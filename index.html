@@ -229,6 +229,29 @@ a{color:inherit}
 .pletter .ph{background:var(--brand);color:#fff;font-size:12px;font-weight:700;padding:11px 15px}
 .pletter .pp{padding:15px;font-size:13px;line-height:1.65;color:var(--ink2)}
 
+/* 카톡 진입 목업 + 흐름 라벨 */
+.pcol{display:flex;flex-direction:column;align-items:center}
+.flowcap{margin-top:14px;font-size:12.5px;font-weight:700;color:var(--ink2);letter-spacing:-.02em;text-align:center}
+.flowcap b{color:var(--brand-d)}
+.kt{height:100%;min-height:490px;display:flex;flex-direction:column}
+.kt-top{background:#9db6cc;display:flex;align-items:center;gap:8px;padding:11px 15px;color:#1f2d3a}
+.kt-top .bk{font-size:19px;line-height:1}
+.kt-top .ch{width:28px;height:28px;border-radius:9px;background:#FEE500;display:grid;place-items:center;font-size:13px;font-weight:900;color:var(--brand-d)}
+.kt-top .nm{font-weight:800;font-size:14px;letter-spacing:-.02em}
+.kt-chat{flex:1;background:#B2C7DA;padding:16px 13px;display:flex;flex-direction:column;gap:12px}
+.kt-row{display:flex;gap:7px;align-items:flex-end}
+.kt-av{width:33px;height:33px;border-radius:12px;background:#FEE500;flex:none;display:grid;place-items:center;font-size:14px;font-weight:900;color:var(--brand-d)}
+.kt-stk{display:flex;flex-direction:column;gap:5px;max-width:188px}
+.kt-who{font-size:11px;color:#39516a;margin-left:2px;font-weight:600}
+.kt-alim{background:#fff;border-radius:4px 16px 16px 16px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.10)}
+.kt-alim .hd{background:#FEE500;color:#3c1e1e;font-size:11px;font-weight:800;padding:7px 13px}
+.kt-alim .bd{padding:12px 14px 4px;font-size:13px;line-height:1.55;color:#191F28}
+.kt-alim .bd b{font-weight:800}
+.kt-link{padding:11px 14px 13px}
+.kt-go{display:block;text-align:center;background:var(--brand);color:#fff;font-weight:800;font-size:13.5px;padding:11px;border-radius:11px;cursor:pointer;letter-spacing:-.02em}
+.kt-time{font-size:10px;color:#3f5369;align-self:flex-end;margin-bottom:1px}
+.kt-sys{align-self:center;background:rgba(0,0,0,.14);color:#fff;font-size:10.5px;font-weight:600;padding:4px 11px;border-radius:11px}
+
 /* 스타일/화이트라벨 */
 .sample{font-size:14px;line-height:1.65;color:var(--ink2);background:var(--line2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
 .sample::before{content:"“";color:var(--brand);font-weight:800;margin-right:2px}
@@ -573,41 +596,73 @@ a{color:inherit}
   </div>
 
   <div class="phones">
-    <div class="phone">
-      <div class="scr">
-        <div class="notch"><i></i></div>
-        <div class="pbrand"><span class="lg">B</span><span class="pm">BRIGHT</span><span class="who">박지훈 · 학생</span></div>
-        <div class="pbody">
-          <div class="pcap">오늘의 숙제</div>
-          <div class="ptask">
-            <div class="pt">My Summer Plan</div>
-            <div class="pd">영작문 · 50단어 이상 · 미래시제 사용</div>
-            <div class="pdue">⏰ 오늘 21:00까지</div>
+    <div class="pcol">
+      <div class="phone">
+        <div class="scr">
+          <div class="notch"><i></i></div>
+          <div class="kt">
+            <div class="kt-top"><span class="bk">‹</span><span class="ch">B</span><span class="nm">○○영어학원</span></div>
+            <div class="kt-chat">
+              <div class="kt-sys">오후 2:14</div>
+              <div class="kt-row">
+                <div class="kt-av">B</div>
+                <div class="kt-stk">
+                  <div class="kt-who">○○영어학원</div>
+                  <div class="kt-alim">
+                    <div class="hd">🔔 알림톡</div>
+                    <div class="bd"><b>박지훈</b> 학생, 오늘 영작문 숙제가 있어요. 마감은 <b>오늘 21:00</b>입니다. 아래에서 바로 제출하세요 :)</div>
+                    <div class="kt-link"><div class="kt-go" onclick="toast('앱 설치·로그인 없이 링크 하나로 바로 열려요 →')">숙제 제출하러 가기 ›</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="pcap">제출</div>
-          <div class="pshot">📷 사진을 촬영하거나 올려주세요</div>
-          <button class="pbtn" onclick="toast('제출 완료! 21:00 전에 잘 냈어요 ✅')">제출하기</button>
         </div>
       </div>
+      <div class="flowcap">① 카톡 알림톡 도착<br><b>링크 탭</b> — 설치·가입 없음</div>
     </div>
 
-    <div class="phone">
-      <div class="scr">
-        <div class="notch"><i></i></div>
-        <div class="pbrand"><span class="lg">B</span><span class="pm">BRIGHT</span><span class="who">박지훈 어머님</span></div>
-        <div class="pbody">
-          <div class="pcap">이번 주 숙제 (4 / 5)</div>
-          <div class="pweek"><i class="done">월</i><i class="done">화</i><i class="done">수</i><i class="miss">목</i><i class="done">금</i></div>
-          <div class="pcap">최근 리포트</div>
-          <div class="pletter">
-            <div class="ph">6/17 · 영작문 · 김지영 원장</div>
-            <div class="pp">어머님 안녕하세요 :) 오늘 지훈이는 어휘 선택이 정말 좋았어요. 시제만 다음 주에 같이 보완하려고 합니다. 칭찬 많이 해주세요!</div>
-          </div>
-          <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-sm)">
-            <span style="font-size:13px;color:var(--ink2);font-weight:600">6월 수강료</span><span class="tag ok">납부 완료</span>
+    <div class="pcol">
+      <div class="phone">
+        <div class="scr">
+          <div class="notch"><i></i></div>
+          <div class="pbrand"><span class="lg">B</span><span class="pm">BRIGHT</span><span class="who">박지훈 · 학생</span></div>
+          <div class="pbody">
+            <div class="pcap">오늘의 숙제</div>
+            <div class="ptask">
+              <div class="pt">My Summer Plan</div>
+              <div class="pd">영작문 · 50단어 이상 · 미래시제 사용</div>
+              <div class="pdue">⏰ 오늘 21:00까지</div>
+            </div>
+            <div class="pcap">제출</div>
+            <div class="pshot">📷 사진을 촬영하거나 올려주세요</div>
+            <button class="pbtn" onclick="toast('제출 완료! 21:00 전에 잘 냈어요 ✅')">제출하기</button>
           </div>
         </div>
       </div>
+      <div class="flowcap">② 학생 — <b>숙제 제출</b><br>사진 한 장이면 끝</div>
+    </div>
+
+    <div class="pcol">
+      <div class="phone">
+        <div class="scr">
+          <div class="notch"><i></i></div>
+          <div class="pbrand"><span class="lg">B</span><span class="pm">BRIGHT</span><span class="who">박지훈 어머님</span></div>
+          <div class="pbody">
+            <div class="pcap">이번 주 숙제 (4 / 5)</div>
+            <div class="pweek"><i class="done">월</i><i class="done">화</i><i class="done">수</i><i class="miss">목</i><i class="done">금</i></div>
+            <div class="pcap">최근 리포트</div>
+            <div class="pletter">
+              <div class="ph">6/17 · 영작문 · 김지영 원장</div>
+              <div class="pp">어머님 안녕하세요 :) 오늘 지훈이는 어휘 선택이 정말 좋았어요. 시제만 다음 주에 같이 보완하려고 합니다. 칭찬 많이 해주세요!</div>
+            </div>
+            <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-sm)">
+              <span style="font-size:13px;color:var(--ink2);font-weight:600">6월 수강료</span><span class="tag ok">납부 완료</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flowcap">③ 학부모 — <b>현황·리포트</b><br>같은 링크로 바로 확인</div>
     </div>
   </div>
 </section>
