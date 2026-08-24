@@ -267,8 +267,33 @@ a{color:inherit}
   .grid4{grid-template-columns:repeat(2,1fr)}
   .grid3{grid-template-columns:1fr}
   .gradewrap{grid-template-columns:1fr}
-  .menu{display:none}
+  .nav .wrap{
+    height:auto;
+    min-height:62px;
+    flex-wrap:wrap;
+    gap:10px 12px;
+    padding-top:max(10px,env(safe-area-inset-top));
+  }
+  .menu{
+    order:3;
+    display:flex;
+    width:100%;
+    margin-left:0;
+    gap:4px;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+    padding-bottom:9px;
+    scroll-snap-type:x proximity;
+  }
+  .menu::-webkit-scrollbar{display:none}
+  .menu a{flex:0 0 auto;scroll-snap-align:start}
   .h1{font-size:25px}
+}
+@media(max-width:600px){
+  .wrap{padding-left:16px;padding-right:16px}
+  .brandmark .sub,.prof .nm{display:none}
 }
 </style>
 </head>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mobile navigation test</title>
+  <style>
+    iframe { width: 390px; height: 844px; border: 0; }
+  </style>
+</head>
+<body>
+  <pre id="result">FAIL: page did not load</pre>
+  <iframe id="app" src="../index.html"></iframe>
+  <script>
+    document.getElementById('app').addEventListener('load', function () {
+      const appWindow = this.contentWindow;
+      const menu = appWindow.document.getElementById('menu');
+      const style = appWindow.getComputedStyle(menu);
+      const visible = style.display !== 'none' && menu.getBoundingClientRect().height > 0;
+      const horizontallyScrollable = menu.scrollWidth > menu.clientWidth &&
+        ['auto', 'scroll'].includes(style.overflowX);
+      const result = visible && horizontallyScrollable
+        ? 'PASS: mobile navigation is visible and horizontally scrollable'
+        : `FAIL: display=${style.display}, height=${menu.getBoundingClientRect().height}, overflowX=${style.overflowX}, widths=${menu.clientWidth}/${menu.scrollWidth}`;
+
+      document.getElementById('result').textContent = result;
+      document.title = result.startsWith('PASS:') ? 'PASS' : 'FAIL';
+    });
+  </script>
+</body>
+</html>
