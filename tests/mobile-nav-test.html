@@ -2,26 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Mobile navigation test</title>
-  <style>
-    iframe { width: 390px; height: 844px; border: 0; }
-  </style>
+  <title>Mobile app shell test</title>
+  <style>iframe { width: 390px; height: 844px; border: 0; }</style>
 </head>
 <body>
   <pre id="result">FAIL: page did not load</pre>
   <iframe id="app" src="../index.html"></iframe>
   <script>
     document.getElementById('app').addEventListener('load', function () {
-      const appWindow = this.contentWindow;
-      const menu = appWindow.document.getElementById('menu');
-      const style = appWindow.getComputedStyle(menu);
-      const visible = style.display !== 'none' && menu.getBoundingClientRect().height > 0;
-      const horizontallyScrollable = menu.scrollWidth > menu.clientWidth &&
-        ['auto', 'scroll'].includes(style.overflowX);
-      const result = visible && horizontallyScrollable
-        ? 'PASS: mobile navigation is visible and horizontally scrollable'
-        : `FAIL: display=${style.display}, height=${menu.getBoundingClientRect().height}, overflowX=${style.overflowX}, widths=${menu.clientWidth}/${menu.scrollWidth}`;
+      const w = this.contentWindow, d = w.document;
+      const fails = [];
 
+      // 1. 하단 탭바가 보이고 탭이 3개다
+      const bar = d.querySelector('.tabbar');
+      const tabs = d.querySelectorAll('.tabbar a');
+      const barBox = bar ? bar.getBoundingClientRect() : { height: 0, bottom: 0 };
+      if (barBox.height <= 0) fails.push('tabbar not visible');
+      if (tabs.length !== 3) fails.push('tabs=' + tabs.length + ' (expected 3)');
+
+      // 2. 탭바가 뷰포트 하단에 붙어 있다 (스크롤해도 따라다니는 셸 구조)
+      if (Math.abs(barBox.bottom - w.innerHeight) > 2) {
+        fails.push('tabbar bottom=' + Math.round(barBox.bottom) + ' vs viewport ' + w.innerHeight);
+      }
+
+      // 3. 가로 넘침이 없다
+      const de = d.documentElement;
+      if (de.scrollWidth > de.clientWidth) {
+        fails.push('h-overflow ' + de.scrollWidth + '>' + de.clientWidth);
+      }
+
+      // 4. 탭 전환이 동작한다
+      w.tab('academy');
+      if (!d.getElementById('t-academy').classList.contains('on')) fails.push('tab() did not switch');
+
+      // 5. 진입 화면과 뒤로가기가 동작한다
+      w.tab('today');
+      w.push('grade');
+      if (!d.getElementById('p-grade').classList.contains('on')) fails.push('push() did not open');
+      if (d.getElementById('bk').style.display !== 'grid') fails.push('back button hidden on sub view');
+      w.back();
+      if (!d.getElementById('t-today').classList.contains('on')) fails.push('back() did not return');
+
+      const result = fails.length === 0
+        ? 'PASS: app shell — bottom tab bar, no overflow, tab/push/back all work'
+        : 'FAIL: ' + fails.join(' | ');
       document.getElementById('result').textContent = result;
       document.title = result.startsWith('PASS:') ? 'PASS' : 'FAIL';
     });

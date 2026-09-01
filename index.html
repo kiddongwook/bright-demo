@@ -2,25 +2,24 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BRIGHT — 학원 확장과 관리를 더 쉽게</title>
-<meta name="description" content="출결·수강료·채점·학부모 소통을 한곳에서. 원장님의 방식을 담아, 반과 선생님이 늘어도 흔들림 없이 관리하세요.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>한빛영어학원 · 우리 학원 앱</title>
+<meta name="description" content="출결·숙제·수강료·학부모 소통을 폰 하나로. 우리 학원 이름으로 나가는 앱.">
+<meta name="theme-color" content="#FFFFFF">
 
 <meta property="og:url" content="https://kiddongwook.github.io/bright-demo/">
 <meta property="og:image" content="https://kiddongwook.github.io/bright-demo/og.png">
 <meta property="og:type" content="website">
-<meta property="og:title" content="BRIGHT — 학원 확장과 관리를 더 쉽게">
-<meta property="og:description" content="출결·수강료·채점·학부모 소통을 한곳에서. 원장님의 방식을 담아, 반과 선생님이 늘어도 흔들림 없이 관리하세요.">
+<meta property="og:title" content="한빛영어학원 · 우리 학원 앱">
+<meta property="og:description" content="출결·숙제·수강료·학부모 소통을 폰 하나로. 우리 학원 이름으로 나가는 앱.">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:site_name" content="BRIGHT 학원 관리">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="BRIGHT — 학원 확장과 관리를 더 쉽게">
-<meta name="twitter:description" content="출결·수강료·채점·학부모 소통을 한곳에서. 원장님 방식 그대로, 반과 선생님이 늘어도 쉽게.">
+<meta name="twitter:title" content="한빛영어학원 · 우리 학원 앱">
+<meta name="twitter:description" content="출결·숙제·수강료·학부모 소통을 폰 하나로.">
 <meta name="twitter:image" content="https://kiddongwook.github.io/bright-demo/og.png">
 
-<!-- 파비콘 (외부 파일 없이 인라인 SVG) -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233182F6'/%3E%3Ctext x='16' y='23' font-size='20' font-weight='800' fill='white' text-anchor='middle' font-family='sans-serif'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='8'%20fill='%233182F6'/%3E%3Ctext%20x='16'%20y='23'%20font-size='18'%20font-weight='800'%20fill='white'%20text-anchor='middle'%20font-family='sans-serif'%3E%ED%95%9C%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
@@ -40,845 +39,555 @@
   --ok:#00C471;  --ok-soft:#E7F9F0;
   --warn:#FF8A00; --warn-soft:#FFF4E5;
   --danger:#F04452; --danger-soft:#FFEBED;
-  --violet:#8B5CF6; --violet-soft:#F1ECFF;
   --body:"Pretendard Variable","Pretendard",system-ui,sans-serif;
-  --shadow:0 1px 3px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.05);
   --shadow-sm:0 1px 2px rgba(0,0,0,.05), 0 2px 8px rgba(0,0,0,.04);
 }
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum"}
 .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
-a{color:inherit}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--body);cursor:pointer;border:none;background:none;color:inherit}
 
-/* ── 상단 네비 ── */
-.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
-.nav .wrap{display:flex;align-items:center;gap:18px;height:62px}
-.brandmark{font-size:20px;font-weight:800;letter-spacing:-.04em;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:7px}
-.brandmark .lg{width:26px;height:26px;border-radius:8px;background:var(--brand);display:grid;place-items:center;color:#fff;font-size:14px;font-weight:800}
-.brandmark .sub{font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:0;margin-left:2px}
-.menu{display:flex;gap:2px;margin-left:14px}
-.menu a{font-size:13.5px;font-weight:600;color:var(--ink3);text-decoration:none;padding:8px 13px;border-radius:10px;transition:.15s;white-space:nowrap}
-.menu a:hover{color:var(--ink2);background:var(--line2)}
-.menu a.on{color:var(--brand-d);background:var(--brand-soft)}
-.prof{margin-left:auto;display:flex;align-items:center;gap:9px}
-.prof .av{width:34px;height:34px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
-.prof .nm{font-size:12.5px;font-weight:700;line-height:1.25}
-.prof .nm small{display:block;color:var(--ink3);font-weight:500;font-size:11px}
+/* ── 앱 셸: 폰에서는 꽉 차게, PC에서는 폰 프레임 안에 ── */
+.shell{width:100%;height:100dvh}
+.app{height:100%;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+.appbar{flex:0 0 auto;background:#fff;border-bottom:1px solid var(--line);
+  padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;gap:10px;min-height:56px}
+.appbar .lg{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-size:13px;font-weight:800;flex:0 0 auto}
+.appbar .an{font-size:17px;font-weight:800;letter-spacing:-.03em}
+.appbar .ad{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink3)}
+.appbar .bk{width:28px;height:30px;margin-left:-8px;display:grid;place-items:center;
+  font-size:26px;line-height:1;color:var(--ink2);flex:0 0 auto}
+.view{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding:20px 18px 28px}
+.view.on{display:block}
+.tabbar{flex:0 0 auto;background:#fff;border-top:1px solid var(--line);display:flex;
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.tabbar a{flex:1;text-align:center;font-size:11px;font-weight:700;color:var(--ink3);
+  padding:5px 0;letter-spacing:-.02em}
+.tabbar a .ti{display:block;font-size:19px;line-height:1.25;margin-bottom:1px}
+.tabbar a.on{color:var(--brand)}
 
-/* ── 화면 ── */
-.screen{display:none;padding:38px 0 90px;animation:fade .4s cubic-bezier(.2,.7,.3,1)}
-.screen.on{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.head{margin-bottom:26px}
-.eyebrow{font-size:13px;font-weight:700;color:var(--brand);margin-bottom:8px}
-.h1{font-size:30px;font-weight:800;letter-spacing:-.035em;line-height:1.18}
-.lede{font-size:15px;color:var(--ink2);margin-top:10px;line-height:1.6;max-width:600px}
-.lede b{color:var(--ink);font-weight:700}
+@media(min-width:641px){
+  body{display:grid;place-items:center;min-height:100vh;background:#E4E8EC;padding:26px 0}
+  .shell{width:390px;height:min(812px,calc(100vh - 64px));background:#111;padding:13px;border-radius:46px;
+    box-shadow:0 40px 90px rgba(0,0,0,.24)}
+  .app{border-radius:34px}
+  .appbar{padding-top:14px}
+  .tabbar{padding-bottom:10px}
+  .credit{position:fixed;bottom:15px;left:0;right:0;text-align:center;
+    font-size:11.5px;color:#98A1AB;font-weight:600}
+}
+@media(max-width:640px){ .credit{display:none} }
 
-/* 카드 */
-.card{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:24px}
-.card.tight{padding:8px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.cols{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-top:20px;align-items:start}
-
-/* KPI */
-.kpi{background:var(--card);border-radius:18px;box-shadow:var(--shadow-sm);padding:20px 22px}
-.kpi .lab{font-size:13px;font-weight:600;color:var(--ink3);display:flex;align-items:center;gap:7px}
-.kpi .lab .d{width:8px;height:8px;border-radius:50%}
-.kpi .v{font-size:34px;font-weight:800;letter-spacing:-.04em;margin-top:10px;line-height:1}
-.kpi .v .u{font-size:15px;font-weight:700;color:var(--ink3);margin-left:2px}
-.kpi .v.acc{color:var(--brand)}
-.kpi .meta{font-size:12.5px;color:var(--ink3);margin-top:9px}
-
-/* 섹션 타이틀(카드 내부) */
-.ct{display:flex;align-items:center;gap:9px;margin-bottom:4px}
-.ct h3{font-size:17px;font-weight:800;letter-spacing:-.03em}
-.ct .cnt{font-size:12.5px;font-weight:700;color:var(--brand);background:var(--brand-soft);padding:2px 9px;border-radius:999px}
-.ct .more{margin-left:auto;font-size:13px;font-weight:600;color:var(--ink3);text-decoration:none}
-
-/* 리스트 행 */
-.row{display:flex;align-items:center;gap:14px;padding:15px 8px;border-radius:14px;transition:.12s}
-.row:hover{background:var(--line2)}
-.row+.row{box-shadow:inset 0 1px 0 var(--line2)}
-.ava{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0}
+/* ── 공통 조각 ── */
+.greet{font-size:22px;font-weight:800;letter-spacing:-.04em;line-height:1.35;margin-bottom:5px}
+.sub{font-size:13.5px;color:var(--ink2);line-height:1.55}
+.sub b{color:var(--brand-d)}
+.cap{font-size:12px;font-weight:800;color:var(--ink3);letter-spacing:-.01em;margin:24px 0 9px}
+.cap.first{margin-top:0}
+.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow-sm);padding:18px}
+.card+.card{margin-top:12px}
+.list{background:var(--card);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden}
+.item{display:flex;align-items:center;gap:13px;padding:15px 16px;width:100%;text-align:left;
+  border-bottom:1px solid var(--line2)}
+.item:last-child{border-bottom:0}
+.item:active{background:var(--line2)}
+.item .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
+  font-size:16px;flex:0 0 auto}
+.item .bd{flex:1;min-width:0;display:block}
+.item .t{display:block;font-size:15px;font-weight:700;letter-spacing:-.02em}
+.item .s{display:block;font-size:12.5px;color:var(--ink3);margin-top:3px;line-height:1.45}
+.item .go{color:var(--line);font-size:20px;flex:0 0 auto;font-weight:700}
+.ava{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;
+  font-size:14px;font-weight:800;flex:0 0 auto}
 .ava.b{background:var(--brand-soft);color:var(--brand-d)}
 .ava.g{background:var(--ok-soft);color:#00935b}
 .ava.w{background:var(--warn-soft);color:#cc6e00}
 .ava.r{background:var(--danger-soft);color:var(--danger)}
-.row .bd{flex:1;min-width:0}
-.row .t{font-size:14.5px;font-weight:700;letter-spacing:-.02em}
-.row .t .ko{font-weight:500;color:var(--ink2)}
-.row .s{font-size:12.5px;color:var(--ink3);margin-top:2px}
-
-.tag{display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;letter-spacing:-.01em}
+.tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;
+  padding:4px 9px;border-radius:999px;letter-spacing:-.01em;flex:0 0 auto}
 .tag.ai{background:var(--brand-soft);color:var(--brand-d)}
 .tag.ok{background:var(--ok-soft);color:#00935b}
 .tag.wait{background:var(--warn-soft);color:#cc6e00}
 .tag.late{background:var(--danger-soft);color:var(--danger)}
 .tag.line{background:var(--line2);color:var(--ink2)}
-.tag.sm{font-size:11px;padding:3px 8px}
-
-/* 버튼 */
-.btn{font-family:var(--body);font-size:14px;font-weight:700;padding:11px 18px;border-radius:13px;border:none;background:var(--brand);color:#fff;cursor:pointer;letter-spacing:-.02em;transition:.15s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}
-.btn:hover{background:var(--brand-d)}
+.btn{display:block;width:100%;background:var(--brand);color:#fff;font-weight:800;font-size:15.5px;
+  padding:15px;border-radius:14px;letter-spacing:-.02em;text-align:center}
 .btn.ghost{background:var(--line2);color:var(--ink2)}
-.btn.ghost:hover{background:var(--line)}
-.btn.sm{font-size:12.5px;padding:8px 13px;border-radius:10px}
-.btn.block{width:100%}
+.btn.sm{width:auto;flex:0 0 auto;padding:9px 14px;font-size:13px;border-radius:11px}
+.btn:active{opacity:.85}
+.btnrow{display:flex;gap:9px;margin-top:16px}
+.btnrow .btn{flex:1}
 
-/* 미니 차트 */
-.bars{display:flex;align-items:flex-end;gap:8px;height:74px;margin:10px 0 4px}
-.bars span{flex:1;background:var(--brand-soft);border-radius:6px 6px 4px 4px;position:relative}
-.bars span.hi{background:var(--brand)}
+/* 출결 3버튼 */
+.att{display:flex;gap:5px;flex:0 0 auto}
+.att button{font-size:12px;font-weight:700;padding:7px 9px;border-radius:10px;
+  background:var(--line2);color:var(--ink3)}
+.att button.on.p{background:var(--ok);color:#fff}
+.att button.on.l{background:var(--warn);color:#fff}
+.att button.on.a{background:var(--danger);color:#fff}
 
-/* 테이블 */
-.tbl{width:100%;border-collapse:collapse}
-.tbl th{font-size:12px;font-weight:600;color:var(--ink3);text-align:left;padding:0 12px 12px}
-.tbl th.r,.tbl td.r{text-align:right}
-.tbl td{font-size:14px;padding:14px 12px;border-top:1px solid var(--line2);letter-spacing:-.01em}
-.tbl tr:hover td{background:var(--line2)}
-.tbl td:first-child{border-radius:12px 0 0 12px}.tbl td:last-child{border-radius:0 12px 12px 0}
-.nmcell{font-weight:700}
-.dots{display:flex;gap:5px}
-.dots i{width:13px;height:13px;border-radius:50%;background:var(--line)}
-.dots i.p{background:var(--ok)} .dots i.a{background:var(--danger)} .dots i.l{background:var(--warn)}
+/* 첨삭 */
+.essay{font-size:14.5px;line-height:2;color:var(--ink2);letter-spacing:-.01em}
+.essay em{font-style:normal;background:var(--danger-soft);color:var(--danger);
+  font-weight:700;padding:1px 4px;border-radius:5px}
+.corr{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--line2)}
+.corr:last-child{border-bottom:0}
+.corr .ci{width:20px;height:20px;border-radius:50%;background:var(--danger-soft);color:var(--danger);
+  font-size:11px;font-weight:800;display:grid;place-items:center;flex:0 0 auto;margin-top:2px}
+.corr .cb{flex:1;min-width:0}
+.corr .cf{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.02em}
+.corr .cf s{color:var(--ink3);font-weight:600;margin-right:6px}
+.corr .cw{display:block;font-size:12.5px;color:var(--ink3);margin-top:3px;line-height:1.5}
+.score{display:flex;align-items:baseline;gap:7px}
+.score b{font-size:36px;font-weight:800;letter-spacing:-.04em;color:var(--brand)}
+.score span{font-size:14px;font-weight:700;color:var(--ink3)}
 
-/* 입력 */
-.field{margin-bottom:18px}
-.field label{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:8px}
-.field input,.field textarea{width:100%;border:1.5px solid var(--line);background:var(--card);font-family:var(--body);font-size:15px;padding:13px 15px;border-radius:13px;color:var(--ink);transition:.15s}
-.field input:focus,.field textarea:focus{outline:none;border-color:var(--brand);background:#fff}
-.field textarea{resize:vertical;min-height:80px;line-height:1.55}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{font-size:13px;font-weight:600;padding:9px 15px;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;background:var(--card);transition:.12s;color:var(--ink2)}
-.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
-.scorebox{display:flex;align-items:baseline;gap:7px}
-.scorebox input{width:96px;font-weight:800;font-size:30px;text-align:center;padding:8px;letter-spacing:-.03em}
-.scorebox .of{font-size:18px;color:var(--ink3);font-weight:700}
+/* 편지 */
+.letter{background:#fff;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.letter .lh{background:var(--brand);color:#fff;padding:13px 17px;display:flex;
+  align-items:center;justify-content:space-between;gap:8px}
+.letter .lh .lt{font-size:13px;font-weight:800;letter-spacing:-.02em}
+.letter .lh .lr{font-size:10.5px;font-weight:700;background:rgba(255,255,255,.22);
+  padding:3px 8px;border-radius:999px;flex:0 0 auto}
+.letter .lb{padding:18px 18px 20px}
+.letter .lb p{font-size:14.5px;line-height:1.85;letter-spacing:-.01em;color:var(--ink)}
+.letter .lb p+p{margin-top:12px}
+.letter .lf{padding:12px 17px;background:#FBFCFD;border-top:1px solid var(--line);
+  font-size:11.5px;color:var(--ink3);line-height:1.5}
 
-/* AI 첨삭 */
-.gradewrap{display:grid;grid-template-columns:1.05fr 1fr;gap:20px;align-items:start}
-.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:16px}
-.legend span{display:inline-flex;align-items:center;gap:7px}
-.legend i{width:16px;height:4px;border-radius:2px;display:inline-block}
-.legend i.t{background:var(--danger)} .legend i.g{background:var(--warn)}
-.legend i.s{background:var(--violet)} .legend i.v{background:var(--ok)}
-.essay{font-size:16px;line-height:2.2;letter-spacing:-.01em;color:var(--ink)}
-.ann{cursor:help;padding:1px 3px;border-radius:6px;font-weight:500}
-.ann.t{background:var(--danger-soft);box-shadow:inset 0 -2.5px 0 var(--danger)}
-.ann.g{background:var(--warn-soft);box-shadow:inset 0 -2.5px 0 var(--warn)}
-.ann.s{background:var(--violet-soft);box-shadow:inset 0 -2.5px 0 var(--violet)}
-.ann.v{background:var(--ok-soft);box-shadow:inset 0 -2.5px 0 var(--ok)}
-.ann sup{font-size:10px;font-weight:800;color:var(--ink3);margin-left:1px}
-.aibox{background:var(--brand-soft);border-radius:16px;padding:18px 20px;margin-top:18px}
-.aibox .h{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:8px;letter-spacing:-.02em}
-.aibox p{font-size:13.5px;line-height:1.7;color:var(--ink2)}
-.aibox p b{color:var(--ink)}
-.corr .c{display:flex;gap:13px;padding:15px 4px;align-items:baseline}
-.corr .c+.c{border-top:1px solid var(--line2)}
-.corr .ci{width:24px;height:24px;border-radius:8px;background:var(--line2);display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--ink2);flex-shrink:0}
-.corr .cx{flex:1;font-size:14px;line-height:1.5}
-.corr .from{color:var(--danger);text-decoration:line-through;font-weight:700}
-.corr .to{color:#00935b;font-weight:800}
-.corr .why{display:block;color:var(--ink3);font-size:12.5px;margin-top:3px}
-.rub{margin-top:2px}
-.rub .r{display:grid;grid-template-columns:96px 1fr 56px;align-items:center;gap:14px;padding:11px 0}
-.rub .r+.r{border-top:1px solid var(--line2)}
-.rub .rl{font-size:13.5px;font-weight:600;color:var(--ink2)}
-.rub .rt{height:8px;background:var(--line2);border-radius:999px;overflow:hidden}
-.rub .rf{height:100%;background:var(--brand);border-radius:999px}
-.rub .rs{font-weight:800;text-align:right;letter-spacing:-.02em}
-.rub .rs small{color:var(--ink3);font-weight:700;font-size:12px}
-
-/* AI 리포트 레터 */
-.letter{border-radius:18px;overflow:hidden;border:1px solid var(--line)}
-.letter .lh{background:var(--brand);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between}
-.letter .lh .lt{font-size:14px;font-weight:800;letter-spacing:-.02em}
-.letter .lh .lr{font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:999px}
-.letter .lb{padding:24px 26px;background:#fff}
-.letter .lb p{font-size:15px;line-height:1.85;letter-spacing:-.01em}
-.letter .lb p+p{margin-top:14px}
-.letter .lf{padding:16px 22px;background:#FBFCFD;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
-.letter .lf .note{font-size:12px;color:var(--ink3);margin-right:auto;line-height:1.45}
-
-/* 모바일 프레임 */
-.phones{display:flex;gap:36px;flex-wrap:wrap}
-.phone{width:286px;border-radius:42px;padding:12px;background:#111;box-shadow:0 30px 60px rgba(0,0,0,.18)}
-.phone .scr{background:var(--bg);border-radius:32px;overflow:hidden;min-height:520px}
-.phone .notch{height:30px;display:flex;justify-content:center;align-items:flex-start;padding-top:8px}
-.phone .notch i{width:90px;height:22px;background:#111;border-radius:0 0 14px 14px;margin-top:-8px}
-.pbrand{background:#fff;padding:16px 20px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--line)}
-.pbrand .lg{width:24px;height:24px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
-.pbrand .pm{font-size:16px;font-weight:800;letter-spacing:-.03em}
-.pbrand .who{margin-left:auto;font-size:11.5px;color:var(--ink3);font-weight:600}
-.pbody{padding:18px}
-.pcap{font-size:12px;font-weight:700;color:var(--ink3);margin-bottom:10px}
-.ptask{background:#fff;border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);margin-bottom:16px}
-.ptask .pt{font-size:18px;font-weight:800;letter-spacing:-.03em}
-.ptask .pd{font-size:13px;color:var(--ink2);margin-top:4px}
-.pdue{display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--danger);background:var(--danger-soft);padding:5px 11px;border-radius:999px}
-.pshot{background:#fff;border:1.5px dashed var(--line);height:120px;border-radius:14px;display:grid;place-items:center;color:var(--ink3);font-size:13px;margin:12px 0;font-weight:600}
-.pbtn{display:block;width:100%;text-align:center;background:var(--brand);color:#fff;border:none;font-family:var(--body);font-weight:800;font-size:15px;padding:15px;border-radius:14px;cursor:pointer;letter-spacing:-.02em}
-.pweek{display:flex;gap:7px;margin:4px 0 18px}
-.pweek i{flex:1;aspect-ratio:1;background:#fff;border-radius:11px;display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--ink3);box-shadow:var(--shadow-sm)}
-.pweek i.done{background:var(--ok);color:#fff;box-shadow:none}
-.pweek i.miss{background:var(--line2);box-shadow:none}
-.pletter{background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm)}
-.pletter .ph{background:var(--brand);color:#fff;font-size:12px;font-weight:700;padding:11px 15px}
-.pletter .pp{padding:15px;font-size:13px;line-height:1.65;color:var(--ink2)}
-
-/* 카톡 진입 목업 + 흐름 라벨 */
-.pcol{display:flex;flex-direction:column;align-items:center}
-.flowcap{margin-top:14px;font-size:12.5px;font-weight:700;color:var(--ink2);letter-spacing:-.02em;text-align:center}
-.flowcap b{color:var(--brand-d)}
-.kt{height:100%;min-height:490px;display:flex;flex-direction:column}
-.kt-top{background:#9db6cc;display:flex;align-items:center;gap:8px;padding:11px 15px;color:#1f2d3a}
-.kt-top .bk{font-size:19px;line-height:1}
-.kt-top .ch{width:28px;height:28px;border-radius:9px;background:#FEE500;display:grid;place-items:center;font-size:13px;font-weight:900;color:var(--brand-d)}
-.kt-top .nm{font-weight:800;font-size:14px;letter-spacing:-.02em}
-.kt-chat{flex:1;background:#B2C7DA;padding:16px 13px;display:flex;flex-direction:column;gap:12px}
-.kt-row{display:flex;gap:7px;align-items:flex-end}
-.kt-av{width:33px;height:33px;border-radius:12px;background:#FEE500;flex:none;display:grid;place-items:center;font-size:14px;font-weight:900;color:var(--brand-d)}
-.kt-stk{display:flex;flex-direction:column;gap:5px;max-width:188px}
-.kt-who{font-size:11px;color:#39516a;margin-left:2px;font-weight:600}
-.kt-alim{background:#fff;border-radius:4px 16px 16px 16px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.10)}
-.kt-alim .hd{background:#FEE500;color:#3c1e1e;font-size:11px;font-weight:800;padding:7px 13px}
-.kt-alim .bd{padding:12px 14px 4px;font-size:13px;line-height:1.55;color:#191F28}
-.kt-alim .bd b{font-weight:800}
-.kt-link{padding:11px 14px 13px}
-.kt-go{display:block;text-align:center;background:var(--brand);color:#fff;font-weight:800;font-size:13.5px;padding:11px;border-radius:11px;cursor:pointer;letter-spacing:-.02em}
-.kt-time{font-size:10px;color:#3f5369;align-self:flex-end;margin-bottom:1px}
-.kt-sys{align-self:center;background:rgba(0,0,0,.14);color:#fff;font-size:10.5px;font-weight:600;padding:4px 11px;border-radius:11px}
-
-/* 스타일/화이트라벨 */
-.sample{font-size:14px;line-height:1.65;color:var(--ink2);background:var(--line2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
-.sample::before{content:"“";color:var(--brand);font-weight:800;margin-right:2px}
-
-/* 성장 기록 — 누적 디테일 */
-.cmp{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
-.cmpbox{border-radius:18px;padding:20px 22px;border:1px solid var(--line);background:#FBFCFD}
-.cmpbox.new{border-color:transparent;background:var(--brand-soft)}
-.cmpbox .cl{font-size:11.5px;font-weight:800;letter-spacing:.01em;color:var(--ink3);margin-bottom:11px}
-.cmpbox.new .cl{color:var(--brand-d)}
-.cmpbox .cv{font-size:15px;font-weight:700;line-height:1.6;letter-spacing:-.02em;color:var(--ink2)}
-.cmpbox.new .cv{color:var(--ink)}
-.cmpbox .cv b{color:var(--brand-d)}
-.cmpbox .cn{font-size:12.5px;color:var(--ink3);line-height:1.5;margin-top:11px}
-.trend{margin-top:8px}
-.trend .tr{display:flex;align-items:center;gap:16px;padding:13px 6px;border-bottom:1px solid var(--line2)}
+/* 추이 */
+.trend .tr{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line2)}
 .trend .tr:last-child{border-bottom:0}
-.trend .tl{width:62px;font-size:14px;font-weight:700;letter-spacing:-.02em;flex:0 0 auto}
-.spark{display:flex;align-items:flex-end;gap:5px;width:64px;height:32px;flex:0 0 auto}
-.spark i{flex:1;background:var(--line);border-radius:4px 4px 2px 2px;min-height:3px}
+.trend .tl{width:46px;font-size:13.5px;font-weight:700;letter-spacing:-.02em;flex:0 0 auto}
+.spark{display:flex;align-items:flex-end;gap:4px;width:44px;height:26px;flex:0 0 auto}
+.spark i{flex:1;background:var(--line);border-radius:3px 3px 1px 1px;min-height:3px}
 .spark i.hi{background:var(--brand)}
 .spark.flat{align-items:center}
-.spark.flat i{height:4px;min-height:4px;border-radius:2px}
-.letter .lf .btn{white-space:nowrap}
-.tn{font-size:14px;font-weight:700;color:var(--ink3);letter-spacing:-.01em;white-space:nowrap}
-.tn u{text-decoration:none;color:var(--line);margin:0 3px}
-.tn b{color:var(--ink);font-size:16px}
-.delta{margin-left:auto;font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;flex:0 0 auto}
+.spark.flat i{height:3px;min-height:3px;border-radius:2px}
+.tn{font-size:13px;font-weight:700;color:var(--ink3);white-space:nowrap}
+.tn u{text-decoration:none;color:var(--line);margin:0 2px}
+.tn b{color:var(--ink);font-size:15px}
+.delta{margin-left:auto;font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;flex:0 0 auto}
 .delta.good{background:var(--ok-soft);color:#00935b}
-.delta.bad{background:var(--danger-soft);color:var(--danger)}
 .delta.flat{background:var(--line2);color:var(--ink3)}
-.sig{display:flex;gap:13px;padding:16px 6px;border-bottom:1px solid var(--line2)}
-.sig:last-child{border-bottom:0}
-.sig .sb{flex:1;min-width:0}
-.sig .st{font-size:14.5px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
-.sig .se{font-size:12.5px;color:var(--ink3);line-height:1.6;margin-top:6px}
-.sig .se b{color:var(--ink2);font-weight:700}
 
-.foot{text-align:center;padding:30px 0 40px;font-size:12px;color:var(--ink3)}
-.foot b{color:var(--ink2);font-weight:800}
+/* 주간 점 */
+.week{display:flex;gap:6px;margin-top:11px}
+.week i{flex:1;aspect-ratio:1;border-radius:9px;background:var(--line2);display:grid;
+  place-items:center;font-size:11.5px;font-weight:700;color:var(--ink3);font-style:normal}
+.week i.done{background:var(--ok);color:#fff}
+.week i.miss{background:var(--danger-soft);color:var(--danger)}
 
-.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-size:14px;font-weight:600;padding:14px 22px;border-radius:14px;opacity:0;pointer-events:none;transition:.3s cubic-bezier(.2,.7,.3,1);z-index:99;box-shadow:0 16px 40px rgba(0,0,0,.25)}
+/* 우리 학원 */
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12px;font-weight:800;color:var(--ink3);margin-bottom:8px}
+.field .val{background:var(--line2);border-radius:12px;padding:13px 15px;font-size:15px;font-weight:700}
+.chips{display:flex;gap:9px}
+.chip{width:34px;height:34px;border-radius:11px;border:2px solid transparent}
+.chip.on{border-color:var(--ink)}
+.sample{font-size:13px;line-height:1.6;color:var(--ink2);background:var(--line2);
+  border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.sample:last-child{margin-bottom:0}
+.madeby{text-align:center;font-size:11.5px;color:var(--ink3);margin-top:26px;line-height:1.65}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(16px);
+  background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;padding:12px 18px;
+  border-radius:12px;opacity:0;pointer-events:none;transition:.28s cubic-bezier(.2,.7,.3,1);
+  z-index:99;box-shadow:0 14px 34px rgba(0,0,0,.28);max-width:300px;text-align:center;line-height:1.5}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-@media(max-width:900px){
-  .cols{grid-template-columns:1fr}
-  .cmp{grid-template-columns:1fr}
-  .grid4{grid-template-columns:repeat(2,1fr)}
-  .grid3{grid-template-columns:1fr}
-  .gradewrap{grid-template-columns:1fr}
-  .nav .wrap{
-    height:auto;
-    min-height:62px;
-    flex-wrap:wrap;
-    gap:10px 12px;
-    padding-top:max(10px,env(safe-area-inset-top));
-  }
-  .menu{
-    order:3;
-    display:flex;
-    width:100%;
-    margin-left:0;
-    gap:4px;
-    overflow-x:auto;
-    overscroll-behavior-x:contain;
-    scrollbar-width:none;
-    -ms-overflow-style:none;
-    padding-bottom:9px;
-    scroll-snap-type:x proximity;
-  }
-  .menu::-webkit-scrollbar{display:none}
-  .menu a{flex:0 0 auto;scroll-snap-align:start}
-  .h1{font-size:25px}
-}
-@media(max-width:600px){
-  .wrap{padding-left:16px;padding-right:16px}
-  .brandmark .sub,.prof .nm{display:none}
-}
 </style>
 </head>
-<body>
 
-<!-- ── 상단 네비 ── -->
-<header class="nav">
-  <div class="wrap">
-    <a class="brandmark" href="#" onclick="go('dash');return false"><span class="lg">B</span>BRIGHT<span class="sub">학원 관리</span></a>
-    <nav class="menu" id="menu">
-      <a href="#" data-s="dash"   onclick="go('dash');return false">홈</a>
-      <a href="#" data-s="attend" onclick="go('attend');return false">출결</a>
-      <a href="#" data-s="pay"    onclick="go('pay');return false">수강료</a>
-      <a href="#" data-s="grade"  onclick="go('grade');return false">AI 첨삭</a>
-      <a href="#" data-s="report" onclick="go('report');return false">AI 리포트</a>
-      <a href="#" data-s="track"  onclick="go('track');return false">성장 기록</a>
-      <a href="#" data-s="students" onclick="go('students');return false">학생·반</a>
-      <a href="#" data-s="style"  onclick="go('style');return false">원장 스타일</a>
-      <a href="#" data-s="mobile" onclick="go('mobile');return false">학생·학부모</a>
-    </nav>
-    <div class="prof">
-      <div class="av">김</div>
-      <div class="nm">김지영 원장<small>브라이트 영어학원</small></div>
-    </div>
-  </div>
+<body>
+<div class="shell"><div class="app">
+
+<header class="appbar">
+  <button class="bk" id="bk" onclick="back()" style="display:none">&lsaquo;</button>
+  <span class="lg" id="lg">한</span>
+  <span class="an" id="an">한빛영어학원</span>
+  <span class="ad" id="ad">6월 17일 화</span>
 </header>
 
-<div class="wrap">
+<!-- ════════ 탭 1 · 오늘 ════════ -->
+<section class="view on" id="t-today">
+  <div class="greet">안녕하세요,<br>김지영 원장님</div>
+  <p class="sub">오늘 할 일 <b>4가지</b> 남았어요.</p>
 
-<!-- ════ 홈 ════ -->
-<section class="screen on" id="s-dash">
-  <div class="head">
-    <div class="eyebrow">화요일 · 6월 17일</div>
-    <h1 class="h1">안녕하세요 김지영 원장님,<br>오늘 학원은 잘 돌아가고 있어요.</h1>
-    <p class="lede">출결·수강료·채점·학부모 소통을 한곳에서. 원장님의 방식을 담아, <b>반과 선생님이 늘어도 흔들림 없이</b> 관리하세요.</p>
+  <div class="cap">오늘 할 일</div>
+  <div class="list">
+    <button class="item" onclick="push('attend')">
+      <span class="ic" style="background:var(--ok-soft)">✓</span>
+      <span class="bd"><span class="t">출결 체크</span><span class="s">중2A · 15/17명 입력됨</span></span>
+      <span class="go">›</span>
+    </button>
+    <button class="item" onclick="push('grade')">
+      <span class="ic" style="background:var(--brand-soft)">✎</span>
+      <span class="bd"><span class="t">채점 3건</span><span class="s">박지훈 외 2명 · 영작문 제출됨</span></span>
+      <span class="go">›</span>
+    </button>
+    <button class="item" onclick="toast('김민수 어머님께 숙제 안내를 보냈어요')">
+      <span class="ic" style="background:var(--warn-soft)">!</span>
+      <span class="bd"><span class="t">숙제 미제출 1명</span><span class="s">김민수 · 마감 3시간 지남</span></span>
+      <span class="tag wait">알리기</span>
+    </button>
+    <button class="item" onclick="push('pay')">
+      <span class="ic" style="background:var(--danger-soft)">₩</span>
+      <span class="bd"><span class="t">수강료 미납 3명</span><span class="s">6월분 · 114만원</span></span>
+      <span class="go">›</span>
+    </button>
   </div>
 
-  <div class="grid4">
-    <div class="kpi"><div class="lab"><span class="d" style="background:var(--ok)"></span>오늘 등원</div><div class="v num">42<span class="u">/47</span></div><div class="meta">결석 3 · 지각 2</div></div>
-    <div class="kpi"><div class="lab"><span class="d" style="background:var(--brand)"></span>숙제 미제출</div><div class="v num acc">5</div><div class="meta">마감 지남 · 독촉 대기</div></div>
-    <div class="kpi"><div class="lab"><span class="d" style="background:var(--warn)"></span>검수 대기</div><div class="v num">7</div><div class="meta">AI 초안 4 · 채점 3</div></div>
-    <div class="kpi"><div class="lab"><span class="d" style="background:var(--danger)"></span>수강료 미납</div><div class="v num">3</div><div class="meta">6월분 · 114만원</div></div>
-  </div>
-
-  <div class="cols">
-    <div class="card">
-      <div class="ct"><h3>지금 처리할 일</h3><span class="cnt">4</span><a class="more" href="#">전체 보기</a></div>
-      <div style="margin-top:6px">
-        <div class="row">
-          <div class="ava b">박</div>
-          <div class="bd"><div class="t">박지훈 <span class="ko">· 영작문</span></div><div class="s">중2A · "My Summer Plan" 제출 20:14 · AI 초안 준비됨</div></div>
-          <span class="tag ai">AI 초안</span>
-          <button class="btn sm" onclick="go('report')">검수</button>
-        </div>
-        <div class="row">
-          <div class="ava w">최</div>
-          <div class="bd"><div class="t">최유나 <span class="ko">· 단어시험</span></div><div class="s">중2A · 제출 19:50 · 채점 대기</div></div>
-          <span class="tag wait">채점</span>
-          <button class="btn sm ghost" onclick="go('grade')">채점</button>
-        </div>
-        <div class="row">
-          <div class="ava r">김</div>
-          <div class="bd"><div class="t">김민수 <span class="ko">· 영작문</span></div><div class="s">중2A · 마감 21:00 지남 · 미제출</div></div>
-          <span class="tag late">미제출</span>
-          <button class="btn sm ghost" onclick="toast('김민수 학부모에게 알림톡을 보냈어요')">독촉</button>
-        </div>
-        <div class="row">
-          <div class="ava r">이</div>
-          <div class="bd"><div class="t">이서연 <span class="ko">· 수강료</span></div><div class="s">고1B · 6월분 38만원 · 납부일 3일 경과</div></div>
-          <span class="tag late">미납</span>
-          <button class="btn sm ghost" onclick="toast('이서연 학부모에게 안내를 보냈어요')">안내</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:18px;padding:0 4px">
-        <button class="btn" onclick="go('grade')">+ 숙제 내기</button>
-        <button class="btn ghost" onclick="go('attend')">출결 입력</button>
-      </div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="card">
-        <div class="ct"><h3>이번 주 제출률</h3></div>
-        <div class="bars">
-          <span style="height:60%"></span><span style="height:72%"></span><span style="height:55%"></span>
-          <span style="height:80%"></span><span class="hi" style="height:92%"></span><span style="height:68%"></span><span class="hi" style="height:88%"></span>
-        </div>
-        <div style="font-size:13px;color:var(--ink2);font-weight:600">평균 <b class="num" style="color:var(--brand)">79%</b> <span style="color:var(--ok);font-weight:700">▲ 6%p</span></div>
-      </div>
-      <div class="card" style="background:var(--brand);color:#fff">
-        <div style="font-size:13px;font-weight:600;opacity:.9">원장 AI가 절약한 시간</div>
-        <div class="num" style="font-size:38px;font-weight:800;margin-top:8px;line-height:1">3.4<span style="font-size:16px;opacity:.8;margin-left:3px">시간</span></div>
-        <div style="font-size:12.5px;opacity:.85;margin-top:8px">이번 주 리포트 초안 자동 작성 기준</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ════ 출결 ════ -->
-<section class="screen" id="s-attend">
-  <div class="head">
-    <div class="eyebrow">운영 · 기본</div>
-    <h1 class="h1">출결</h1>
-    <p class="lede">매일의 등·하원을 한 줄로. 결석·지각은 학부모에게 <b>자동 알림톡</b>으로 — 레거시가 하던 일, 그대로 가져왔어요.</p>
-  </div>
+  <div class="cap">이번 주 숙제 제출</div>
   <div class="card">
-    <div class="ct"><h3>중2A · 오늘 (6/17)</h3><span class="cnt">17명</span><span class="more">등원 15 · 결석 1 · 지각 1</span></div>
-    <table class="tbl" style="margin-top:8px">
-      <thead><tr><th>학생</th><th>이번 주</th><th>오늘</th><th class="r">제출률</th><th class="r"></th></tr></thead>
-      <tbody>
-        <tr><td class="nmcell">박지훈</td><td><span class="dots"><i class="p"></i><i class="p"></i><i class="p"></i><i class="p"></i><i class="p"></i></span></td><td><span class="tag ok">등원</span></td><td class="r num">94%</td><td class="r"><button class="btn sm ghost" onclick="toast('박지훈 출결을 수정합니다')">수정</button></td></tr>
-        <tr><td class="nmcell">최유나</td><td><span class="dots"><i class="p"></i><i class="p"></i><i class="l"></i><i class="p"></i><i class="p"></i></span></td><td><span class="tag ok">등원</span></td><td class="r num">88%</td><td class="r"><button class="btn sm ghost">수정</button></td></tr>
-        <tr><td class="nmcell">김민수</td><td><span class="dots"><i class="p"></i><i class="a"></i><i class="p"></i><i class="p"></i><i class="l"></i></span></td><td><span class="tag wait">지각</span></td><td class="r num">71%</td><td class="r"><button class="btn sm ghost">수정</button></td></tr>
-        <tr><td class="nmcell">이서연</td><td><span class="dots"><i class="p"></i><i class="p"></i><i class="p"></i><i class="a"></i><i class="p"></i></span></td><td><span class="tag late">결석</span></td><td class="r num">82%</td><td class="r"><button class="btn sm" onclick="toast('이서연 학부모에게 결석 알림톡을 보냈어요')">알림</button></td></tr>
-        <tr><td class="nmcell">정하늘</td><td><span class="dots"><i class="p"></i><i class="p"></i><i class="p"></i><i class="p"></i><i class="p"></i></span></td><td><span class="tag ok">등원</span></td><td class="r num">100%</td><td class="r"><button class="btn sm ghost">수정</button></td></tr>
-      </tbody>
-    </table>
-    <div style="display:flex;gap:11px;margin-top:18px;align-items:center;padding:0 4px">
-      <button class="btn" onclick="toast('출결을 저장하고 결석·지각 학부모에게 보냈어요')">출결 저장 · 자동 알림</button>
-      <span style="font-size:13px;color:var(--ink3)">결석/지각만 골라 알림톡 발송</span>
+    <div style="display:flex;align-items:baseline;gap:7px">
+      <b class="num" style="font-size:30px;font-weight:800;letter-spacing:-.04em">79<span style="font-size:16px">%</span></b>
+      <span style="font-size:13px;font-weight:700;color:var(--ok)">▲ 6%p</span>
+    </div>
+    <div class="week">
+      <i class="done">월</i><i class="done">화</i><i class="miss">수</i><i class="done">목</i>
+      <i class="done">금</i><i>토</i><i>일</i>
     </div>
   </div>
 </section>
 
-<!-- ════ 수강료 ════ -->
-<section class="screen" id="s-pay">
-  <div class="head">
-    <div class="eyebrow">운영 · 기본</div>
-    <h1 class="h1">수강료</h1>
-    <p class="lede">누가 냈고 누가 안 냈는지 한눈에. 미납 학부모에게는 <b>독촉이 아니라 원장님 톤의 정중한 안내</b>를 보냅니다.</p>
+<!-- ════════ 탭 2 · 학생 ════════ -->
+<section class="view" id="t-students">
+  <div class="greet">학생</div>
+  <p class="sub">중2A · 17명 · 담임 김지영</p>
+
+  <div class="cap">이름을 누르면 그 학생 전부가 보여요</div>
+  <div class="list">
+    <button class="item" onclick="push('student')">
+      <span class="ava b">박</span>
+      <span class="bd"><span class="t">박지훈</span><span class="s">제출률 97% · 6월 납부 완료</span></span>
+      <span class="tag ok">순항</span>
+    </button>
+    <button class="item" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
+      <span class="ava r">김</span>
+      <span class="bd"><span class="t">김민수</span><span class="s">제출률 45% · 지각 2회</span></span>
+      <span class="tag late">살펴보기</span>
+    </button>
+    <button class="item" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
+      <span class="ava w">최</span>
+      <span class="bd"><span class="t">최유나</span><span class="s">제출률 88% · 채점 대기 1건</span></span>
+      <span class="tag wait">채점</span>
+    </button>
+    <button class="item" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
+      <span class="ava g">이</span>
+      <span class="bd"><span class="t">이서연</span><span class="s">제출률 92% · 6월 미납</span></span>
+      <span class="tag late">미납</span>
+    </button>
+    <button class="item" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
+      <span class="ava b">정</span>
+      <span class="bd"><span class="t">정하윤</span><span class="s">제출률 95% · 6월 납부 완료</span></span>
+      <span class="tag ok">순항</span>
+    </button>
   </div>
-  <div class="grid3" style="margin-bottom:20px">
-    <div class="kpi"><div class="lab">6월 청구</div><div class="v num">₩17.8<span class="u">백만</span></div><div class="meta">47명 정상 청구</div></div>
-    <div class="kpi"><div class="lab">수납 완료</div><div class="v num acc">93<span class="u">%</span></div><div class="meta">44명 납부</div></div>
-    <div class="kpi"><div class="lab">미납</div><div class="v num">3</div><div class="meta">₩1,140,000</div></div>
-  </div>
+</section>
+
+<!-- ════════ 탭 3 · 우리 학원 ════════ -->
+<section class="view" id="t-academy">
+  <div class="greet">우리 학원</div>
+  <p class="sub">학부모에게 가는 모든 것에 <b>우리 학원 이름</b>이 붙습니다.</p>
+
+  <div class="cap">앱에 보이는 이름</div>
   <div class="card">
-    <div class="ct"><h3>6월 미납</h3><span class="cnt">3</span></div>
-    <table class="tbl" style="margin-top:8px">
-      <thead><tr><th>학생 · 반</th><th>청구일</th><th class="r">금액</th><th>경과</th><th class="r"></th></tr></thead>
-      <tbody>
-        <tr><td><span class="nmcell">이서연</span> · 고1B</td><td class="num">6/10</td><td class="r num">₩380,000</td><td><span class="tag late">3일</span></td><td class="r"><button class="btn sm" onclick="toast('이서연 학부모에게 안내를 보냈어요')">안내 발송</button></td></tr>
-        <tr><td><span class="nmcell">김민수</span> · 중2A</td><td class="num">6/10</td><td class="r num">₩380,000</td><td><span class="tag late">3일</span></td><td class="r"><button class="btn sm" onclick="toast('김민수 학부모에게 안내를 보냈어요')">안내 발송</button></td></tr>
-        <tr><td><span class="nmcell">한지우</span> · 중3A</td><td class="num">6/10</td><td class="r num">₩380,000</td><td><span class="tag wait">1일</span></td><td class="r"><button class="btn sm ghost" onclick="toast('한지우 학부모에게 안내를 보냈어요')">안내 발송</button></td></tr>
-      </tbody>
-    </table>
-    <div style="display:flex;gap:11px;margin-top:18px;padding:0 4px">
-      <button class="btn" onclick="toast('미납 3명에게 일괄 안내를 보냈어요')">미납 일괄 안내</button>
-      <button class="btn ghost" onclick="toast('7월 청구서를 생성했어요')">7월 청구 생성</button>
+    <div class="field">
+      <label>학원 이름</label>
+      <div class="val">한빛영어학원</div>
     </div>
-  </div>
-</section>
-
-<!-- ════ AI 첨삭 + 채점 ════ -->
-<section class="screen" id="s-grade">
-  <div class="head">
-    <div class="eyebrow">박지훈 · 중2A · 영작문 · 제출 20:14</div>
-    <h1 class="h1">AI가 짚고,<br>원장님이 확정합니다.</h1>
-    <p class="lede">AI가 문법·어휘를 오류 유형별로 짚고 루브릭으로 분해해요. 원장님은 검수만 — 자동 채점이 아니라 <b>강사 검수 루프</b>로 정확도와 개인 터치를 지킵니다.</p>
-  </div>
-
-  <div class="gradewrap">
-    <div class="card">
-      <div class="ct"><h3>제출물</h3><span class="tag line sm">58 단어</span></div>
-      <div class="legend" style="margin-top:14px">
-        <span><i class="t"></i>시제·동사</span><span><i class="g"></i>문법·관사</span><span><i class="s"></i>스펠링·수일치</span><span><i class="v"></i>어휘 우수</span>
-      </div>
-      <div class="essay">
-        My summer plan is very exciting. I <span class="ann t" title="과거시제: last year(과거 시점) → go를 went로">go<sup>1</sup></span> to Busan with my family last year, so this year I want to visit Jeju. I will swim in <span class="ann g" title="관사: 모음 발음 앞 → a를 an으로">a<sup>2</sup></span> ocean and eat many <span class="ann v" title="어휘 우수: 상황에 맞는 좋은 표현">delicious</span> foods. I also plan to read five English books to improve my <span class="ann s" title="수일치: 복수 의미 → skill을 skills로">skill<sup>3</sup></span>. I think this summer will be a <span class="ann v" title="어휘 우수: 자연스러운 마무리 표현">wonderful</span> time for me.
-      </div>
-      <div class="aibox">
-        <div class="h">🤖 AI 총평 <span class="tag ai sm">초안 · 검수 필요</span></div>
-        <p>미래·과거 계획을 잘 구성했고 어휘 선택이 또래보다 우수합니다. 과거 시점(last year)에서 시제만 놓쳤고 관사·수일치 같은 작은 실수가 보여요. 다음 단계로 <b>시제 일관성</b> 연습을 권장합니다.</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="ct"><h3>첨삭 항목</h3><span class="cnt">3</span></div>
-      <div class="corr" style="margin-top:4px">
-        <div class="c"><span class="ci">1</span><span class="cx"><span class="from">go</span> → <span class="to">went</span><span class="why">last year는 과거 시점 — 동사를 과거형으로</span></span><span class="tag late sm">시제</span></div>
-        <div class="c"><span class="ci">2</span><span class="cx"><span class="from">a</span> ocean → <span class="to">an</span> ocean<span class="why">모음 발음 앞에는 관사 an</span></span><span class="tag wait sm">관사</span></div>
-        <div class="c"><span class="ci">3</span><span class="cx"><span class="from">skill</span> → <span class="to">skills</span><span class="why">'실력 전반'은 복수로 쓰는 것이 자연스러움</span></span><span class="tag sm" style="background:var(--violet-soft);color:#6d28d9">수일치</span></div>
-      </div>
-
-      <div class="ct" style="margin-top:24px"><h3>루브릭</h3><span class="more">AI 산정 · 강사 조정 가능</span></div>
-      <div class="rub">
-        <div class="r"><span class="rl">문법·정확성</span><span class="rt"><span class="rf" style="width:84%"></span></span><span class="rs num">21<small>/25</small></span></div>
-        <div class="r"><span class="rl">어휘</span><span class="rt"><span class="rf" style="width:92%"></span></span><span class="rs num">23<small>/25</small></span></div>
-        <div class="r"><span class="rl">구성·흐름</span><span class="rt"><span class="rf" style="width:88%"></span></span><span class="rs num">22<small>/25</small></span></div>
-        <div class="r"><span class="rl">과제·분량</span><span class="rt"><span class="rf" style="width:76%"></span></span><span class="rs num">19<small>/25</small></span></div>
-      </div>
-
-      <div style="display:flex;align-items:flex-end;gap:16px;margin:22px 0 4px;border-top:1px solid var(--line);padding-top:18px">
-        <div class="field" style="margin:0">
-          <label>총점 (강사 확정)</label>
-          <div class="scorebox"><input value="85" class="num"><span class="of">/ 100</span></div>
-        </div>
-        <div style="font-size:12.5px;color:var(--ink3);line-height:1.5;padding-bottom:10px">AI 합산 <b class="num" style="color:var(--ink)">85</b>.<br>그대로 확정하거나 조정하세요.</div>
-      </div>
-      <div class="field">
-        <label>리포트에서 강조할 포인트</label>
-        <div class="chips">
-          <span class="chip on">어휘 칭찬</span><span class="chip on">시제 복습</span><span class="chip">구성</span><span class="chip">분량</span><span class="chip">태도</span>
-        </div>
-      </div>
-      <button class="btn block" onclick="go('report')">채점 확정 · AI 리포트 생성 →</button>
-    </div>
-  </div>
-</section>
-
-<!-- ════ AI 리포트 ════ -->
-<section class="screen" id="s-report">
-  <div class="head">
-    <div class="eyebrow">학부모 리포트 · 박지훈 어머님</div>
-    <h1 class="h1">원장님 말투 그대로,<br>한 통의 편지로.</h1>
-    <p class="lede">채점 결과 + 원장님이 그동안 써온 말투를 학습해 AI가 초안을 씁니다. 원장님은 읽고 다듬어서 발송 — <b>자동 발송은 없습니다.</b></p>
-  </div>
-
-  <div class="cols">
-    <div class="card">
-      <div class="ct"><h3>AI 초안</h3><span class="tag ai">원장 스타일 반영</span></div>
-      <div class="letter" style="margin-top:14px">
-        <div class="lh"><span class="lt">브라이트 영어학원 · 김지영 원장 드림</span><span class="lr">AI Draft</span></div>
-        <div class="lb">
-          <p>어머님 안녕하세요 :) 오늘 지훈이는 '여름 계획' 영작문을 했어요. 어휘 선택이 정말 좋아서, 읽으면서 저도 흐뭇했답니다.</p>
-          <p>다만 과거시제에서 작은 실수가 있었어요(go→went). 큰 문제는 아니고, 다음 주에 시제 복습을 함께 잡아두려고 합니다. 분량도 충실하게 잘 채웠어요.</p>
-          <p>꾸준히 잘 따라오고 있으니, 집에서도 칭찬 많이 해주세요! 궁금한 점 있으시면 언제든 편하게 연락 주세요.</p>
-        </div>
-        <div class="lf">
-          <span class="note">🤖 AI 초안 · 원장님 말투 학습 반영<br>발송 전 원장님 검수 필수</span>
-          <button class="btn sm ghost" onclick="toast('톤을 조절해 다시 생성했어요')">다시 생성</button>
-          <button class="btn sm" onclick="toast('박지훈 어머님께 리포트를 보냈어요')">발송</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="ct"><h3>요약</h3></div>
-      <div style="margin-top:8px">
-        <div class="row" style="cursor:default"><div class="bd"><div class="t">영작문 점수</div></div><span class="num" style="font-size:20px;font-weight:800">85</span></div>
-        <div class="row" style="cursor:default"><div class="bd"><div class="t">시제 오류</div></div><span class="tag wait">1회</span></div>
-        <div class="row" style="cursor:default"><div class="bd"><div class="t">어휘</div></div><span class="tag ok">우수</span></div>
-        <div class="row" style="cursor:default"><div class="bd"><div class="t">분량</div></div><span class="tag ok">충족</span></div>
-      </div>
-      <div style="font-size:13px;color:var(--ink2);line-height:1.6;margin-top:14px;background:var(--brand-soft);border-radius:14px;padding:14px 16px">
-        이 초안은 원장님의 과거 메시지 <b class="num" style="font-weight:800">18건</b>을 학습한 말투예요. <a href="#" onclick="go('style');return false" style="color:var(--brand-d);font-weight:700">스타일 보기 →</a>
+    <div class="field">
+      <label>학원 색</label>
+      <div class="chips">
+        <button class="chip on" style="background:#3182F6" onclick="setBrand('#3182F6',this)"></button>
+        <button class="chip" style="background:#00A86B" onclick="setBrand('#00A86B',this)"></button>
+        <button class="chip" style="background:#7C3AED" onclick="setBrand('#7C3AED',this)"></button>
+        <button class="chip" style="background:#E8590C" onclick="setBrand('#E8590C',this)"></button>
+        <button class="chip" style="background:#D6336C" onclick="setBrand('#D6336C',this)"></button>
       </div>
     </div>
   </div>
-</section>
 
-<!-- ════ 성장 기록 ════ -->
-<section class="screen" id="s-track">
-  <div class="head">
-    <div class="eyebrow">박지훈 · 중2A · 4월 → 6월 누적</div>
-    <h1 class="h1">점수가 아니라,<br>무엇이 달라졌는지.</h1>
-    <p class="lede">채점할 때마다 오류가 유형별로 쌓이고, 그게 시간축으로 섭니다. 그래서 <b>"지난달 시제 5번, 이번 달 1번"</b> 같은 문장이 자동으로 나와요 — 요약 숫자로는 할 수 없는 말입니다.</p>
-  </div>
-
-  <div class="cmp">
-    <div class="cmpbox">
-      <div class="cl">일반적인 관리 시스템이 보내는 것</div>
-      <div class="cv">출석률 92% · 이번 달 평균 B+ · 숙제 제출 8/10</div>
-      <div class="cn">틀린 정보는 하나도 없습니다. 다만 학부모가 "우리 애를 알고 있구나"라고 느낄 문장이 없습니다.</div>
-    </div>
-    <div class="cmpbox new">
-      <div class="cl">BRIGHT가 보내는 것</div>
-      <div class="cv">시제 오류 <b>5회 → 1회</b>, 관사 <b>4회 → 1회</b>.<br>두 달 연속 줄었어요.</div>
-      <div class="cn">학부모가 다른 학부모에게 그대로 옮길 수 있는 문장입니다.</div>
-    </div>
-  </div>
-
-  <div class="cols">
-    <div class="card">
-      <div class="ct"><h3>오류 유형별 추이</h3><span class="tag line sm">4월 · 5월 · 6월</span><span class="more">채점 26건 누적</span></div>
-      <div class="trend">
-        <div class="tr">
-          <div class="tl">시제</div>
-          <div class="spark"><i style="height:100%"></i><i style="height:60%"></i><i class="hi" style="height:20%"></i></div>
-          <div class="tn num">5<u>→</u>3<u>→</u><b>1</b></div>
-          <span class="delta good">▼ 4회</span>
-        </div>
-        <div class="tr">
-          <div class="tl">관사</div>
-          <div class="spark"><i style="height:100%"></i><i style="height:50%"></i><i class="hi" style="height:25%"></i></div>
-          <div class="tn num">4<u>→</u>2<u>→</u><b>1</b></div>
-          <span class="delta good">▼ 3회</span>
-        </div>
-        <div class="tr">
-          <div class="tl">수일치</div>
-          <div class="spark"><i style="height:100%"></i><i style="height:100%"></i><i class="hi" style="height:33%"></i></div>
-          <div class="tn num">3<u>→</u>3<u>→</u><b>1</b></div>
-          <span class="delta good">▼ 2회</span>
-        </div>
-        <div class="tr">
-          <div class="tl">스펠링</div>
-          <div class="spark"><i style="height:100%"></i><i style="height:50%"></i><i class="hi" style="height:4%"></i></div>
-          <div class="tn num">2<u>→</u>1<u>→</u><b>0</b></div>
-          <span class="delta good">▼ 2회</span>
-        </div>
-        <div class="tr">
-          <div class="tl">어휘</div>
-          <div class="spark flat"><i></i><i></i><i class="hi"></i></div>
-          <div class="tn num">0<u>→</u>0<u>→</u><b>0</b></div>
-          <span class="delta flat">우수 유지</span>
-        </div>
-      </div>
-      <div style="font-size:13px;color:var(--ink2);font-weight:600;margin-top:14px;padding:0 6px">
-        6월 첨삭 항목 <b class="num" style="color:var(--brand)">3건</b> · 4월 14건에서 <span style="color:var(--ok);font-weight:700">79% 감소</span>
-        <a href="#" onclick="go('grade');return false" style="color:var(--brand-d);font-weight:700;margin-left:6px">이번 판 첨삭 보기 →</a>
-      </div>
-
-      <div class="ct" style="margin-top:26px"><h3>참여 흐름</h3><span class="more">최근 12주 숙제 제출률</span></div>
-      <div class="bars">
-        <span style="height:70%"></span><span style="height:78%"></span><span style="height:64%"></span>
-        <span style="height:82%"></span><span style="height:75%"></span><span style="height:88%"></span>
-        <span style="height:92%"></span><span style="height:80%"></span><span style="height:95%"></span>
-        <span class="hi" style="height:100%"></span><span class="hi" style="height:100%"></span><span class="hi" style="height:92%"></span>
-      </div>
-      <div style="font-size:13px;color:var(--ink2);font-weight:600">평균 <b class="num" style="color:var(--brand)">85%</b> · 최근 3주 <b class="num">97%</b> <span style="color:var(--ok);font-weight:700">안정</span></div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="card">
-        <div class="ct"><h3>원장님께 드리는 신호</h3><span class="cnt">1</span><span class="more">중2A</span></div>
-        <div style="margin-top:4px">
-          <div class="sig">
-            <div class="ava r">김</div>
-            <div class="sb">
-              <div class="st">김민수 <span class="tag late">신호 있음</span></div>
-              <div class="se">최근 3주 제출률 <b>92% → 71% → 45%</b> · 6월 지각 <b>2회</b> · 오류 유형은 <b>줄지 않음</b><br>세 지표가 같은 방향으로 3주째 움직였어요.</div>
-            </div>
-          </div>
-          <div class="sig">
-            <div class="ava b">박</div>
-            <div class="sb">
-              <div class="st">박지훈 <span class="tag ok">순항</span></div>
-              <div class="se">오류 4개 유형 모두 감소 · 최근 3주 제출률 <b>97%</b><br>지금은 따로 챙기지 않으셔도 됩니다.</div>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:16px;padding:0 4px">
-          <button class="btn sm" onclick="toast('김민수 학부모께 상담을 제안했어요')">상담 제안</button>
-          <button class="btn sm ghost" onclick="go('attend')">출결 보기</button>
-        </div>
-        <div style="font-size:12.5px;color:var(--ink3);line-height:1.6;margin-top:16px;background:var(--line2);border-radius:14px;padding:13px 15px">
-          예측이 아니라 <b style="color:var(--ink2)">관측된 신호</b>입니다. 학생 수가 적어도 정확한 이유예요 — 통계가 아니라 기록을 봅니다.
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="ct"><h3>이 기록으로 써지는 편지</h3><span class="tag ai">누적 반영</span></div>
-        <div class="letter" style="margin-top:14px">
-          <div class="lh"><span class="lt">6월 월간 기록 · 김지영 원장 드림</span><span class="lr">AI Draft</span></div>
-          <div class="lb">
-            <p>어머님, 지훈이 <b>6월 기록</b>을 정리해 드려요. 4월엔 시제를 5번 틀렸는데 이번 달은 1번이에요. 관사도 4번에서 1번으로 줄었고요.</p>
-            <p>두 달 사이에 <b>눈에 띄게 정확해졌습니다.</b> 숙제도 최근 3주는 거의 빠짐없이 냈어요. 집에서 많이 칭찬해 주세요!</p>
-          </div>
-          <div class="lf">
-            <span class="note">🤖 채점 26건 누적 + 원장님 말투 반영<br>발송 전 원장님 검수 필수</span>
-            <button class="btn sm ghost" onclick="go('report');return false">리포트</button>
-            <button class="btn sm" onclick="toast('박지훈 어머님께 6월 기록을 보냈어요')">발송</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ════ 학생·반 ════ -->
-<section class="screen" id="s-students">
-  <div class="head">
-    <div class="eyebrow">명부 · 관리</div>
-    <h1 class="h1">학생 · 반</h1>
-    <p class="lede">반과 학생, 학부모 연락처. 모든 기능의 뿌리 — <b>CSV로 한 번에</b> 올리고 여기서 관리합니다.</p>
-  </div>
+  <div class="cap">원장님 말투</div>
   <div class="card">
-    <div class="ct"><h3>중2A</h3><span class="cnt">17명</span><span class="more">담임 김지영</span></div>
-    <table class="tbl" style="margin-top:8px">
-      <thead><tr><th>학생</th><th>학부모</th><th>연락처</th><th class="r">제출률</th><th class="r">납부</th></tr></thead>
-      <tbody>
-        <tr><td class="nmcell">박지훈</td><td>박○○ 모</td><td class="num">010-1234-••••</td><td class="r num">94%</td><td class="r"><span class="tag ok">완료</span></td></tr>
-        <tr><td class="nmcell">최유나</td><td>최○○ 모</td><td class="num">010-2345-••••</td><td class="r num">88%</td><td class="r"><span class="tag ok">완료</span></td></tr>
-        <tr><td class="nmcell">김민수</td><td>김○○ 부</td><td class="num">010-3456-••••</td><td class="r num">71%</td><td class="r"><span class="tag late">미납</span></td></tr>
-        <tr><td class="nmcell">정하늘</td><td>정○○ 모</td><td class="num">010-4567-••••</td><td class="r num">100%</td><td class="r"><span class="tag ok">완료</span></td></tr>
-      </tbody>
-    </table>
-    <div style="display:flex;gap:11px;margin-top:18px;padding:0 4px">
-      <button class="btn" onclick="toast('학생 추가 폼을 엽니다')">+ 학생 추가</button>
-      <button class="btn ghost" onclick="toast('CSV로 명부를 한 번에 등록합니다')">CSV 업로드</button>
-      <button class="btn ghost" onclick="toast('반을 추가합니다')">+ 반 만들기</button>
-    </div>
+    <div class="sample">지훈이 오늘 발표할 때 눈이 반짝반짝하더라고요 :)</div>
+    <div class="sample">조금만 더 하면 돼요. 제가 옆에서 잘 챙길게요!</div>
+    <p style="font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.6">
+      그동안 보내신 메시지 <b class="num" style="color:var(--brand-d)">18건</b>을 학습했어요.
+      리포트 초안이 이 말투로 써집니다.
+    </p>
+  </div>
+
+  <div class="cap">학부모에게는 이렇게 보여요</div>
+  <div class="list">
+    <button class="item" onclick="push('parent')">
+      <span class="ic" style="background:var(--brand-soft)">📱</span>
+      <span class="bd"><span class="t">학부모 화면 미리보기</span><span class="s">앱 설치 없이 카톡 링크로 열립니다</span></span>
+      <span class="go">›</span>
+    </button>
+  </div>
+
+  <div class="madeby">한빛영어학원 앱<br>BRIGHT로 만들어졌습니다 · 데모</div>
+</section>
+
+<!-- ════════ 출결 ════════ -->
+<section class="view" id="p-attend">
+  <p class="sub">이름을 누르면 바로 저장돼요. 결석·지각은 <b>학부모 알림까지 한 번에</b> 나갑니다.</p>
+
+  <div class="cap">중2A · 6월 17일</div>
+  <div class="list">
+    <div class="item"><span class="ava b">박</span><span class="bd"><span class="t">박지훈</span></span>
+      <span class="att"><button class="on p" onclick="att(this,'p')">등원</button><button onclick="att(this,'l')">지각</button><button onclick="att(this,'a')">결석</button></span></div>
+    <div class="item"><span class="ava r">김</span><span class="bd"><span class="t">김민수</span></span>
+      <span class="att"><button onclick="att(this,'p')">등원</button><button class="on l" onclick="att(this,'l')">지각</button><button onclick="att(this,'a')">결석</button></span></div>
+    <div class="item"><span class="ava w">최</span><span class="bd"><span class="t">최유나</span></span>
+      <span class="att"><button class="on p" onclick="att(this,'p')">등원</button><button onclick="att(this,'l')">지각</button><button onclick="att(this,'a')">결석</button></span></div>
+    <div class="item"><span class="ava g">이</span><span class="bd"><span class="t">이서연</span></span>
+      <span class="att"><button onclick="att(this,'p')">등원</button><button onclick="att(this,'l')">지각</button><button class="on a" onclick="att(this,'a')">결석</button></span></div>
+    <div class="item"><span class="ava b">정</span><span class="bd"><span class="t">정하윤</span></span>
+      <span class="att"><button class="on p" onclick="att(this,'p')">등원</button><button onclick="att(this,'l')">지각</button><button onclick="att(this,'a')">결석</button></span></div>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" onclick="toast('출결을 저장하고, 결석·지각 학부모 2명에게 알림을 보냈어요')">저장하고 알리기</button>
   </div>
 </section>
 
-<!-- ════ 원장 스타일 ════ -->
-<section class="screen" id="s-style">
-  <div class="head">
-    <div class="eyebrow">제품의 심장</div>
-    <h1 class="h1">원장님의 말투를<br>AI가 배웁니다.</h1>
-    <p class="lede">그동안 보낸 메시지·피드백을 붙여넣으면 AI가 어조·표현·따뜻함을 학습해요. 그래서 <b>신입 강사가 와도 원장님처럼 씁니다.</b></p>
+<!-- ════════ 채점 ════════ -->
+<section class="view" id="p-grade">
+  <p class="sub">박지훈 · 영작문 &lsquo;My Summer Plan&rsquo; · 어제 20:14 제출</p>
+
+  <div class="cap">제출물</div>
+  <div class="card">
+    <p class="essay">My summer plan is very exciting. I <em>go</em> to Busan with my family last year, so this year I want to visit Jeju. I will swim in <em>a</em> ocean and eat many delicious foods. I also plan to read five English books to improve my <em>skill</em>.</p>
   </div>
 
-  <div class="cols">
-    <div class="card">
-      <div class="ct"><h3>학습된 스타일 샘플</h3><span class="tag ai">18건 학습됨</span></div>
-      <div style="margin-top:16px">
-        <div class="sample">어머님 안녕하세요 :) 오늘 수업 정말 잘 따라왔어요. 칭찬 많이 해주세요!</div>
-        <div class="sample">조금 아쉬운 부분이 있었지만 큰 문제는 아니에요. 다음 주에 같이 보완하려고 합니다.</div>
-        <div class="sample">궁금한 점 있으시면 언제든 편하게 연락 주세요. 늘 감사합니다.</div>
-      </div>
-      <div class="field" style="margin-top:6px">
-        <label>새 샘플 추가</label>
-        <textarea placeholder="원장님이 평소 학부모에게 쓰시던 메시지를 붙여넣어 주세요…"></textarea>
-      </div>
-      <button class="btn" onclick="toast('새 스타일 샘플을 학습에 반영했어요')">학습 적용</button>
-    </div>
+  <div class="cap">AI가 짚은 것 · 3건</div>
+  <div class="card">
+    <div class="corr"><span class="ci">1</span><span class="cb">
+      <span class="cf"><s>go</s>went</span>
+      <span class="cw">last year는 과거 시점이라 동사를 과거형으로</span></span></div>
+    <div class="corr"><span class="ci">2</span><span class="cb">
+      <span class="cf"><s>a ocean</s>an ocean</span>
+      <span class="cw">모음 발음 앞에는 관사 an</span></span></div>
+    <div class="corr"><span class="ci">3</span><span class="cb">
+      <span class="cf"><s>skill</s>skills</span>
+      <span class="cw">&lsquo;실력 전반&rsquo;은 복수로 쓰는 것이 자연스러워요</span></span></div>
+  </div>
 
-    <div class="card">
-      <div class="ct"><h3>우리 학원 앱 (화이트라벨)</h3></div>
-      <div class="field" style="margin-top:14px"><label>학원명</label><input value="브라이트 영어학원"></div>
-      <div class="field">
-        <label>브랜드 컬러 — 앱 전체에 즉시 반영</label>
-        <div class="chips">
-          <span class="chip on" onclick="setBrand('#3182F6',this)">토스 블루</span>
-          <span class="chip" onclick="setBrand('#00C471',this)">그린</span>
-          <span class="chip" onclick="setBrand('#7C3AED',this)">바이올렛</span>
-          <span class="chip" onclick="setBrand('#FF6B35',this)">코랄</span>
-          <span class="chip" onclick="setBrand('#E0316E',this)">로즈</span>
-        </div>
-      </div>
-      <div style="font-size:13px;color:var(--ink2);line-height:1.6;background:var(--brand-soft);border-radius:14px;padding:15px 16px">
-        코드는 하나, 색·로고·이름만 바꾸면 각 학원이 <b>"우리 학원 앱"</b>으로 느낍니다. 위 색을 눌러보세요 — 상단 로고·버튼·강조가 즉시 바뀝니다.
-      </div>
-    </div>
+  <div class="cap">점수</div>
+  <div class="card">
+    <div class="score"><b class="num">85</b><span>/ 100 · AI 산정</span></div>
+    <p style="font-size:12.5px;color:var(--ink3);margin-top:8px;line-height:1.6">
+      어휘는 또래보다 우수합니다. 시제만 놓쳤어요.<br>원장님이 확정해야 리포트가 만들어집니다.
+    </p>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn ghost" onclick="toast('점수를 조정할 수 있어요')">점수 조정</button>
+    <button class="btn" onclick="push('report')">확정하고 리포트</button>
   </div>
 </section>
 
-<!-- ════ 학생·학부모 (모바일) ════ -->
-<section class="screen" id="s-mobile">
-  <div class="head">
-    <div class="eyebrow">앱 설치 0 · 카톡 링크 진입</div>
-    <h1 class="h1">학생과 학부모는<br>링크 하나로.</h1>
-    <p class="lede">앱 설치도 회원가입도 없이 — 카톡 링크를 누르면 끝. 학생은 숙제를 내고, 학부모는 <b>우리 아이 현황과 원장님 리포트</b>를 봅니다.</p>
+<!-- ════════ 리포트 ════════ -->
+<section class="view" id="p-report">
+  <p class="sub">원장님 말투로 초안을 썼어요. <b>읽고 다듬어서 보내세요</b> — 자동 발송은 없습니다.</p>
+
+  <div class="cap first" style="margin-top:20px">박지훈 어머님께</div>
+  <div class="letter">
+    <div class="lh"><span class="lt">한빛영어학원 · 김지영 원장 드림</span><span class="lr">초안</span></div>
+    <div class="lb">
+      <p>어머님 안녕하세요 :) 오늘 지훈이는 &lsquo;여름 계획&rsquo; 영작문을 했어요. 어휘 선택이 정말 좋아서 읽으면서 저도 흐뭇했답니다.</p>
+      <p>과거시제에서 작은 실수가 있었어요(go→went). 큰 문제는 아니고 다음 주에 시제 복습을 함께 잡아두려고 합니다.</p>
+      <p>4월엔 시제를 5번 틀렸는데 이번 달은 1번이에요. 집에서도 많이 칭찬해 주세요!</p>
+    </div>
+    <div class="lf">채점 결과 + 원장님 말투 18건을 반영한 초안입니다.<br>보내기 전 꼭 한 번 읽어보세요.</div>
   </div>
 
-  <div class="phones">
-    <div class="pcol">
-      <div class="phone">
-        <div class="scr">
-          <div class="notch"><i></i></div>
-          <div class="kt">
-            <div class="kt-top"><span class="bk">‹</span><span class="ch">B</span><span class="nm">○○영어학원</span></div>
-            <div class="kt-chat">
-              <div class="kt-sys">오후 2:14</div>
-              <div class="kt-row">
-                <div class="kt-av">B</div>
-                <div class="kt-stk">
-                  <div class="kt-who">○○영어학원</div>
-                  <div class="kt-alim">
-                    <div class="hd">🔔 알림톡</div>
-                    <div class="bd"><b>박지훈</b> 학생, 오늘 영작문 숙제가 있어요. 마감은 <b>오늘 21:00</b>입니다. 아래에서 바로 제출하세요 :)</div>
-                    <div class="kt-link"><div class="kt-go" onclick="toast('앱 설치·로그인 없이 링크 하나로 바로 열려요 →')">숙제 제출하러 가기 ›</div></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="flowcap">① 카톡 알림톡 도착<br><b>링크 탭</b> — 설치·가입 없음</div>
-    </div>
-
-    <div class="pcol">
-      <div class="phone">
-        <div class="scr">
-          <div class="notch"><i></i></div>
-          <div class="pbrand"><span class="lg">B</span><span class="pm">BRIGHT</span><span class="who">박지훈 · 학생</span></div>
-          <div class="pbody">
-            <div class="pcap">오늘의 숙제</div>
-            <div class="ptask">
-              <div class="pt">My Summer Plan</div>
-              <div class="pd">영작문 · 50단어 이상 · 미래시제 사용</div>
-              <div class="pdue">⏰ 오늘 21:00까지</div>
-            </div>
-            <div class="pcap">제출</div>
-            <div class="pshot">📷 사진을 촬영하거나 올려주세요</div>
-            <button class="pbtn" onclick="toast('제출 완료! 21:00 전에 잘 냈어요 ✅')">제출하기</button>
-          </div>
-        </div>
-      </div>
-      <div class="flowcap">② 학생 — <b>숙제 제출</b><br>사진 한 장이면 끝</div>
-    </div>
-
-    <div class="pcol">
-      <div class="phone">
-        <div class="scr">
-          <div class="notch"><i></i></div>
-          <div class="pbrand"><span class="lg">B</span><span class="pm">BRIGHT</span><span class="who">박지훈 어머님</span></div>
-          <div class="pbody">
-            <div class="pcap">이번 주 숙제 (4 / 5)</div>
-            <div class="pweek"><i class="done">월</i><i class="done">화</i><i class="done">수</i><i class="miss">목</i><i class="done">금</i></div>
-            <div class="pcap">최근 리포트</div>
-            <div class="pletter">
-              <div class="ph">6/17 · 영작문 · 김지영 원장</div>
-              <div class="pp">어머님 안녕하세요 :) 오늘 지훈이는 어휘 선택이 정말 좋았어요. 시제만 다음 주에 같이 보완하려고 합니다. 칭찬 많이 해주세요!</div>
-            </div>
-            <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-sm)">
-              <span style="font-size:13px;color:var(--ink2);font-weight:600">6월 수강료</span><span class="tag ok">납부 완료</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="flowcap">③ 학부모 — <b>현황·리포트</b><br>같은 링크로 바로 확인</div>
-    </div>
+  <div class="btnrow">
+    <button class="btn ghost" onclick="toast('톤을 조절해 다시 썼어요')">다시 쓰기</button>
+    <button class="btn" onclick="toast('박지훈 어머님께 카톡으로 보냈어요')">보내기</button>
   </div>
 </section>
 
-</div>
+<!-- ════════ 학생 상세 ════════ -->
+<section class="view" id="p-student">
+  <p class="sub">중2A · 어머님 010-****-1234 · 6월 납부 완료</p>
 
-<div class="foot"><b>BRIGHT.</b> · 학원 확장·관리 · 원장 복제 AI 프로토타입 v0.7 (프리미엄 라이트) · 화이트라벨 · Next.js + Supabase + LLM</div>
+  <div class="cap">6월 요약</div>
+  <div class="card">
+    <div style="display:flex;gap:22px">
+      <div><div style="font-size:12px;font-weight:700;color:var(--ink3)">숙제 제출률</div>
+        <div class="num" style="font-size:26px;font-weight:800;margin-top:5px">97<span style="font-size:14px">%</span></div></div>
+      <div><div style="font-size:12px;font-weight:700;color:var(--ink3)">첨삭 항목</div>
+        <div class="num" style="font-size:26px;font-weight:800;margin-top:5px;color:var(--brand)">3<span style="font-size:14px">건</span></div></div>
+    </div>
+    <div class="week">
+      <i class="done">월</i><i class="done">화</i><i class="done">수</i><i class="done">목</i>
+      <i class="done">금</i><i>토</i><i>일</i>
+    </div>
+  </div>
 
+  <div class="cap">틀리던 것이 줄고 있어요</div>
+  <div class="card trend">
+    <div class="tr"><span class="tl">시제</span>
+      <span class="spark"><i style="height:100%"></i><i style="height:60%"></i><i class="hi" style="height:20%"></i></span>
+      <span class="tn num">5<u>›</u>3<u>›</u><b>1</b></span><span class="delta good">▼4</span></div>
+    <div class="tr"><span class="tl">관사</span>
+      <span class="spark"><i style="height:100%"></i><i style="height:50%"></i><i class="hi" style="height:25%"></i></span>
+      <span class="tn num">4<u>›</u>2<u>›</u><b>1</b></span><span class="delta good">▼3</span></div>
+    <div class="tr"><span class="tl">수일치</span>
+      <span class="spark"><i style="height:100%"></i><i style="height:100%"></i><i class="hi" style="height:33%"></i></span>
+      <span class="tn num">3<u>›</u>3<u>›</u><b>1</b></span><span class="delta good">▼2</span></div>
+    <div class="tr"><span class="tl">스펠링</span>
+      <span class="spark"><i style="height:100%"></i><i style="height:50%"></i><i class="hi" style="height:5%"></i></span>
+      <span class="tn num">2<u>›</u>1<u>›</u><b>0</b></span><span class="delta good">▼2</span></div>
+    <div class="tr"><span class="tl">어휘</span>
+      <span class="spark flat"><i></i><i></i><i class="hi"></i></span>
+      <span class="tn num">0<u>›</u>0<u>›</u><b>0</b></span><span class="delta flat">우수</span></div>
+    <p style="font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.6">
+      4월 · 5월 · 6월 · 채점 26건 누적
+    </p>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" onclick="push('report')">이 기록으로 리포트 보내기</button>
+  </div>
+</section>
+
+<!-- ════════ 수강료 ════════ -->
+<section class="view" id="p-pay">
+  <p class="sub">독촉이 아니라 <b>원장님 톤의 정중한 안내</b>로 나갑니다.</p>
+
+  <div class="cap">6월 미납 · 3명 · 114만원</div>
+  <div class="list">
+    <div class="item"><span class="ava r">이</span>
+      <span class="bd"><span class="t">이서연</span><span class="s">고1B · 38만원 · 3일 경과</span></span>
+      <button class="btn sm" onclick="toast('이서연 어머님께 안내를 보냈어요')">안내</button></div>
+    <div class="item"><span class="ava r">한</span>
+      <span class="bd"><span class="t">한지우</span><span class="s">중2A · 38만원 · 2일 경과</span></span>
+      <button class="btn sm" onclick="toast('한지우 어머님께 안내를 보냈어요')">안내</button></div>
+    <div class="item"><span class="ava r">송</span>
+      <span class="bd"><span class="t">송민재</span><span class="s">중3A · 38만원 · 1일 경과</span></span>
+      <button class="btn sm" onclick="toast('송민재 어머님께 안내를 보냈어요')">안내</button></div>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn ghost" onclick="toast('3명 모두에게 안내를 보냈어요')">모두에게 안내 보내기</button>
+  </div>
+</section>
+
+<!-- ════════ 학부모 화면 ════════ -->
+<section class="view" id="p-parent">
+  <p class="sub">학부모는 <b>앱을 깔지 않습니다.</b> 카톡 링크를 누르면 이 화면이 열려요.</p>
+
+  <div class="cap">박지훈 어머님이 보는 화면</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="background:var(--brand);color:#fff;padding:15px 17px">
+      <div style="font-size:11.5px;font-weight:700;opacity:.85">한빛영어학원</div>
+      <div style="font-size:17px;font-weight:800;letter-spacing:-.03em;margin-top:3px">지훈이 이번 주</div>
+    </div>
+    <div style="padding:17px">
+      <div style="font-size:12px;font-weight:800;color:var(--ink3)">출석</div>
+      <div class="week">
+        <i class="done">월</i><i class="done">화</i><i class="done">수</i><i class="done">목</i>
+        <i class="done">금</i><i>토</i><i>일</i>
+      </div>
+      <div style="font-size:12px;font-weight:800;color:var(--ink3);margin-top:20px">원장님 편지</div>
+      <div style="background:var(--line2);border-radius:12px;padding:14px;margin-top:9px;
+        font-size:13.5px;line-height:1.75;color:var(--ink2)">
+        어머님 안녕하세요 :) 오늘 지훈이는 &lsquo;여름 계획&rsquo; 영작문을 했어요. 어휘 선택이 정말 좋아서…
+      </div>
+      <div style="font-size:12px;font-weight:800;color:var(--ink3);margin-top:20px">오늘 숙제</div>
+      <div style="font-size:13.5px;font-weight:700;margin-top:8px">단어시험 51~75 · 오늘 21:00까지</div>
+    </div>
+  </div>
+
+  <p style="font-size:12.5px;color:var(--ink3);margin-top:16px;line-height:1.65;text-align:center">
+    학원 이름·색이 그대로 따라갑니다.<br>학부모에게는 <b style="color:var(--ink2)">우리 학원 앱</b>으로 보여요.
+  </p>
+</section>
+
+<nav class="tabbar">
+  <a href="#" data-t="today" class="on" onclick="tab('today');return false"><span class="ti">📋</span>오늘</a>
+  <a href="#" data-t="students" onclick="tab('students');return false"><span class="ti">👥</span>학생</a>
+  <a href="#" data-t="academy" onclick="tab('academy');return false"><span class="ti">🏫</span>우리 학원</a>
+</nav>
+
+</div></div>
+
+<div class="credit">BRIGHT · 학원 앱 데모 — PC에서는 폰 화면으로 보여드립니다</div>
 <div class="toast" id="toast"></div>
 
 <script>
-function go(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
-  const el=document.getElementById('s-'+id);
-  if(el) el.classList.add('on');
-  document.querySelectorAll('.menu a').forEach(a=>a.classList.toggle('on',a.dataset.s===id));
-  window.scrollTo({top:0,behavior:'smooth'});
+var TITLE={
+  'p-attend':['출결','중2A'],
+  'p-grade':['채점','영작문'],
+  'p-report':['학부모 리포트','박지훈'],
+  'p-student':['박지훈','중2A'],
+  'p-pay':['수강료','6월'],
+  'p-parent':['학부모 화면','미리보기']
+};
+var cur='t-today', hist=[];
+
+function render(){
+  var vs=document.querySelectorAll('.view');
+  for(var i=0;i<vs.length;i++) vs[i].classList.remove('on');
+  document.getElementById(cur).classList.add('on');
+
+  var isSub=cur.charAt(0)==='p';
+  document.getElementById('bk').style.display=isSub?'grid':'none';
+  document.getElementById('lg').style.display=isSub?'none':'grid';
+  document.getElementById('an').textContent=isSub?TITLE[cur][0]:'한빛영어학원';
+  document.getElementById('ad').textContent=isSub?TITLE[cur][1]:'6월 17일 화';
+
+  var ts=document.querySelectorAll('.tabbar a');
+  for(var j=0;j<ts.length;j++){
+    var base=hist.length?hist[0]:cur;
+    ts[j].classList.toggle('on','t-'+ts[j].dataset.t===base);
+  }
+  document.getElementById(cur).scrollTop=0;
 }
-let toastT;
+function tab(t){ hist=[]; cur='t-'+t; render(); }
+function push(p){ hist.push(cur); cur='p-'+p; render(); }
+function back(){ cur=hist.pop()||'t-today'; render(); }
+
+var toastT;
 function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show')},2600);
 }
-function setBrand(color,el){
-  const d=shade(color,-18), soft=tint(color,.90);
-  document.documentElement.style.setProperty('--brand',color);
-  document.documentElement.style.setProperty('--brand-d',d);
-  document.documentElement.style.setProperty('--brand-soft',soft);
-  el.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on');
-  toast('브랜드 컬러가 앱 전체에 적용됐어요');
+
+function att(el,kind){
+  var row=el.parentNode.querySelectorAll('button');
+  for(var i=0;i<row.length;i++) row[i].className='';
+  el.className='on '+kind;
 }
+
 function hex(c){c=c.replace('#','');return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)];}
-function shade(c,p){let[r,g,b]=hex(c);const f=1+p/100;return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v*f))).toString(16).padStart(2,'0')).join('');}
-function tint(c,p){let[r,g,b]=hex(c);return '#'+[r,g,b].map(v=>Math.round(v+(255-v)*p).toString(16).padStart(2,'0')).join('');}
-document.querySelector('.menu a[data-s="dash"]').classList.add('on');
+function shade(c,p){var a=hex(c),f=1+p/100;return '#'+a.map(function(v){return Math.max(0,Math.min(255,Math.round(v*f))).toString(16).padStart(2,'0')}).join('');}
+function tint(c,p){var a=hex(c);return '#'+a.map(function(v){return Math.round(v+(255-v)*p).toString(16).padStart(2,'0')}).join('');}
+function setBrand(color,el){
+  var r=document.documentElement.style;
+  r.setProperty('--brand',color);
+  r.setProperty('--brand-d',shade(color,-18));
+  r.setProperty('--brand-soft',tint(color,.90));
+  var cs=el.parentNode.querySelectorAll('.chip');
+  for(var i=0;i<cs.length;i++) cs[i].classList.remove('on');
+  el.classList.add('on');
+  toast('학원 색이 앱과 학부모 화면에 함께 적용됐어요');
+}
+
+var h=location.hash.replace('#','');
+if(h){
+  if(document.getElementById('t-'+h)) cur='t-'+h;
+  else if(document.getElementById('p-'+h)){ hist=['t-today']; cur='p-'+h; }
+}
+render();
 </script>
 </body>
 </html>
