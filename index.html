@@ -4,199 +4,238 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>한빛영어학원 · 우리 학원 앱</title>
-<meta name="description" content="출결·숙제·수강료·학부모 소통을 폰 하나로. 우리 학원 이름으로 나가는 앱.">
+<meta name="description" content="출결·숙제·수강료·학부모 편지를 폰 하나로. 우리 학원 이름으로 나가는 앱.">
 <meta name="theme-color" content="#FFFFFF">
 
 <meta property="og:url" content="https://kiddongwook.github.io/bright-demo/">
 <meta property="og:image" content="https://kiddongwook.github.io/bright-demo/og.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="한빛영어학원 · 우리 학원 앱">
-<meta property="og:description" content="출결·숙제·수강료·학부모 소통을 폰 하나로. 우리 학원 이름으로 나가는 앱.">
+<meta property="og:description" content="출결·숙제·수강료·학부모 편지를 폰 하나로. 우리 학원 이름으로 나가는 앱.">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="한빛영어학원 · 우리 학원 앱">
-<meta name="twitter:description" content="출결·숙제·수강료·학부모 소통을 폰 하나로.">
+<meta name="twitter:description" content="출결·숙제·수강료·학부모 편지를 폰 하나로.">
 <meta name="twitter:image" content="https://kiddongwook.github.io/bright-demo/og.png">
 
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='8'%20fill='%233182F6'/%3E%3Ctext%20x='16'%20y='23'%20font-size='18'%20font-weight='800'%20fill='white'%20text-anchor='middle'%20font-family='sans-serif'%3E%ED%95%9C%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%232B57C4'/%3E%3Ctext%20x='16'%20y='23'%20font-size='18'%20font-weight='700'%20fill='white'%20text-anchor='middle'%20font-family='serif'%3E%ED%95%9C%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
 :root{
-  --bg:#F2F4F6;
-  --card:#FFFFFF;
-  --ink:#191F28;
-  --ink2:#4E5968;
-  --ink3:#8B95A1;
-  --line:#E5E8EB;
-  --line2:#F2F4F6;
-  /* 화이트라벨 슬롯 — 학원별 brand_color 런타임 주입 */
-  --brand:#3182F6;
-  --brand-d:#1B64DA;
-  --brand-soft:#EBF3FF;
-  --ok:#00C471;  --ok-soft:#E7F9F0;
-  --warn:#FF8A00; --warn-soft:#FFF4E5;
-  --danger:#F04452; --danger-soft:#FFEBED;
-  --body:"Pretendard Variable","Pretendard",system-ui,sans-serif;
-  --shadow-sm:0 1px 2px rgba(0,0,0,.05), 0 2px 8px rgba(0,0,0,.04);
+  /* 종이와 잉크 */
+  --paper:#FFFFFF;
+  --ground:#FAFAF8;
+  --ink:#17181A;
+  --ink2:#565A60;
+  --ink3:#9BA0A6;
+  --rule:#E7E6E2;      /* 괘선 */
+  --rule2:#F1F0ED;     /* 옅은 괘선 */
+
+  /* 빨간펜 — 첨삭과 원장님의 손 */
+  --pen:#D33A2C;
+  --pen-soft:#FCEDEB;
+
+  --ok:#1B9E5A;   --ok-soft:#E7F4ED;
+  --warn:#C1780C; --warn-soft:#FAF0DF;
+
+  /* 학원 색 — 화이트라벨 슬롯 (런타임 주입) */
+  --brand:#2B57C4;
+  --brand-d:#1E409B;
+  --brand-soft:#E9EFFB;
+
+  --ui:"Pretendard Variable","Pretendard",system-ui,sans-serif;
+  --voice:"Gowun Batang","Nanum Myeongjo",serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum"}
+html,body{background:var(--ground);color:var(--ink);font-family:var(--ui);
+  -webkit-font-smoothing:antialiased;font-feature-settings:"tnum"}
 .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 a{color:inherit;text-decoration:none}
-button{font-family:var(--body);cursor:pointer;border:none;background:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:5px}
+
+/* 원장님의 목소리는 명조, 시스템의 숫자는 고딕 */
+.voice{font-family:var(--voice);letter-spacing:-.01em}
 
 /* ── 앱 셸: 폰에서는 꽉 차게, PC에서는 폰 프레임 안에 ── */
 .shell{width:100%;height:100dvh}
-.app{height:100%;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
-.appbar{flex:0 0 auto;background:#fff;border-bottom:1px solid var(--line);
-  padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;gap:10px;min-height:56px}
-.appbar .lg{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;
-  display:grid;place-items:center;font-size:13px;font-weight:800;flex:0 0 auto}
-.appbar .an{font-size:17px;font-weight:800;letter-spacing:-.03em}
-.appbar .ad{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink3)}
-.appbar .bk{width:28px;height:30px;margin-left:-8px;display:grid;place-items:center;
-  font-size:26px;line-height:1;color:var(--ink2);flex:0 0 auto}
-.view{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding:20px 18px 28px}
-.view.on{display:block}
-.tabbar{flex:0 0 auto;background:#fff;border-top:1px solid var(--line);display:flex;
-  padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
-.tabbar a{flex:1;text-align:center;font-size:11px;font-weight:700;color:var(--ink3);
-  padding:5px 0;letter-spacing:-.02em}
-.tabbar a .ti{display:block;font-size:19px;line-height:1.25;margin-bottom:1px}
+.app{height:100%;display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
+.appbar{flex:0 0 auto;background:var(--paper);border-bottom:1px solid var(--rule);
+  padding:calc(13px + env(safe-area-inset-top)) 20px 13px;display:flex;align-items:center;gap:9px;min-height:57px}
+.appbar .lg{width:25px;height:25px;border-radius:7px;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto;
+  font-family:var(--voice);line-height:1}
+.appbar .an{font-family:var(--voice);font-size:18px;font-weight:700;letter-spacing:-.02em}
+.appbar .ad{margin-left:auto;font-size:12px;font-weight:600;color:var(--ink3);letter-spacing:-.01em}
+.appbar .bk{width:26px;height:28px;margin-left:-7px;display:grid;place-items:center;
+  font-size:25px;line-height:1;color:var(--ink2);flex:0 0 auto}
+.view{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;
+  padding:0 0 34px;background:var(--paper)}
+.view.on{display:block;animation:rise .26s cubic-bezier(.2,.7,.3,1)}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.tabbar{flex:0 0 auto;background:var(--paper);border-top:1px solid var(--rule);display:flex;
+  padding:7px 6px calc(7px + env(safe-area-inset-bottom))}
+.tabbar a{flex:1;text-align:center;font-size:10.5px;font-weight:600;color:var(--ink3);
+  padding:4px 0;letter-spacing:-.01em;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tabbar a svg{width:22px;height:22px;display:block}
 .tabbar a.on{color:var(--brand)}
 
 @media(min-width:641px){
-  body{display:grid;place-items:center;min-height:100vh;background:#E4E8EC;padding:26px 0}
-  .shell{width:390px;height:min(812px,calc(100vh - 64px));background:#111;padding:13px;border-radius:46px;
-    box-shadow:0 40px 90px rgba(0,0,0,.24)}
+  body{display:grid;place-items:center;min-height:100vh;background:#DFDDD7;padding:26px 0}
+  .shell{width:390px;height:min(812px,calc(100vh - 64px));background:#111;padding:13px;
+    border-radius:46px;box-shadow:0 40px 90px rgba(0,0,0,.26)}
   .app{border-radius:34px}
-  .appbar{padding-top:14px}
-  .tabbar{padding-bottom:10px}
+  .appbar{padding-top:15px}
+  .tabbar{padding-bottom:9px}
   .credit{position:fixed;bottom:15px;left:0;right:0;text-align:center;
-    font-size:11.5px;color:#98A1AB;font-weight:600}
+    font-size:11.5px;color:#8E8B84;font-weight:600}
 }
 @media(max-width:640px){ .credit{display:none} }
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-/* ── 공통 조각 ── */
-.greet{font-size:22px;font-weight:800;letter-spacing:-.04em;line-height:1.35;margin-bottom:5px}
-.sub{font-size:13.5px;color:var(--ink2);line-height:1.55}
-.sub b{color:var(--brand-d)}
-.cap{font-size:12px;font-weight:800;color:var(--ink3);letter-spacing:-.01em;margin:24px 0 9px}
-.cap.first{margin-top:0}
-.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow-sm);padding:18px}
-.card+.card{margin-top:12px}
-.list{background:var(--card);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden}
-.item{display:flex;align-items:center;gap:13px;padding:15px 16px;width:100%;text-align:left;
-  border-bottom:1px solid var(--line2)}
-.item:last-child{border-bottom:0}
-.item:active{background:var(--line2)}
-.item .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
-  font-size:16px;flex:0 0 auto}
-.item .bd{flex:1;min-width:0;display:block}
-.item .t{display:block;font-size:15px;font-weight:700;letter-spacing:-.02em}
-.item .s{display:block;font-size:12.5px;color:var(--ink3);margin-top:3px;line-height:1.45}
-.item .go{color:var(--line);font-size:20px;flex:0 0 auto;font-weight:700}
-.ava{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;
-  font-size:14px;font-weight:800;flex:0 0 auto}
-.ava.b{background:var(--brand-soft);color:var(--brand-d)}
-.ava.g{background:var(--ok-soft);color:#00935b}
-.ava.w{background:var(--warn-soft);color:#cc6e00}
-.ava.r{background:var(--danger-soft);color:var(--danger)}
-.tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;
-  padding:4px 9px;border-radius:999px;letter-spacing:-.01em;flex:0 0 auto}
-.tag.ai{background:var(--brand-soft);color:var(--brand-d)}
-.tag.ok{background:var(--ok-soft);color:#00935b}
-.tag.wait{background:var(--warn-soft);color:#cc6e00}
-.tag.late{background:var(--danger-soft);color:var(--danger)}
-.tag.line{background:var(--line2);color:var(--ink2)}
-.btn{display:block;width:100%;background:var(--brand);color:#fff;font-weight:800;font-size:15.5px;
-  padding:15px;border-radius:14px;letter-spacing:-.02em;text-align:center}
-.btn.ghost{background:var(--line2);color:var(--ink2)}
-.btn.sm{width:auto;flex:0 0 auto;padding:9px 14px;font-size:13px;border-radius:11px}
-.btn:active{opacity:.85}
-.btnrow{display:flex;gap:9px;margin-top:16px}
+/* ── 종이 한 장: 상자 대신 괘선 ── */
+.head{padding:26px 20px 22px}
+.hello{font-family:var(--voice);font-size:25px;font-weight:700;line-height:1.55;letter-spacing:-.02em}
+.lede{font-family:var(--voice);font-size:15px;line-height:1.85;color:var(--ink2);margin-top:8px}
+.lede b{color:var(--ink);font-weight:700}
+.lab{font-size:11.5px;font-weight:700;letter-spacing:.02em;color:var(--ink3);
+  padding:0 20px;margin-bottom:10px;display:flex;align-items:baseline;gap:8px}
+.lab .r{margin-left:auto;font-weight:600;color:var(--ink3);letter-spacing:-.01em}
+.sheet{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.block{padding:24px 0 0}
+.rw{display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  padding:15px 20px;border-bottom:1px solid var(--rule2)}
+.rw:last-child{border-bottom:0}
+.rw:active{background:var(--rule2)}
+.rw .bd{flex:1;min-width:0;display:block}
+.rw .t{display:block;font-size:15px;font-weight:700;letter-spacing:-.02em}
+.rw .s{display:block;font-size:12.5px;color:var(--ink3);margin-top:3px;line-height:1.45}
+.rw .go{color:var(--rule);font-size:19px;flex:0 0 auto;font-weight:700}
+.mk{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+  --mkicon:1;
+  font-size:14px;font-weight:700;flex:0 0 auto;border:1px solid var(--rule)}
+.mk svg{width:15px;height:15px}
+.nm{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  font-family:var(--voice);font-size:14px;font-weight:700;flex:0 0 auto}
+.nm.b{background:var(--brand-soft);color:var(--brand-d)}
+.nm.g{background:var(--ok-soft);color:var(--ok)}
+.nm.w{background:var(--warn-soft);color:var(--warn)}
+.nm.r{background:var(--pen-soft);color:var(--pen)}
+.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;
+  padding:4px 8px;border-radius:5px;letter-spacing:-.01em;flex:0 0 auto}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.wait{background:var(--warn-soft);color:var(--warn)}
+.tag.pen{background:var(--pen-soft);color:var(--pen)}
+
+/* 큰 숫자 */
+.big{display:flex;align-items:baseline;gap:8px;padding:0 20px;flex-wrap:wrap}
+.big b{font-size:31px;font-weight:800;letter-spacing:-.045em}
+.big b i{font-size:15px;font-style:normal;font-weight:700}
+.big span{font-size:13px;font-weight:700;color:var(--ok)}
+
+/* 버튼 — 학원 색이 곧 행동의 색 */
+.btn{display:block;width:100%;background:var(--brand);color:#fff;font-weight:700;font-size:15.5px;
+  padding:15px;border-radius:11px;letter-spacing:-.02em;text-align:center}
+.btn.ghost{background:transparent;color:var(--ink2);border:1px solid var(--rule)}
+.btn.sm{width:auto;flex:0 0 auto;padding:8px 13px;font-size:12.5px;border-radius:8px}
+.btn:active{opacity:.82}
+.btnrow{display:flex;gap:9px;padding:22px 20px 0}
 .btnrow .btn{flex:1}
 
-/* 출결 3버튼 */
-.att{display:flex;gap:5px;flex:0 0 auto}
-.att button{font-size:12px;font-weight:700;padding:7px 9px;border-radius:10px;
-  background:var(--line2);color:var(--ink3)}
-.att button.on.p{background:var(--ok);color:#fff}
-.att button.on.l{background:var(--warn);color:#fff}
-.att button.on.a{background:var(--danger);color:#fff}
+/* 시그니처 — 출석부 ○ △ ✕ */
+.ledger .rw{padding:12px 20px}
+.marks{display:flex;gap:4px;flex:0 0 auto}
+.marks button{width:36px;height:36px;border-radius:10px;font-size:17px;line-height:1;
+  color:var(--rule);border:1px solid transparent;font-weight:400}
+.marks button.on.p{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.marks button.on.l{color:var(--warn);border-color:var(--warn);background:var(--warn-soft)}
+.marks button.on.a{color:var(--pen);border-color:var(--pen);background:var(--pen-soft)}
+.legend{display:flex;gap:14px;padding:13px 20px 0;font-size:11.5px;color:var(--ink3);font-weight:600}
+.legend b{color:var(--ink2);font-weight:700;margin-right:3px}
 
-/* 첨삭 */
-.essay{font-size:14.5px;line-height:2;color:var(--ink2);letter-spacing:-.01em}
-.essay em{font-style:normal;background:var(--danger-soft);color:var(--danger);
-  font-weight:700;padding:1px 4px;border-radius:5px}
-.corr{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--line2)}
+/* 첨삭 — 빨간펜 */
+.essay{font-size:15px;line-height:2.15;color:var(--ink2);letter-spacing:-.01em;padding:0 20px}
+.essay em{font-style:normal;color:var(--pen);font-weight:700;
+  border-bottom:2px solid var(--pen);padding-bottom:1px}
+.corr{display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid var(--rule2)}
 .corr:last-child{border-bottom:0}
-.corr .ci{width:20px;height:20px;border-radius:50%;background:var(--danger-soft);color:var(--danger);
-  font-size:11px;font-weight:800;display:grid;place-items:center;flex:0 0 auto;margin-top:2px}
-.corr .cb{flex:1;min-width:0}
-.corr .cf{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.02em}
-.corr .cf s{color:var(--ink3);font-weight:600;margin-right:6px}
-.corr .cw{display:block;font-size:12.5px;color:var(--ink3);margin-top:3px;line-height:1.5}
-.score{display:flex;align-items:baseline;gap:7px}
-.score b{font-size:36px;font-weight:800;letter-spacing:-.04em;color:var(--brand)}
-.score span{font-size:14px;font-weight:700;color:var(--ink3)}
+.corr .ci{width:19px;height:19px;border-radius:50%;border:1px solid var(--pen);color:var(--pen);
+  font-size:11px;font-weight:700;display:grid;place-items:center;flex:0 0 auto;margin-top:3px}
+.corr .cb{flex:1;min-width:0;display:block}
+.corr .cf{display:block;font-size:15px;font-weight:700;letter-spacing:-.02em}
+.corr .cf s{color:var(--ink3);font-weight:400;margin-right:7px;text-decoration-color:var(--pen)}
+.corr .cw{display:block;font-size:12.5px;color:var(--ink3);margin-top:4px;line-height:1.55}
 
-/* 편지 */
-.letter{background:#fff;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm)}
-.letter .lh{background:var(--brand);color:#fff;padding:13px 17px;display:flex;
-  align-items:center;justify-content:space-between;gap:8px}
-.letter .lh .lt{font-size:13px;font-weight:800;letter-spacing:-.02em}
-.letter .lh .lr{font-size:10.5px;font-weight:700;background:rgba(255,255,255,.22);
-  padding:3px 8px;border-radius:999px;flex:0 0 auto}
-.letter .lb{padding:18px 18px 20px}
-.letter .lb p{font-size:14.5px;line-height:1.85;letter-spacing:-.01em;color:var(--ink)}
-.letter .lb p+p{margin-top:12px}
-.letter .lf{padding:12px 17px;background:#FBFCFD;border-top:1px solid var(--line);
-  font-size:11.5px;color:var(--ink3);line-height:1.5}
+/* 편지 — 이 앱에서 유일하게 상자를 가진 것 */
+.note{margin:0 20px;background:#FCFBF8;border:1px solid var(--rule);border-radius:3px;
+  padding:24px 22px 22px}
+.note .nh{font-family:var(--voice);font-size:13px;font-weight:700;color:var(--ink2);
+  padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
+.note .nh span{font-family:var(--ui);font-size:10.5px;font-weight:700;color:var(--pen);
+  border:1px solid var(--pen);padding:2px 6px;border-radius:4px;flex:0 0 auto}
+.note p{font-family:var(--voice);font-size:15.5px;line-height:2.05;color:var(--ink)}
+.note p+p{margin-top:14px}
+.note .nf{margin-top:18px;padding-top:14px;border-top:1px solid var(--rule);
+  font-size:11.5px;color:var(--ink3);line-height:1.6;font-family:var(--ui)}
 
 /* 추이 */
-.trend .tr{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line2)}
+.trend .tr{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--rule2)}
 .trend .tr:last-child{border-bottom:0}
 .trend .tl{width:46px;font-size:13.5px;font-weight:700;letter-spacing:-.02em;flex:0 0 auto}
-.spark{display:flex;align-items:flex-end;gap:4px;width:44px;height:26px;flex:0 0 auto}
-.spark i{flex:1;background:var(--line);border-radius:3px 3px 1px 1px;min-height:3px}
+.spark{display:flex;align-items:flex-end;gap:4px;width:42px;height:24px;flex:0 0 auto}
+.spark i{flex:1;background:var(--rule);border-radius:2px 2px 0 0;min-height:2px}
 .spark i.hi{background:var(--brand)}
 .spark.flat{align-items:center}
-.spark.flat i{height:3px;min-height:3px;border-radius:2px}
-.tn{font-size:13px;font-weight:700;color:var(--ink3);white-space:nowrap}
-.tn u{text-decoration:none;color:var(--line);margin:0 2px}
-.tn b{color:var(--ink);font-size:15px}
-.delta{margin-left:auto;font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;flex:0 0 auto}
-.delta.good{background:var(--ok-soft);color:#00935b}
-.delta.flat{background:var(--line2);color:var(--ink3)}
+.spark.flat i{height:2px;min-height:2px}
+.tn{font-size:13px;font-weight:600;color:var(--ink3);white-space:nowrap}
+.tn u{text-decoration:none;color:var(--rule);margin:0 3px}
+.tn b{color:var(--ink);font-size:15px;font-weight:700}
+.delta{margin-left:auto;font-size:11.5px;font-weight:700;flex:0 0 auto}
+.delta.good{color:var(--ok)}
+.delta.flat{color:var(--ink3)}
 
-/* 주간 점 */
-.week{display:flex;gap:6px;margin-top:11px}
-.week i{flex:1;aspect-ratio:1;border-radius:9px;background:var(--line2);display:grid;
-  place-items:center;font-size:11.5px;font-weight:700;color:var(--ink3);font-style:normal}
-.week i.done{background:var(--ok);color:#fff}
-.week i.miss{background:var(--danger-soft);color:var(--danger)}
+/* 주간 */
+.week{display:flex;gap:5px;padding:12px 20px 0}
+.week i{flex:1;aspect-ratio:1;border-radius:8px;background:var(--rule2);display:grid;
+  place-items:center;font-size:11.5px;font-weight:600;color:var(--ink3);font-style:normal}
+.week i.done{background:var(--ok-soft);color:var(--ok)}
+.week i.miss{background:var(--pen-soft);color:var(--pen)}
 
 /* 우리 학원 */
-.field{margin-bottom:16px}
-.field:last-child{margin-bottom:0}
-.field label{display:block;font-size:12px;font-weight:800;color:var(--ink3);margin-bottom:8px}
-.field .val{background:var(--line2);border-radius:12px;padding:13px 15px;font-size:15px;font-weight:700}
-.chips{display:flex;gap:9px}
-.chip{width:34px;height:34px;border-radius:11px;border:2px solid transparent}
-.chip.on{border-color:var(--ink)}
-.sample{font-size:13px;line-height:1.6;color:var(--ink2);background:var(--line2);
-  border-radius:12px;padding:12px 14px;margin-bottom:9px}
-.sample:last-child{margin-bottom:0}
-.madeby{text-align:center;font-size:11.5px;color:var(--ink3);margin-top:26px;line-height:1.65}
+.fld{padding:15px 20px;border-bottom:1px solid var(--rule2)}
+.fld:last-child{border-bottom:0}
+.fld label{display:block;font-size:11.5px;font-weight:700;color:var(--ink3);margin-bottom:8px}
+.fld .val{font-family:var(--voice);font-size:19px;font-weight:700;letter-spacing:-.02em}
+.chips{display:flex;gap:12px}
+.chip{width:32px;height:32px;border-radius:9px;border:1px solid rgba(0,0,0,.08);position:relative}
+.chip.on::after{content:"";position:absolute;inset:-4px;border:1px solid var(--ink);border-radius:12px}
+.said{font-family:var(--voice);font-size:14.5px;line-height:1.85;color:var(--ink2);
+  padding:13px 20px;border-bottom:1px solid var(--rule2)}
+.said::before{content:"\201C";color:var(--pen);font-weight:700;margin-right:2px}
+.madeby{text-align:center;font-size:11.5px;color:var(--ink3);margin-top:30px;line-height:1.75}
+.madeby b{font-family:var(--voice);color:var(--ink2);font-weight:700}
 
-.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(16px);
+/* 학부모 화면 미리보기 */
+.pv{margin:0 20px;border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.pv .pvh{background:var(--brand);color:#fff;padding:16px 18px}
+.pv .pvh .pn{font-family:var(--voice);font-size:12px;font-weight:700;opacity:.9}
+.pv .pvh .pt{font-family:var(--voice);font-size:19px;font-weight:700;margin-top:4px;letter-spacing:-.02em}
+.pv .pvb{padding:16px 0 18px}
+.pv .pvl{font-size:11.5px;font-weight:700;color:var(--ink3);padding:0 18px}
+.pv .pvl.mt{margin-top:20px}
+.pv .pvq{font-family:var(--voice);font-size:14px;line-height:1.9;color:var(--ink2);padding:8px 18px 0}
+.pv .pvd{font-size:14px;font-weight:700;padding:9px 18px 0;letter-spacing:-.02em}
+.pv .week{padding:10px 18px 0}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(14px);
   background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;padding:12px 18px;
-  border-radius:12px;opacity:0;pointer-events:none;transition:.28s cubic-bezier(.2,.7,.3,1);
-  z-index:99;box-shadow:0 14px 34px rgba(0,0,0,.28);max-width:300px;text-align:center;line-height:1.5}
+  border-radius:9px;opacity:0;pointer-events:none;transition:.28s cubic-bezier(.2,.7,.3,1);
+  z-index:99;box-shadow:0 14px 34px rgba(0,0,0,.3);max-width:300px;text-align:center;line-height:1.5}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
@@ -205,7 +244,7 @@ button{font-family:var(--body);cursor:pointer;border:none;background:none;color:
 <div class="shell"><div class="app">
 
 <header class="appbar">
-  <button class="bk" id="bk" onclick="back()" style="display:none">&lsaquo;</button>
+  <button class="bk" id="bk" onclick="back()" style="display:none" aria-label="뒤로">&lsaquo;</button>
   <span class="lg" id="lg">한</span>
   <span class="an" id="an">한빛영어학원</span>
   <span class="ad" id="ad">6월 17일 화</span>
@@ -213,75 +252,78 @@ button{font-family:var(--body);cursor:pointer;border:none;background:none;color:
 
 <!-- ════════ 탭 1 · 오늘 ════════ -->
 <section class="view on" id="t-today">
-  <div class="greet">안녕하세요,<br>김지영 원장님</div>
-  <p class="sub">오늘 할 일 <b>4가지</b> 남았어요.</p>
+  <div class="head">
+    <h1 class="hello">안녕하세요,<br>김지영 원장님</h1>
+    <p class="lede">오늘 남은 일은 <b>네 가지</b>예요.</p>
+  </div>
 
-  <div class="cap">오늘 할 일</div>
-  <div class="list">
-    <button class="item" onclick="push('attend')">
-      <span class="ic" style="background:var(--ok-soft)">✓</span>
+  <div class="lab">오늘 할 일</div>
+  <div class="sheet">
+    <button class="rw" onclick="push('attend')">
+      <span class="mk" style="color:var(--ok);border-color:var(--ok)">○</span>
       <span class="bd"><span class="t">출결 체크</span><span class="s">중2A · 15/17명 입력됨</span></span>
       <span class="go">›</span>
     </button>
-    <button class="item" onclick="push('grade')">
-      <span class="ic" style="background:var(--brand-soft)">✎</span>
+    <button class="rw" onclick="push('grade')">
+      <span class="mk" style="color:var(--pen);border-color:var(--pen)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 4.5l3 3L8 19l-4 1 1-4z"/></svg></span>
       <span class="bd"><span class="t">채점 3건</span><span class="s">박지훈 외 2명 · 영작문 제출됨</span></span>
       <span class="go">›</span>
     </button>
-    <button class="item" onclick="toast('김민수 어머님께 숙제 안내를 보냈어요')">
-      <span class="ic" style="background:var(--warn-soft)">!</span>
+    <button class="rw" onclick="toast('김민수 어머님께 숙제 안내를 보냈어요')">
+      <span class="mk" style="color:var(--warn);border-color:var(--warn)">△</span>
       <span class="bd"><span class="t">숙제 미제출 1명</span><span class="s">김민수 · 마감 3시간 지남</span></span>
       <span class="tag wait">알리기</span>
     </button>
-    <button class="item" onclick="push('pay')">
-      <span class="ic" style="background:var(--danger-soft)">₩</span>
+    <button class="rw" onclick="push('pay')">
+      <span class="mk" style="color:var(--ink2)">₩</span>
       <span class="bd"><span class="t">수강료 미납 3명</span><span class="s">6월분 · 114만원</span></span>
       <span class="go">›</span>
     </button>
   </div>
 
-  <div class="cap">이번 주 숙제 제출</div>
-  <div class="card">
-    <div style="display:flex;align-items:baseline;gap:7px">
-      <b class="num" style="font-size:30px;font-weight:800;letter-spacing:-.04em">79<span style="font-size:16px">%</span></b>
-      <span style="font-size:13px;font-weight:700;color:var(--ok)">▲ 6%p</span>
-    </div>
-    <div class="week">
-      <i class="done">월</i><i class="done">화</i><i class="miss">수</i><i class="done">목</i>
-      <i class="done">금</i><i>토</i><i>일</i>
+  <div class="block">
+    <div class="lab">이번 주 숙제 제출<span class="r">6/16 – 6/22</span></div>
+    <div class="sheet" style="padding:18px 0 20px">
+      <div class="big"><b class="num">79<i>%</i></b><span>▲ 6%p</span></div>
+      <div class="week">
+        <i class="done">월</i><i class="done">화</i><i class="miss">수</i><i class="done">목</i>
+        <i class="done">금</i><i>토</i><i>일</i>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ════════ 탭 2 · 학생 ════════ -->
 <section class="view" id="t-students">
-  <div class="greet">학생</div>
-  <p class="sub">중2A · 17명 · 담임 김지영</p>
+  <div class="head">
+    <h1 class="hello">학생</h1>
+    <p class="lede">중2A · 17명 · 담임 김지영</p>
+  </div>
 
-  <div class="cap">이름을 누르면 그 학생 전부가 보여요</div>
-  <div class="list">
-    <button class="item" onclick="push('student')">
-      <span class="ava b">박</span>
+  <div class="lab">이름을 누르면 그 학생 전부가 보여요</div>
+  <div class="sheet">
+    <button class="rw" onclick="push('student')">
+      <span class="nm b">박</span>
       <span class="bd"><span class="t">박지훈</span><span class="s">제출률 97% · 6월 납부 완료</span></span>
       <span class="tag ok">순항</span>
     </button>
-    <button class="item" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
-      <span class="ava r">김</span>
+    <button class="rw" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
+      <span class="nm r">김</span>
       <span class="bd"><span class="t">김민수</span><span class="s">제출률 45% · 지각 2회</span></span>
-      <span class="tag late">살펴보기</span>
+      <span class="tag pen">살펴보기</span>
     </button>
-    <button class="item" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
-      <span class="ava w">최</span>
+    <button class="rw" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
+      <span class="nm w">최</span>
       <span class="bd"><span class="t">최유나</span><span class="s">제출률 88% · 채점 대기 1건</span></span>
       <span class="tag wait">채점</span>
     </button>
-    <button class="item" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
-      <span class="ava g">이</span>
+    <button class="rw" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
+      <span class="nm g">이</span>
       <span class="bd"><span class="t">이서연</span><span class="s">제출률 92% · 6월 미납</span></span>
-      <span class="tag late">미납</span>
+      <span class="tag pen">미납</span>
     </button>
-    <button class="item" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
-      <span class="ava b">정</span>
+    <button class="rw" onclick="toast('데모에서는 박지훈 학생만 열립니다')">
+      <span class="nm b">정</span>
       <span class="bd"><span class="t">정하윤</span><span class="s">제출률 95% · 6월 납부 완료</span></span>
       <span class="tag ok">순항</span>
     </button>
@@ -290,66 +332,76 @@ button{font-family:var(--body);cursor:pointer;border:none;background:none;color:
 
 <!-- ════════ 탭 3 · 우리 학원 ════════ -->
 <section class="view" id="t-academy">
-  <div class="greet">우리 학원</div>
-  <p class="sub">학부모에게 가는 모든 것에 <b>우리 학원 이름</b>이 붙습니다.</p>
+  <div class="head">
+    <h1 class="hello">우리 학원</h1>
+    <p class="lede">학부모에게 가는 모든 것에 <b>우리 학원 이름</b>이 붙습니다.</p>
+  </div>
 
-  <div class="cap">앱에 보이는 이름</div>
-  <div class="card">
-    <div class="field">
+  <div class="lab">앱에 보이는 이름</div>
+  <div class="sheet">
+    <div class="fld">
       <label>학원 이름</label>
       <div class="val">한빛영어학원</div>
     </div>
-    <div class="field">
+    <div class="fld">
       <label>학원 색</label>
       <div class="chips">
-        <button class="chip on" style="background:#3182F6" onclick="setBrand('#3182F6',this)"></button>
-        <button class="chip" style="background:#00A86B" onclick="setBrand('#00A86B',this)"></button>
-        <button class="chip" style="background:#7C3AED" onclick="setBrand('#7C3AED',this)"></button>
-        <button class="chip" style="background:#E8590C" onclick="setBrand('#E8590C',this)"></button>
-        <button class="chip" style="background:#D6336C" onclick="setBrand('#D6336C',this)"></button>
+        <button class="chip on" style="background:#2B57C4" onclick="setBrand('#2B57C4',this)" aria-label="남색"></button>
+        <button class="chip" style="background:#1B7F53" onclick="setBrand('#1B7F53',this)" aria-label="초록"></button>
+        <button class="chip" style="background:#6D4AAE" onclick="setBrand('#6D4AAE',this)" aria-label="보라"></button>
+        <button class="chip" style="background:#C2571C" onclick="setBrand('#C2571C',this)" aria-label="주황"></button>
+        <button class="chip" style="background:#B03060" onclick="setBrand('#B03060',this)" aria-label="자주"></button>
       </div>
     </div>
   </div>
 
-  <div class="cap">원장님 말투</div>
-  <div class="card">
-    <div class="sample">지훈이 오늘 발표할 때 눈이 반짝반짝하더라고요 :)</div>
-    <div class="sample">조금만 더 하면 돼요. 제가 옆에서 잘 챙길게요!</div>
-    <p style="font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.6">
-      그동안 보내신 메시지 <b class="num" style="color:var(--brand-d)">18건</b>을 학습했어요.
-      리포트 초안이 이 말투로 써집니다.
-    </p>
+  <div class="block">
+    <div class="lab">원장님 말투<span class="r">18건 학습됨</span></div>
+    <div class="sheet">
+      <div class="said">지훈이 오늘 발표할 때 눈이 반짝반짝하더라고요 :)</div>
+      <div class="said">조금만 더 하면 돼요. 제가 옆에서 잘 챙길게요!</div>
+      <div class="fld">
+        <p style="font-size:12.5px;color:var(--ink3);line-height:1.7">
+          그동안 보내신 메시지에서 배운 말투예요.<br>편지 초안이 이 말투로 써집니다.
+        </p>
+      </div>
+    </div>
   </div>
 
-  <div class="cap">학부모에게는 이렇게 보여요</div>
-  <div class="list">
-    <button class="item" onclick="push('parent')">
-      <span class="ic" style="background:var(--brand-soft)">📱</span>
-      <span class="bd"><span class="t">학부모 화면 미리보기</span><span class="s">앱 설치 없이 카톡 링크로 열립니다</span></span>
-      <span class="go">›</span>
-    </button>
+  <div class="block">
+    <div class="lab">학부모에게는 이렇게 보여요</div>
+    <div class="sheet">
+      <button class="rw" onclick="push('parent')">
+        <span class="mk" style="color:var(--brand);border-color:var(--brand)">□</span>
+        <span class="bd"><span class="t">학부모 화면 미리보기</span><span class="s">앱 설치 없이 카톡 링크로 열립니다</span></span>
+        <span class="go">›</span>
+      </button>
+    </div>
   </div>
 
-  <div class="madeby">한빛영어학원 앱<br>BRIGHT로 만들어졌습니다 · 데모</div>
+  <div class="madeby"><b>한빛영어학원</b> 앱<br>BRIGHT로 만들어졌습니다 · 데모</div>
 </section>
 
 <!-- ════════ 출결 ════════ -->
 <section class="view" id="p-attend">
-  <p class="sub">이름을 누르면 바로 저장돼요. 결석·지각은 <b>학부모 알림까지 한 번에</b> 나갑니다.</p>
-
-  <div class="cap">중2A · 6월 17일</div>
-  <div class="list">
-    <div class="item"><span class="ava b">박</span><span class="bd"><span class="t">박지훈</span></span>
-      <span class="att"><button class="on p" onclick="att(this,'p')">등원</button><button onclick="att(this,'l')">지각</button><button onclick="att(this,'a')">결석</button></span></div>
-    <div class="item"><span class="ava r">김</span><span class="bd"><span class="t">김민수</span></span>
-      <span class="att"><button onclick="att(this,'p')">등원</button><button class="on l" onclick="att(this,'l')">지각</button><button onclick="att(this,'a')">결석</button></span></div>
-    <div class="item"><span class="ava w">최</span><span class="bd"><span class="t">최유나</span></span>
-      <span class="att"><button class="on p" onclick="att(this,'p')">등원</button><button onclick="att(this,'l')">지각</button><button onclick="att(this,'a')">결석</button></span></div>
-    <div class="item"><span class="ava g">이</span><span class="bd"><span class="t">이서연</span></span>
-      <span class="att"><button onclick="att(this,'p')">등원</button><button onclick="att(this,'l')">지각</button><button class="on a" onclick="att(this,'a')">결석</button></span></div>
-    <div class="item"><span class="ava b">정</span><span class="bd"><span class="t">정하윤</span></span>
-      <span class="att"><button class="on p" onclick="att(this,'p')">등원</button><button onclick="att(this,'l')">지각</button><button onclick="att(this,'a')">결석</button></span></div>
+  <div class="head">
+    <p class="lede">이름 옆을 누르면 바로 저장돼요.<br>결석·지각은 <b>학부모 알림까지 한 번에</b> 나갑니다.</p>
   </div>
+
+  <div class="lab">중2A<span class="r">6월 17일 화</span></div>
+  <div class="sheet ledger">
+    <div class="rw"><span class="nm b">박</span><span class="bd"><span class="t">박지훈</span></span>
+      <span class="marks"><button class="on p" onclick="att(this,'p')" aria-label="출석">○</button><button onclick="att(this,'l')" aria-label="지각">△</button><button onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
+    <div class="rw"><span class="nm r">김</span><span class="bd"><span class="t">김민수</span></span>
+      <span class="marks"><button onclick="att(this,'p')" aria-label="출석">○</button><button class="on l" onclick="att(this,'l')" aria-label="지각">△</button><button onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
+    <div class="rw"><span class="nm w">최</span><span class="bd"><span class="t">최유나</span></span>
+      <span class="marks"><button class="on p" onclick="att(this,'p')" aria-label="출석">○</button><button onclick="att(this,'l')" aria-label="지각">△</button><button onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
+    <div class="rw"><span class="nm g">이</span><span class="bd"><span class="t">이서연</span></span>
+      <span class="marks"><button onclick="att(this,'p')" aria-label="출석">○</button><button onclick="att(this,'l')" aria-label="지각">△</button><button class="on a" onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
+    <div class="rw"><span class="nm b">정</span><span class="bd"><span class="t">정하윤</span></span>
+      <span class="marks"><button class="on p" onclick="att(this,'p')" aria-label="출석">○</button><button onclick="att(this,'l')" aria-label="지각">△</button><button onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
+  </div>
+  <div class="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
 
   <div class="btnrow">
     <button class="btn" onclick="toast('출결을 저장하고, 결석·지각 학부모 2명에게 알림을 보냈어요')">저장하고 알리기</button>
@@ -358,53 +410,59 @@ button{font-family:var(--body);cursor:pointer;border:none;background:none;color:
 
 <!-- ════════ 채점 ════════ -->
 <section class="view" id="p-grade">
-  <p class="sub">박지훈 · 영작문 &lsquo;My Summer Plan&rsquo; · 어제 20:14 제출</p>
+  <div class="head">
+    <p class="lede">박지훈 · 영작문 &lsquo;My Summer Plan&rsquo;<br>어제 20:14 제출</p>
+  </div>
 
-  <div class="cap">제출물</div>
-  <div class="card">
+  <div class="lab">제출물<span class="r">58 단어</span></div>
+  <div class="sheet" style="padding:20px 0">
     <p class="essay">My summer plan is very exciting. I <em>go</em> to Busan with my family last year, so this year I want to visit Jeju. I will swim in <em>a</em> ocean and eat many delicious foods. I also plan to read five English books to improve my <em>skill</em>.</p>
   </div>
 
-  <div class="cap">AI가 짚은 것 · 3건</div>
-  <div class="card">
-    <div class="corr"><span class="ci">1</span><span class="cb">
-      <span class="cf"><s>go</s>went</span>
-      <span class="cw">last year는 과거 시점이라 동사를 과거형으로</span></span></div>
-    <div class="corr"><span class="ci">2</span><span class="cb">
-      <span class="cf"><s>a ocean</s>an ocean</span>
-      <span class="cw">모음 발음 앞에는 관사 an</span></span></div>
-    <div class="corr"><span class="ci">3</span><span class="cb">
-      <span class="cf"><s>skill</s>skills</span>
-      <span class="cw">&lsquo;실력 전반&rsquo;은 복수로 쓰는 것이 자연스러워요</span></span></div>
+  <div class="block">
+    <div class="lab">빨간펜<span class="r">AI가 짚은 것 3건</span></div>
+    <div class="sheet">
+      <div class="corr"><span class="ci">1</span><span class="cb">
+        <span class="cf"><s>go</s>went</span>
+        <span class="cw">last year는 과거 시점이라 동사를 과거형으로</span></span></div>
+      <div class="corr"><span class="ci">2</span><span class="cb">
+        <span class="cf"><s>a ocean</s>an ocean</span>
+        <span class="cw">모음 발음 앞에는 관사 an</span></span></div>
+      <div class="corr"><span class="ci">3</span><span class="cb">
+        <span class="cf"><s>skill</s>skills</span>
+        <span class="cw">&lsquo;실력 전반&rsquo;은 복수로 쓰는 것이 자연스러워요</span></span></div>
+    </div>
   </div>
 
-  <div class="cap">점수</div>
-  <div class="card">
-    <div class="score"><b class="num">85</b><span>/ 100 · AI 산정</span></div>
-    <p style="font-size:12.5px;color:var(--ink3);margin-top:8px;line-height:1.6">
-      어휘는 또래보다 우수합니다. 시제만 놓쳤어요.<br>원장님이 확정해야 리포트가 만들어집니다.
-    </p>
+  <div class="block">
+    <div class="lab">점수<span class="r">AI 산정 · 원장님이 확정</span></div>
+    <div class="sheet" style="padding:18px 0 20px">
+      <div class="big"><b class="num" style="color:var(--brand)">85</b><span style="color:var(--ink3);font-weight:600">/ 100</span></div>
+      <p style="font-size:13px;color:var(--ink2);line-height:1.75;padding:12px 20px 0">
+        어휘는 또래보다 우수합니다. 시제만 놓쳤어요.
+      </p>
+    </div>
   </div>
 
   <div class="btnrow">
     <button class="btn ghost" onclick="toast('점수를 조정할 수 있어요')">점수 조정</button>
-    <button class="btn" onclick="push('report')">확정하고 리포트</button>
+    <button class="btn" onclick="push('report')">확정하고 편지 쓰기</button>
   </div>
 </section>
 
-<!-- ════════ 리포트 ════════ -->
+<!-- ════════ 학부모 편지 ════════ -->
 <section class="view" id="p-report">
-  <p class="sub">원장님 말투로 초안을 썼어요. <b>읽고 다듬어서 보내세요</b> — 자동 발송은 없습니다.</p>
+  <div class="head">
+    <p class="lede">원장님 말투로 초안을 썼어요.<br><b>읽고 다듬어서 보내세요</b> — 자동 발송은 없습니다.</p>
+  </div>
 
-  <div class="cap first" style="margin-top:20px">박지훈 어머님께</div>
-  <div class="letter">
-    <div class="lh"><span class="lt">한빛영어학원 · 김지영 원장 드림</span><span class="lr">초안</span></div>
-    <div class="lb">
-      <p>어머님 안녕하세요 :) 오늘 지훈이는 &lsquo;여름 계획&rsquo; 영작문을 했어요. 어휘 선택이 정말 좋아서 읽으면서 저도 흐뭇했답니다.</p>
-      <p>과거시제에서 작은 실수가 있었어요(go→went). 큰 문제는 아니고 다음 주에 시제 복습을 함께 잡아두려고 합니다.</p>
-      <p>4월엔 시제를 5번 틀렸는데 이번 달은 1번이에요. 집에서도 많이 칭찬해 주세요!</p>
-    </div>
-    <div class="lf">채점 결과 + 원장님 말투 18건을 반영한 초안입니다.<br>보내기 전 꼭 한 번 읽어보세요.</div>
+  <div class="lab">박지훈 어머님께</div>
+  <div class="note">
+    <div class="nh">한빛영어학원 · 김지영 원장 드림 <span>초안</span></div>
+    <p>어머님 안녕하세요 :) 오늘 지훈이는 &lsquo;여름 계획&rsquo; 영작문을 했어요. 어휘 선택이 정말 좋아서 읽으면서 저도 흐뭇했답니다.</p>
+    <p>과거시제에서 작은 실수가 있었어요(go→went). 큰 문제는 아니고 다음 주에 시제 복습을 함께 잡아두려고 합니다.</p>
+    <p>4월엔 시제를 5번 틀렸는데 이번 달은 1번이에요. 집에서도 많이 칭찬해 주세요!</p>
+    <div class="nf">채점 결과와 원장님 말투를 반영한 초안입니다.<br>보내기 전 꼭 한 번 읽어보세요.</div>
   </div>
 
   <div class="btnrow">
@@ -415,15 +473,16 @@ button{font-family:var(--body);cursor:pointer;border:none;background:none;color:
 
 <!-- ════════ 학생 상세 ════════ -->
 <section class="view" id="p-student">
-  <p class="sub">중2A · 어머님 010-****-1234 · 6월 납부 완료</p>
+  <div class="head">
+    <h1 class="hello">박지훈</h1>
+    <p class="lede">중2A · 어머님 010-****-1234 · 6월 납부 완료</p>
+  </div>
 
-  <div class="cap">6월 요약</div>
-  <div class="card">
-    <div style="display:flex;gap:22px">
-      <div><div style="font-size:12px;font-weight:700;color:var(--ink3)">숙제 제출률</div>
-        <div class="num" style="font-size:26px;font-weight:800;margin-top:5px">97<span style="font-size:14px">%</span></div></div>
-      <div><div style="font-size:12px;font-weight:700;color:var(--ink3)">첨삭 항목</div>
-        <div class="num" style="font-size:26px;font-weight:800;margin-top:5px;color:var(--brand)">3<span style="font-size:14px">건</span></div></div>
+  <div class="lab">6월<span class="r">이번 주 출결</span></div>
+  <div class="sheet" style="padding:18px 0 20px">
+    <div class="big">
+      <b class="num">97<i>%</i></b><span style="color:var(--ink3);font-weight:600">숙제 제출</span>
+      <b class="num" style="margin-left:10px;color:var(--brand)">3<i>건</i></b><span style="color:var(--ink3);font-weight:600">첨삭</span>
     </div>
     <div class="week">
       <i class="done">월</i><i class="done">화</i><i class="done">수</i><i class="done">목</i>
@@ -431,46 +490,47 @@ button{font-family:var(--body);cursor:pointer;border:none;background:none;color:
     </div>
   </div>
 
-  <div class="cap">틀리던 것이 줄고 있어요</div>
-  <div class="card trend">
-    <div class="tr"><span class="tl">시제</span>
-      <span class="spark"><i style="height:100%"></i><i style="height:60%"></i><i class="hi" style="height:20%"></i></span>
-      <span class="tn num">5<u>›</u>3<u>›</u><b>1</b></span><span class="delta good">▼4</span></div>
-    <div class="tr"><span class="tl">관사</span>
-      <span class="spark"><i style="height:100%"></i><i style="height:50%"></i><i class="hi" style="height:25%"></i></span>
-      <span class="tn num">4<u>›</u>2<u>›</u><b>1</b></span><span class="delta good">▼3</span></div>
-    <div class="tr"><span class="tl">수일치</span>
-      <span class="spark"><i style="height:100%"></i><i style="height:100%"></i><i class="hi" style="height:33%"></i></span>
-      <span class="tn num">3<u>›</u>3<u>›</u><b>1</b></span><span class="delta good">▼2</span></div>
-    <div class="tr"><span class="tl">스펠링</span>
-      <span class="spark"><i style="height:100%"></i><i style="height:50%"></i><i class="hi" style="height:5%"></i></span>
-      <span class="tn num">2<u>›</u>1<u>›</u><b>0</b></span><span class="delta good">▼2</span></div>
-    <div class="tr"><span class="tl">어휘</span>
-      <span class="spark flat"><i></i><i></i><i class="hi"></i></span>
-      <span class="tn num">0<u>›</u>0<u>›</u><b>0</b></span><span class="delta flat">우수</span></div>
-    <p style="font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.6">
-      4월 · 5월 · 6월 · 채점 26건 누적
-    </p>
+  <div class="block">
+    <div class="lab">틀리던 것이 줄고 있어요<span class="r">4·5·6월 · 채점 26건</span></div>
+    <div class="sheet trend">
+      <div class="tr"><span class="tl">시제</span>
+        <span class="spark"><i style="height:100%"></i><i style="height:60%"></i><i class="hi" style="height:20%"></i></span>
+        <span class="tn num">5<u>›</u>3<u>›</u><b>1</b></span><span class="delta good">▼4</span></div>
+      <div class="tr"><span class="tl">관사</span>
+        <span class="spark"><i style="height:100%"></i><i style="height:50%"></i><i class="hi" style="height:25%"></i></span>
+        <span class="tn num">4<u>›</u>2<u>›</u><b>1</b></span><span class="delta good">▼3</span></div>
+      <div class="tr"><span class="tl">수일치</span>
+        <span class="spark"><i style="height:100%"></i><i style="height:100%"></i><i class="hi" style="height:33%"></i></span>
+        <span class="tn num">3<u>›</u>3<u>›</u><b>1</b></span><span class="delta good">▼2</span></div>
+      <div class="tr"><span class="tl">스펠링</span>
+        <span class="spark"><i style="height:100%"></i><i style="height:50%"></i><i class="hi" style="height:5%"></i></span>
+        <span class="tn num">2<u>›</u>1<u>›</u><b>0</b></span><span class="delta good">▼2</span></div>
+      <div class="tr"><span class="tl">어휘</span>
+        <span class="spark flat"><i></i><i></i><i class="hi"></i></span>
+        <span class="tn num">0<u>›</u>0<u>›</u><b>0</b></span><span class="delta flat">우수</span></div>
+    </div>
   </div>
 
   <div class="btnrow">
-    <button class="btn" onclick="push('report')">이 기록으로 리포트 보내기</button>
+    <button class="btn" onclick="push('report')">이 기록으로 편지 보내기</button>
   </div>
 </section>
 
 <!-- ════════ 수강료 ════════ -->
 <section class="view" id="p-pay">
-  <p class="sub">독촉이 아니라 <b>원장님 톤의 정중한 안내</b>로 나갑니다.</p>
+  <div class="head">
+    <p class="lede">독촉이 아니라<br><b>원장님 톤의 정중한 안내</b>로 나갑니다.</p>
+  </div>
 
-  <div class="cap">6월 미납 · 3명 · 114만원</div>
-  <div class="list">
-    <div class="item"><span class="ava r">이</span>
+  <div class="lab">6월 미납<span class="r">3명 · 114만원</span></div>
+  <div class="sheet">
+    <div class="rw"><span class="nm r">이</span>
       <span class="bd"><span class="t">이서연</span><span class="s">고1B · 38만원 · 3일 경과</span></span>
       <button class="btn sm" onclick="toast('이서연 어머님께 안내를 보냈어요')">안내</button></div>
-    <div class="item"><span class="ava r">한</span>
+    <div class="rw"><span class="nm r">한</span>
       <span class="bd"><span class="t">한지우</span><span class="s">중2A · 38만원 · 2일 경과</span></span>
       <button class="btn sm" onclick="toast('한지우 어머님께 안내를 보냈어요')">안내</button></div>
-    <div class="item"><span class="ava r">송</span>
+    <div class="rw"><span class="nm r">송</span>
       <span class="bd"><span class="t">송민재</span><span class="s">중3A · 38만원 · 1일 경과</span></span>
       <button class="btn sm" onclick="toast('송민재 어머님께 안내를 보냈어요')">안내</button></div>
   </div>
@@ -482,39 +542,41 @@ button{font-family:var(--body);cursor:pointer;border:none;background:none;color:
 
 <!-- ════════ 학부모 화면 ════════ -->
 <section class="view" id="p-parent">
-  <p class="sub">학부모는 <b>앱을 깔지 않습니다.</b> 카톡 링크를 누르면 이 화면이 열려요.</p>
+  <div class="head">
+    <p class="lede">학부모는 <b>앱을 깔지 않습니다.</b><br>카톡 링크를 누르면 이 화면이 열려요.</p>
+  </div>
 
-  <div class="cap">박지훈 어머님이 보는 화면</div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <div style="background:var(--brand);color:#fff;padding:15px 17px">
-      <div style="font-size:11.5px;font-weight:700;opacity:.85">한빛영어학원</div>
-      <div style="font-size:17px;font-weight:800;letter-spacing:-.03em;margin-top:3px">지훈이 이번 주</div>
+  <div class="lab">박지훈 어머님이 보는 화면</div>
+  <div class="pv">
+    <div class="pvh">
+      <div class="pn">한빛영어학원</div>
+      <div class="pt">지훈이 이번 주</div>
     </div>
-    <div style="padding:17px">
-      <div style="font-size:12px;font-weight:800;color:var(--ink3)">출석</div>
+    <div class="pvb">
+      <div class="pvl">출석</div>
       <div class="week">
         <i class="done">월</i><i class="done">화</i><i class="done">수</i><i class="done">목</i>
         <i class="done">금</i><i>토</i><i>일</i>
       </div>
-      <div style="font-size:12px;font-weight:800;color:var(--ink3);margin-top:20px">원장님 편지</div>
-      <div style="background:var(--line2);border-radius:12px;padding:14px;margin-top:9px;
-        font-size:13.5px;line-height:1.75;color:var(--ink2)">
-        어머님 안녕하세요 :) 오늘 지훈이는 &lsquo;여름 계획&rsquo; 영작문을 했어요. 어휘 선택이 정말 좋아서…
-      </div>
-      <div style="font-size:12px;font-weight:800;color:var(--ink3);margin-top:20px">오늘 숙제</div>
-      <div style="font-size:13.5px;font-weight:700;margin-top:8px">단어시험 51~75 · 오늘 21:00까지</div>
+      <div class="pvl mt">원장님 편지</div>
+      <p class="pvq">어머님 안녕하세요 :) 오늘 지훈이는 &lsquo;여름 계획&rsquo; 영작문을 했어요. 어휘 선택이 정말 좋아서…</p>
+      <div class="pvl mt">오늘 숙제</div>
+      <div class="pvd">단어시험 51~75 · 오늘 21:00까지</div>
     </div>
   </div>
 
-  <p style="font-size:12.5px;color:var(--ink3);margin-top:16px;line-height:1.65;text-align:center">
-    학원 이름·색이 그대로 따라갑니다.<br>학부모에게는 <b style="color:var(--ink2)">우리 학원 앱</b>으로 보여요.
+  <p style="font-size:12.5px;color:var(--ink3);line-height:1.75;text-align:center;padding:18px 20px 0">
+    학원 이름과 색이 그대로 따라갑니다.<br>학부모에게는 <b style="color:var(--ink2)">우리 학원 앱</b>으로 보여요.
   </p>
 </section>
 
 <nav class="tabbar">
-  <a href="#" data-t="today" class="on" onclick="tab('today');return false"><span class="ti">📋</span>오늘</a>
-  <a href="#" data-t="students" onclick="tab('students');return false"><span class="ti">👥</span>학생</a>
-  <a href="#" data-t="academy" onclick="tab('academy');return false"><span class="ti">🏫</span>우리 학원</a>
+  <a href="#" data-t="today" class="on" onclick="tab('today');return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg>오늘</a>
+  <a href="#" data-t="students" onclick="tab('students');return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.4" r="3.3"/><path d="M5.6 19.2c0-3.3 2.9-5.4 6.4-5.4s6.4 2.1 6.4 5.4"/></svg>학생</a>
+  <a href="#" data-t="academy" onclick="tab('academy');return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9.6L12 4l8 5.6V20"/><path d="M9.6 20v-5.2h4.8V20"/></svg>우리 학원</a>
 </nav>
 
 </div></div>
@@ -526,7 +588,7 @@ button{font-family:var(--body);cursor:pointer;border:none;background:none;color:
 var TITLE={
   'p-attend':['출결','중2A'],
   'p-grade':['채점','영작문'],
-  'p-report':['학부모 리포트','박지훈'],
+  'p-report':['학부모 편지','박지훈'],
   'p-student':['박지훈','중2A'],
   'p-pay':['수강료','6월'],
   'p-parent':['학부모 화면','미리보기']
@@ -544,11 +606,10 @@ function render(){
   document.getElementById('an').textContent=isSub?TITLE[cur][0]:'한빛영어학원';
   document.getElementById('ad').textContent=isSub?TITLE[cur][1]:'6월 17일 화';
 
+  var base=hist.length?hist[0]:cur;
   var ts=document.querySelectorAll('.tabbar a');
-  for(var j=0;j<ts.length;j++){
-    var base=hist.length?hist[0]:cur;
-    ts[j].classList.toggle('on','t-'+ts[j].dataset.t===base);
-  }
+  for(var j=0;j<ts.length;j++) ts[j].classList.toggle('on','t-'+ts[j].dataset.t===base);
+
   document.getElementById(cur).scrollTop=0;
 }
 function tab(t){ hist=[]; cur='t-'+t; render(); }
@@ -574,8 +635,8 @@ function tint(c,p){var a=hex(c);return '#'+a.map(function(v){return Math.round(v
 function setBrand(color,el){
   var r=document.documentElement.style;
   r.setProperty('--brand',color);
-  r.setProperty('--brand-d',shade(color,-18));
-  r.setProperty('--brand-soft',tint(color,.90));
+  r.setProperty('--brand-d',shade(color,-22));
+  r.setProperty('--brand-soft',tint(color,.91));
   var cs=el.parentNode.querySelectorAll('.chip');
   for(var i=0;i<cs.length;i++) cs[i].classList.remove('on');
   el.classList.add('on');
