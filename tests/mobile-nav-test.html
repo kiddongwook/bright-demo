@@ -114,12 +114,27 @@
       if (text('#s-today-tag') !== '결석') fails.push('student today tag=' + text('#s-today-tag'));
       if (text('.appbar .badge') !== '3') fails.push('student badge after post+att=' + text('.appbar .badge'));
 
+      // ── 결석 사전 신청 + 보강 ──
+      w.logout(); w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
+      const pb = +text('.appbar .badge');
+      w.push('absence'); d.getElementById('ab-reason').value = '병원 진료'; w.sendAbsence();
+      if (w.DB.absences[0].status !== '요청' || w.DB.absences[0].who !== 'p') fails.push('absence not created');
+      if (!d.querySelector('#p-child .week i.a')) fails.push('planned absence not on week strip');
+      w.logout(); w.gatePhone('010-1000-0001'); w.gateGo(); w.gateCode();
+      if (d.querySelectorAll('#d-absence-list .tag.danger').length !== 2) fails.push('pending absences=' + d.querySelectorAll('#d-absence-list .tag.danger').length);
+      w.openAbsence(w.DB.absences[0].id); w.mkPick(null, '6월 21일 토 2시'); w.confirmMakeup();
+      if (w.DB.absences[0].status !== '보강 확정') fails.push('makeup not confirmed');
+      w.logout(); w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
+      if (+text('.appbar .badge') !== pb + 1) fails.push('parent badge after makeup=' + text('.appbar .badge'));
+      if (!/6월 21일/.test(text('#p-absence-list'))) fails.push('makeup not shown to parent');
+      if (!d.querySelector('#p-child .week i.m')) fails.push('makeup not on week strip');
+
       // ── 이름 교체 ──
       if (d.body.innerHTML.indexOf('한빛') >= 0) fails.push('한빛 remains');
       if (d.head.innerHTML.indexOf('Gowun') >= 0) fails.push('Gowun Batang link remains');
 
       const result = fails.length === 0
-        ? 'PASS: gate + 3 roles + router + overflow + live state'
+        ? 'PASS: gate + 3 roles + router + overflow + live state + absence'
         : 'FAIL: ' + fails.join(' | ');
       document.getElementById('result').textContent = result;
       document.title = result.startsWith('PASS:') ? 'PASS' : 'FAIL';

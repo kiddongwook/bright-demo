@@ -138,6 +138,7 @@ button{cursor:pointer;border:none;background:none}
 .week i.p{border-color:var(--ink);color:var(--ink)}
 .week i.l{border-color:var(--warn);color:var(--warn)}
 .week i.a{border-color:var(--danger);color:var(--danger)}
+.week i.m{border-color:var(--ink);border-style:dashed;color:var(--ink)}
 
 /* ── 공지 / 문의 ── */
 .post{padding:16px;border-bottom:1px solid var(--rule)}
@@ -161,6 +162,8 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 .seg{display:flex;gap:6px;padding:0 20px}
 .seg button{flex:1;padding:10px;border:1px solid var(--rule);border-radius:9px;font-size:13px;font-weight:600;color:var(--ink3)}
 .seg button.on{border-color:var(--ink);color:var(--ink)}
+.seg.col{flex-direction:column}
+.seg.col button{text-align:left;padding:12px 14px}
 
 /* ── 더보기 ── */
 .chips{display:flex;gap:10px;padding:2px 0}
@@ -249,6 +252,9 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="box" id="d-att-box"></div>
   <div class="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
   <div class="btnrow"><button class="btn" onclick="saveAtt()">저장하고 알리기</button></div>
+
+  <div class="lab">결석 신청<span class="r">학부모가 미리 알린 것</span></div>
+  <div id="d-absence-list"></div>
 
   <div class="lab">이번 주</div>
   <div class="box soft">
@@ -370,14 +376,19 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="head"><h1 class="hello">지훈이</h1><p class="lede">고1 A · 월수금 7시 · 오늘은 수업이 없는 날이에요.</p></div>
   <div class="lab first">이번 주<span class="r">6/16 – 6/22</span></div>
   <div class="box">
-    <div class="week"><i class="p">월</i><i>화</i><i class="p">수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>
-    <div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">6월 출석</span><span class="s">7회 중 7회 · 지각 0 · 결석 0</span></span><span class="tag ok">개근</span></div>
+    <div class="week" id="p-week"></div>
+    <div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">6월 출석</span><span class="s">6회 중 6회 · 지각 0 · 결석 0</span></span><span class="tag ok">개근</span></div>
   </div>
+  <div class="legend"><span><b>○</b>출석</span><span><b>✕</b>결석 예정</span><span><b>◌</b>보강</span></div>
+
+  <div class="lab">미리 알린 결석<span class="r">보강은 원장님이 잡아요</span></div>
+  <div id="p-absence-list"></div>
+  <div class="btnrow" style="padding-top:12px"><button class="btn line" onclick="push('absence')">결석 미리 알리기</button></div>
+
   <div class="lab">다음 수업</div>
   <div class="box soft">
     <div class="rw" style="cursor:default"><span class="bd"><span class="t">6월 18일 수 · 7시</span><span class="s">고1 A · 모의고사 대비 특강 공지를 확인해 주세요</span></span></div>
   </div>
-  <p class="muted" style="padding:18px 20px 0;text-align:center">결석·지각이 있으면 그날 바로 알림이 와요.</p>
 </section>
 <section class="view" id="p-notice">
   <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>고1 A</b> 공지만 보여요.</p></div>
@@ -446,6 +457,26 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 </section>
 <section class="view" id="s-noti"><div id="s-noti-list"></div></section>
 
+<section class="view" id="p-absence">
+  <div class="head"><p class="lede">미리 알려주시면 원장님이 <b>보강을 잡아드려요.</b><br>사전 결석은 같은 주 토요일에 보강합니다.</p></div>
+  <div class="lab first">결석할 날<span class="r">고1 A 수업일</span></div>
+  <div class="seg col">
+    <button class="on" onclick="abPick(this,'6월 18일 수')">6월 18일 수</button>
+    <button onclick="abPick(this,'6월 20일 금')">6월 20일 금</button>
+    <button onclick="abPick(this,'6월 23일 월')">6월 23일 월</button>
+  </div>
+  <div class="lab">사유</div>
+  <div style="padding:0 20px"><textarea class="input" id="ab-reason" placeholder="예) 병원 진료" style="min-height:90px"></textarea></div>
+  <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="sendAbsence()">원장님께 알리기</button></div>
+</section>
+
+<section class="view" id="d-makeup">
+  <div id="mk-info"></div>
+  <div class="lab">보강</div>
+  <div class="seg col" id="mk-opts"></div>
+  <div class="btnrow"><button class="btn line" onclick="back()">나중에</button><button class="btn" onclick="confirmMakeup()">확정하고 알리기</button></div>
+</section>
+
 <nav class="tabbar" id="tabbar" hidden></nav>
 
 </div></div>
@@ -468,8 +499,8 @@ var ICON={
 var TABMETA={today:['오늘','list'],child:['우리 아이','list'],me:['나','list'],notice:['공지','notice'],inbox:['문의','chat'],ask:['문의','chat'],more:['더보기','house']};
 var TITLE={
   'd-roster':['명부','반별'],'d-noti':['알림',''],'d-academy':['우리 학원',''],'d-notice-new':['공지 쓰기',''],
-  'd-answer':['문의',''],'d-faq':['자주 묻는 질문','관리'],
-  'p-noti':['알림',''],'p-notice-view':['공지',''],'p-ask-new':['직접 문의하기',''],'p-ask-mine':['내 문의',''],
+  'd-answer':['문의',''],'d-faq':['자주 묻는 질문','관리'],'d-makeup':['결석 신청','보강'],
+  'p-noti':['알림',''],'p-notice-view':['공지',''],'p-ask-new':['직접 문의하기',''],'p-ask-mine':['내 문의',''],'p-absence':['결석 미리 알리기',''],
   's-noti':['알림',''],'s-notice-view':['공지','']
 };
 
@@ -487,6 +518,10 @@ var DB={
     {id:3,who:'x',name:'최유나 어머님',cls:'A',topic:'레벨 테스트 언제',q:'레벨 테스트는 언제 보나요?',at:'6월 14일',a:'다음 주 월요일 수업 끝나고 20분 정도 봐요. 따로 준비하실 건 없어요.',aAt:'6월 14일'}
   ],
   att:{'김민수':'l','정하윤':'p','한지우':'a'},
+  absences:[
+    {id:1,who:'x',child:'최유나',cls:'A',date:'6월 20일 금',reason:'병원 진료',status:'요청',makeup:null,at:'오늘 오전 11:05'},
+    {id:2,who:'x',child:'한지우',cls:'B',date:'6월 12일 목',reason:'가족 여행',status:'보강 확정',makeup:'6월 14일 토 2시',at:'6월 10일'}
+  ],
   noti:{
     d:[{t:'정하윤 어머님이 문의를 보냈어요',m:'문의 · 숙제 범위 확인 · 오후 1:20',n:true},
        {t:'박지훈 어머님 문의에 답했어요',m:'문의 · 어제 오후 6:02',n:false},
@@ -497,7 +532,7 @@ var DB={
   }
 };
 var ATT_ORDER=['김민수','정하윤','한지우'];
-var ROLE=null, cur='g-phone', hist=[], phoneVal='', draft={}, curAsk=null, curNotice=null, nnTarget='all';
+var ROLE=null, cur='g-phone', hist=[], phoneVal='', draft={}, curAsk=null, curNotice=null, nnTarget='all', abDate='6월 18일 수', curAb=null, mkChoice='6월 21일 토 2시';
 
 /* ── 작은 도구 ── */
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
@@ -582,7 +617,7 @@ function rAtt(){
   set('s-me-box','<div class="week"><i>월</i><i class="'+k+'">화</i><i>수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>'
     +'<div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">'+L[2]+'</span></span><span class="tag '+L[1]+'" id="s-today-tag">'+L[0]+'</span></div>');
 }
-function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); }
+function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); rAbsence(); rMakeup(); }
 
 /* ── 라우터 ── */
 function render(){
@@ -688,6 +723,61 @@ function sendAnswer(){
   back();
 }
 
+/* ── 결석 사전 신청 + 보강 ── */
+var MK_OPTS=['6월 21일 토 2시','6월 28일 토 2시','자료로 대체'];
+function wd(s){ var p=s.split(' '); return p.length>2?p[2]:''; }
+function rAbsence(){
+  var pend=DB.absences.filter(function(a){return a.status==='요청'}), done=DB.absences.filter(function(a){return a.status!=='요청'});
+  function row(a){
+    var tag=a.status==='요청' ? '<span class="tag danger">요청</span>'
+      : '<span class="tag ok">'+(a.makeup==='자료로 대체'?'자료 대체':'보강 '+a.makeup.split(' ').slice(0,3).join(' '))+'</span>';
+    return '<button class="rw" onclick="openAbsence('+a.id+')"><span class="nm">'+a.child.charAt(0)+'</span><span class="bd"><span class="t">'+a.child+' · '+a.date+'</span><span class="s">'+CLS[a.cls]+' · '+esc(a.reason)+' · '+a.at+'</span></span>'+tag+'</button>';
+  }
+  var h= pend.length ? '<div class="box">'+pend.map(row).join('')+'</div>' : '<p class="muted" style="padding:0 20px">새 결석 신청이 없어요.</p>';
+  if(done.length) h+='<div class="lab">처리됨</div><div class="box soft">'+done.map(row).join('')+'</div>';
+  set('d-absence-list',h);
+
+  var mine=DB.absences.filter(function(a){return a.who==='p'}), m='';
+  mine.forEach(function(a){
+    var st=a.status==='요청' ? '<span class="tag warn">원장님 확인 중</span>'
+      : '<span class="tag ok">'+(a.makeup==='자료로 대체'?'자료로 대체':'보강 '+a.makeup)+'</span>';
+    m+='<div class="rw" style="cursor:default"><span class="bd"><span class="t">'+a.date+' 결석</span><span class="s">'+esc(a.reason)+'</span></span>'+st+'</div>';
+  });
+  set('p-absence-list', m ? '<div class="box">'+m+'</div>' : '<p class="muted" style="padding:0 20px">미리 알린 결석이 없어요. 알려주시면 보강을 잡아드려요.</p>');
+
+  var W=['월','화','수','목','금','토','일'], cls={'월':'p'};
+  mine.forEach(function(a){ var d=wd(a.date); if(d) cls[d]='a'; if(a.makeup&&a.makeup!=='자료로 대체'){ var k=wd(a.makeup); if(k) cls[k]='m'; } });
+  set('p-week', W.map(function(d){ return '<i class="'+(cls[d]||'')+'">'+d+'</i>'; }).join(''));
+}
+function rMakeup(){
+  if(!curAb) return;
+  var a=byId(DB.absences,curAb); if(!a) return;
+  set('mk-info','<div class="head"><p class="lede">'+CLS[a.cls]+' · '+a.child+' · <b>'+a.date+'</b> 결석<br>'+esc(a.reason)+' · '+a.at+'</p></div>');
+  var h=''; MK_OPTS.forEach(function(o){ h+='<button class="'+(o===mkChoice?'on':'')+'" onclick="mkPick(this,\''+o+'\')">'+o+'</button>'; });
+  set('mk-opts',h);
+  TITLE['d-makeup'][1]=a.child;
+}
+function abPick(el,d){ var b=el.parentNode.querySelectorAll('button'); for(var i=0;i<b.length;i++) b[i].className=''; el.className='on'; abDate=d; }
+function sendAbsence(){
+  var r=document.getElementById('ab-reason').value.trim();
+  if(!r){ toast('사유를 적어주세요'); return; }
+  var id=1; DB.absences.forEach(function(a){ if(a.id>=id) id=a.id+1; });
+  DB.absences.unshift({id:id,who:'p',child:ME.p.child,cls:'A',date:abDate,reason:r,status:'요청',makeup:null,at:'방금'});
+  DB.noti.d.unshift({t:ME.p.child+' '+abDate+' 결석 신청이 왔어요',m:'출결 · '+r+' · 방금',n:true});
+  document.getElementById('ab-reason').value='';
+  toast('원장님께 알렸어요. 보강을 잡아주시면 알림이 와요');
+  back();
+}
+function openAbsence(id){ curAb=id; mkChoice=MK_OPTS[0]; push('makeup'); }
+function mkPick(el,o){ mkChoice=o; rMakeup(); }
+function confirmMakeup(){
+  var a=byId(DB.absences,curAb); if(!a) return;
+  a.status='보강 확정'; a.makeup=mkChoice;
+  if(a.who==='p') DB.noti.p.unshift({t:a.date+' 결석 → '+(mkChoice==='자료로 대체'?'자료로 대체':mkChoice+' 보강'),m:'출결 · 원장님이 잡았어요 · 방금',n:true});
+  toast(a.child+' 학부모에게 '+(mkChoice==='자료로 대체'?'자료 대체':'보강 일정')+'을 알렸어요');
+  back();
+}
+
 /* ── 조각 ── */
 var toastT;
 function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show')},2600); }
@@ -707,6 +797,7 @@ function setBrand(color,el){
     ATT_ORDER.forEach(function(n){ draft[n]=DB.att[n]; });
     if(h==='d-answer'){ curAsk=1; document.getElementById('ans-body').value=DB.asks[0].draft; }
     if(h==='p-notice-view'){ curNotice=1; } if(h==='s-notice-view'){ curNotice=3; }
+    if(h==='d-makeup'){ curAb=1; }
   }
   render();
 })();
