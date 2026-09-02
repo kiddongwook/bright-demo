@@ -14,7 +14,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="assets/logo/yeongeo-jip.png">
+<link rel="icon" href="assets/logo/yeongeo-jip-bold.png">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
 :root{
@@ -212,7 +212,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 
 <header class="appbar" id="appbar">
   <button class="bk" id="bk" onclick="back()" style="display:none" aria-label="뒤로">&lsaquo;</button>
-  <img class="logo" id="logo" src="assets/logo/yeongeo-jip-white.png" alt="영어의 집">
+  <img class="logo" id="logo" src="assets/logo/yeongeo-jip-bold-white.png" alt="영어의 집">
   <span class="an" id="an" style="display:none"></span>
   <span class="ad" id="ad"></span>
   <button class="bell" id="bell" onclick="push('noti')" aria-label="알림">
@@ -224,7 +224,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 <!-- ════ 게이트 ════ -->
 <section class="view on" id="g-phone" style="background:var(--paper)">
   <div class="gate">
-    <img class="gate-logo" src="assets/logo/yeongeo-jip.png" alt="영어의 집">
+    <img class="gate-logo" src="assets/logo/yeongeo-jip-medium.png" alt="영어의 집">
     <h1>문을 열어드릴게요</h1>
     <p>영어의 집 학생·학부모로 등록된<br>전화번호를 알려주세요.</p>
     <div class="field">
@@ -243,7 +243,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 
 <section class="view" id="g-code" style="background:var(--paper)">
   <div class="gate">
-    <img class="gate-logo" src="assets/logo/yeongeo-jip.png" alt="영어의 집">
+    <img class="gate-logo" src="assets/logo/yeongeo-jip-medium.png" alt="영어의 집">
     <h1>인증번호를 보냈어요</h1>
     <p id="code-to">010-0000-0000 으로 6자리를 보냈습니다.</p>
     <div class="field">
@@ -257,7 +257,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 
 <section class="view" id="g-deny" style="background:var(--paper)">
   <div class="gate">
-    <img class="gate-logo" src="assets/logo/yeongeo-jip.png" alt="영어의 집">
+    <img class="gate-logo" src="assets/logo/yeongeo-jip-medium.png" alt="영어의 집">
     <h1>아직 등록되지 않은 번호예요</h1>
     <p>영어의 집 학생·학부모로 등록되면 문이 열려요.<br>원장님께 말씀해 주세요.</p>
     <div class="btnrow" style="padding-left:0;padding-right:0;width:100%"><button class="btn line" onclick="back()">다른 번호로</button></div>
@@ -378,7 +378,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 
 <section class="view" id="d-academy">
   <div class="homescr">
-    <div class="appicon"><img src="assets/logo/yeongeo-jip-white.png" alt=""></div>
+    <div class="appicon"><img src="assets/logo/yeongeo-jip-bold-white.png" alt=""></div>
     <div class="hl">영어의 집</div>
     <p class="hc">원장님과 학부모, 학생 폰 홈 화면에<br>이렇게 놓입니다.</p>
   </div>
@@ -520,7 +520,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 <section class="view" id="d-kakao">
   <div class="head"><p class="lede">학부모는 앱을 안 열어도 <b>카톡으로 먼저</b> 받아요.<br>「앱에서 보기」를 누르면 그 화면이 바로 열립니다.</p></div>
   <div class="kchat">
-    <div class="khead"><span class="kav"><img src="assets/logo/yeongeo-jip.png" alt=""></span>영어의 집<span class="ktag">알림톡</span></div>
+    <div class="khead"><span class="kav"><img src="assets/logo/yeongeo-jip-bold.png" alt=""></span>영어의 집<span class="ktag">알림톡</span></div>
     <div id="kk-list"></div>
     <div class="kpad"></div>
   </div>
@@ -905,7 +905,7 @@ function rOutbox(){
     var idx=DB.outbox.indexOf(m), mine=(m.to===ME.p.name);
     var btn = mine ? '<button class="kbtn" onclick="kakaoOpen('+idx+')">앱에서 보기</button>'
                    : '<span class="kbtn off">'+esc(m.to)+' 앱에서 열려요</span>';
-    h+='<div class="kmsg"><span class="kav"><img src="assets/logo/yeongeo-jip.png" alt=""></span>'
+    h+='<div class="kmsg"><span class="kav"><img src="assets/logo/yeongeo-jip-bold.png" alt=""></span>'
       +'<div class="kcard"><div class="klab">알림톡 · '+esc(m.to)+'</div><div class="kb"><b>[영어의 집] '+esc(m.title)+'</b>'+esc(m.text)+'</div>'+btn+'</div>'
       +'<span class="ktime">'+m.at+'</span></div>';
   });
