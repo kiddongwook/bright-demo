@@ -38,7 +38,7 @@ button{cursor:pointer;border:none;background:none}
 
 /* ── 셸 ── */
 .shell{width:100%;height:100dvh}
-.app{height:100%;display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
+.app{height:100%;display:flex;flex-direction:column;background:var(--paper);overflow:hidden;position:relative}
 .appbar{flex:0 0 auto;background:var(--brand);color:#fff;transition:background .25s;
   padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;gap:10px;min-height:56px}
 .appbar .bk{width:28px;height:30px;margin-left:-8px;display:grid;place-items:center;font-size:26px;line-height:1;color:#fff}
@@ -166,6 +166,20 @@ button{cursor:pointer;border:none;background:none}
 .kbtn.off{color:#9BA5AD;font-weight:500}
 .ktime{font-size:10.5px;color:#4F6372;flex:0 0 auto}
 .kpad{height:12px}
+/* 둘러보기 가이드 */
+.app.guiding .view{padding-bottom:190px}
+.coach{position:absolute;left:12px;right:12px;bottom:calc(72px + env(safe-area-inset-bottom));background:var(--ink);color:#fff;border-radius:14px;padding:13px 15px 12px;z-index:60;box-shadow:0 14px 34px rgba(0,0,0,.32);display:none}
+.coach.on{display:block;animation:rise .24s cubic-bezier(.2,.7,.3,1)}
+.coach .cs{font-size:11px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.04em}
+.coach .ct{font-size:14px;line-height:1.65;margin:5px 0 10px}
+.coach .ct b{color:#FFD86B;font-weight:700}
+.coach .cb{display:flex;gap:6px;justify-content:flex-end}
+.coach .cb button{font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px}
+.coach .cb .skip{color:rgba(255,255,255,.65)}
+.coach .cb .next{background:#fff;color:var(--ink)}
+.gl{box-shadow:0 0 0 3px var(--brand),0 0 0 9px var(--brand-soft)!important;border-radius:12px;animation:glp 1.1s ease-in-out infinite;position:relative;z-index:5}
+@keyframes glp{0%,100%{box-shadow:0 0 0 3px var(--brand),0 0 0 9px var(--brand-soft)}50%{box-shadow:0 0 0 3px var(--brand),0 0 0 14px var(--brand-soft)}}
+.guide-cta{width:100%;margin-top:18px;padding:12px;border:1px dashed var(--brand);border-radius:11px;color:var(--brand);font-size:13.5px;font-weight:600;background:var(--brand-soft)}
 
 /* ── 공지 / 문의 ── */
 .post{padding:16px;border-bottom:1px solid var(--rule)}
@@ -206,6 +220,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 .credit{display:none}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#fff;font-size:13.5px;font-weight:500;padding:12px 18px;border-radius:9px;opacity:0;pointer-events:none;transition:.26s cubic-bezier(.2,.7,.3,1);z-index:99;max-width:300px;text-align:center;line-height:1.5}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.up{bottom:calc(96px + 150px)}
 </style>
 </head>
 <body>
@@ -239,6 +254,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
       <button onclick="gatePhone('010-1234-0001');gateGo()"><b>학부모 · 박지훈 어머님</b><span>010-1234-0001</span></button>
       <button onclick="gatePhone('010-1234-0104');gateGo()"><b>학생 · 김민수</b><span>010-1234-0104</span></button>
     </div>
+    <button class="guide-cta" onclick="guideStart()">처음이세요? 눌러보면서 둘러보기 (2분)</button>
   </div>
 </section>
 
@@ -354,6 +370,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 
   <div class="lab">데모</div>
   <div class="box soft">
+    <button class="rw" onclick="guideStart()"><span class="bd"><span class="t">둘러보기 가이드 다시 보기</span><span class="s">원장 → 학부모까지 14단계, 2분</span></span><span class="go">›</span></button>
     <button class="rw" onclick="location.reload()"><span class="bd"><span class="t">데모 처음 상태로</span><span class="s">올린 공지·문의·출결을 지우고 다시 시작</span></span><span class="go">›</span></button>
   </div>
 
@@ -528,6 +545,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <p class="muted" style="padding:14px 20px 0;line-height:1.7">실제로는 카카오 알림톡으로 나가요. 문구는 승인된 템플릿을 따르기 때문에 짧고 정형입니다. 자유로운 문장은 앱 안의 공지 본문에 씁니다.</p>
 </section>
 
+<div class="coach" id="coach"><div class="cs"></div><div class="ct"></div><div class="cb"><button class="skip" onclick="guideStop()">건너뛰기</button><button class="next" onclick="guideNext()">다음</button></div></div>
 <nav class="tabbar" id="tabbar" hidden></nav>
 
 </div></div>
@@ -715,7 +733,8 @@ function render(){
   }
   /* 알림 화면을 열면 읽은 것으로 — 배지는 다음 화면부터 줄어든다 */
   if(ROLE && cur.slice(2)==='noti'){ DB.noti[ROLE].forEach(function(x){ x.n=false; }); }
-  document.getElementById(cur).scrollTop=0;
+  if(!GUIDE_ON) document.getElementById(cur).scrollTop=0;
+  guideApply();
 }
 function enter(role){ ROLE=role; hist=[]; cur=role+'-'+TABS[role][0]; draft={}; ATT_ORDER.forEach(function(n){ draft[n]=DB.att[n]; }); render(); }
 function tab(t){ hist=[]; cur=ROLE+'-'+t; render(); }
@@ -901,12 +920,13 @@ function remind(){
 /* ── 발송함: 학부모 카톡으로 나간 것 ── */
 function sendOut(to,kind,title,text,link){ DB.outbox.unshift({to:to,kind:kind,title:title,text:text,link:link,at:'방금'}); }
 function rOutbox(){
-  var list=DB.outbox.slice().reverse(), h='';
+  var list=DB.outbox.slice().reverse(), h='', newestMine=-1;
+  for(var q=0;q<DB.outbox.length;q++){ if(DB.outbox[q].to===ME.p.name){ newestMine=q; break; } }
   list.forEach(function(m){
     var idx=DB.outbox.indexOf(m), mine=(m.to===ME.p.name);
     var btn = mine ? '<button class="kbtn" onclick="kakaoOpen('+idx+')">앱에서 보기</button>'
                    : '<span class="kbtn off">'+esc(m.to)+' 앱에서 열려요</span>';
-    h+='<div class="kmsg"><span class="kav"><img src="assets/logo/yeongeo-jip-bold.png" alt=""></span>'
+    h+='<div class="kmsg'+(idx===newestMine?' mine-last':'')+'"><span class="kav"><img src="assets/logo/yeongeo-jip-bold.png" alt=""></span>'
       +'<div class="kcard"><div class="klab">알림톡 · '+esc(m.to)+'</div><div class="kb"><b>[영어의 집] '+esc(m.title)+'</b>'+esc(m.text)+'</div>'+btn+'</div>'
       +'<span class="ktime">'+m.at+'</span></div>';
   });
@@ -921,9 +941,67 @@ function kakaoOpen(idx){
   toast('학부모가 카톡에서 누르면 이 화면이 열려요');
 }
 
+/* ── 둘러보기 가이드: 안내 카드가 말하고, 눌러야 할 곳이 깜빡이고, 누르면 다음으로 ── */
+var GUIDE=[
+  {expect:'g-phone', text:'원장으로 들어가 볼게요. 아래 <b>원장</b> 번호를 누르세요.', target:'.demo-keys button:nth-of-type(1)', adv:'click',
+   pre:function(){ if(cur!=='g-phone') logout(); }},
+  {expect:'g-code', text:'데모라 인증번호가 채워져 있어요. <b>들어가기</b>를 누르세요.', target:'#g-code .btn', adv:'click',
+   pre:function(){ if(cur!=='g-code'){ gatePhone('010-1000-0001'); gateGo(); } }},
+  {expect:'d-today', text:'원장의 첫 화면, <b>오늘</b>이에요. 출석부에서 이름 옆 ○△✕를 눌러보세요. 누르는 즉시 표시됩니다.', target:'#d-att-box', adv:'next',
+   pre:function(){ if(ROLE!=='d') enter('d'); tab('today'); }},
+  {expect:'d-today', text:'<b>저장하고 알리기</b>를 누르면 결석·지각 학부모에게 알림까지 한 번에 나갑니다.', target:'#d-today .btnrow .btn', adv:'click',
+   pre:function(){ tab('today'); }},
+  {expect:'d-today', text:'학부모가 미리 알린 결석은 여기 쌓여요. <b>최유나 요청</b>을 눌러 보강을 잡아보세요.', target:'#d-absence-list .box .rw', adv:'click',
+   pre:function(){ tab('today'); }},
+  {expect:'d-makeup', text:'보강 날짜를 고르고 <b>확정하고 알리기</b>. 그 학부모에게 알림이 갑니다.', target:'#d-makeup .btnrow .btn:last-child', adv:'click',
+   pre:function(){ if(cur!=='d-makeup'){ var p=DB.absences.filter(function(a){return a.status==='요청'})[0]||DB.absences[0]; openAbsence(p.id); } }},
+  {expect:'d-notice', text:'<b>공지</b> 탭이에요. 공지를 누르면 누가 읽고 누가 안 읽었는지 보여요. 첫 공지를 눌러보세요.', target:'#d-notice-list .post:first-child', adv:'click',
+   pre:function(){ tab('notice'); }},
+  {expect:'d-readers', text:'안 읽은 사람이 바로 보이죠. <b>다시 알리기</b>를 누르면 그 사람들에게만 알림이 갑니다.', target:'#rd-action .btn', adv:'click',
+   pre:function(){ if(cur!=='d-readers') openReaders(DB.notices[0].id); }},
+  {expect:'d-inbox', text:'<b>문의</b> 탭. 학부모 1:1 문의가 여기로 와요. 답변 대기를 눌러 답해보세요.', target:'#d-inbox-list .box .rw', adv:'click',
+   pre:function(){ tab('inbox'); }},
+  {expect:'d-answer', text:'답을 쓰고 <b>답하고 알리기</b>. 그 학부모에게만 알림이 갑니다.', target:'#d-answer .btnrow .btn:last-child', adv:'click',
+   pre:function(){ if(cur!=='d-answer'){ var a=DB.asks.filter(function(x){return !x.a})[0]||DB.asks[0]; openAsk(a.id); } }},
+  {expect:'d-more', text:'<b>더보기</b>에서 학부모 카톡에 어떻게 도착하는지 볼 수 있어요. 눌러보세요.', target:'#d-more .rw[onclick*="kakao"]', adv:'click',
+   pre:function(){ tab('more'); }},
+  {expect:'d-kakao', text:'학부모는 앱을 안 열어도 카톡으로 먼저 받아요. <b>앱에서 보기</b>를 누르면 학부모 앱으로 넘어갑니다.', target:'#kk-list .mine-last .kbtn', adv:'click',
+   pre:function(){ if(cur!=='d-kakao') push('kakao'); }},
+  {expect:['p-notice-view','p-ask-mine','p-child'], text:'여기부터는 <b>학부모가 보는 화면</b>이에요. 아래 <b>우리 아이</b> 탭을 눌러보세요.', target:'.tabbar a[data-t="child"]', adv:'click',
+   pre:function(){ if(ROLE!=='p'){ var i=-1; for(var k=0;k<DB.outbox.length;k++){ if(DB.outbox[k].to===ME.p.name){ i=k; break; } } if(i>=0) kakaoOpen(i); else { enter('p'); } } }},
+  {expect:'p-child', text:'출결·이번 주 할 것·미리 알린 결석이 한 화면에. <b>결석 미리 알리기</b>로 원장님께 보낼 수 있어요.', target:'#p-child .btnrow .btn', adv:'next',
+   pre:function(){ if(ROLE!=='p') enter('p'); tab('child'); }},
+  {expect:'p-child', text:'둘러보기 끝! 학생 앱은 <b>010-1234-0104</b>로 들어가 보세요. 원장 더보기의 「데모 처음 상태로」로 언제든 되돌립니다.', target:null, adv:'end',
+   pre:function(){ tab('child'); }}
+];
+var GUIDE_ON=false, gi=0, gEl=null;
+function guideStart(){ GUIDE_ON=true; gi=0; GUIDE[0].pre(); render(); }
+function guideNext(){
+  if(!GUIDE_ON) return;
+  if(gi>=GUIDE.length-1){ guideStop(); return; }
+  gi++; GUIDE[gi].pre(); render();
+}
+function guideStop(){ GUIDE_ON=false; gEl=null; var c=document.getElementById('coach'); c.classList.remove('on'); var g=document.querySelectorAll('.gl'); for(var i=0;i<g.length;i++) g[i].classList.remove('gl'); toast('둘러보기를 마쳤어요. 더보기에서 다시 볼 수 있어요.'); }
+function guideApply(){
+  var g=document.querySelectorAll('.gl'); for(var i=0;i<g.length;i++) g[i].classList.remove('gl');
+  var c=document.getElementById('coach'); if(!c) return;
+  document.querySelector('.app').classList.toggle('guiding',GUIDE_ON);
+  if(!GUIDE_ON){ c.classList.remove('on'); return; }
+  var st=GUIDE[gi], last=(gi===GUIDE.length-1);
+  c.classList.add('on');
+  c.querySelector('.cs').textContent=(gi+1)+' / '+GUIDE.length;
+  c.querySelector('.ct').innerHTML=st.text;
+  c.querySelector('.next').textContent=last?'끝내기':'다음';
+  if(st.target){
+    var el=document.querySelector(st.target);
+    if(el){ el.classList.add('gl'); if(el!==gEl){ try{ el.scrollIntoView({block:'center'}); }catch(e){} }
+      if(st.adv==='click' && el!==gEl){ gEl=el; el.addEventListener('click',function(){ if(GUIDE_ON && GUIDE[gi]===st) setTimeout(guideNext,220); },{once:true,capture:true}); } }
+  }
+}
+
 /* ── 조각 ── */
 var toastT;
-function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show')},2600); }
+function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('up',!!(typeof GUIDE_ON!=='undefined'&&GUIDE_ON)); t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show')},2600); }
 function hex(c){c=c.replace('#','');return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)];}
 function tint(c,p){var a=hex(c);return '#'+a.map(function(v){return Math.round(v+(255-v)*p).toString(16).padStart(2,'0')}).join('');}
 function setBrand(color,el){
@@ -943,6 +1021,7 @@ function setBrand(color,el){
     if(h==='d-makeup'){ curAb=1; } if(h==='d-readers'){ curReaders=1; }
   }
   render();
+  if(h.indexOf('guide')===0){ guideStart(); var gn=parseInt(h.split('=')[1]||'1',10); while(GUIDE_ON && gi<gn-1) guideNext(); }
 })();
 </script>
 </body>

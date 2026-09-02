@@ -167,12 +167,27 @@
       if (w.ROLE !== 'p' || on() !== 'p-notice-view') fails.push('kakao button did not open parent notice, got ' + w.ROLE + '/' + on());
       if (!/카톡 테스트 공지/.test(text('#p-nv'))) fails.push('opened notice is not the posted one');
 
+      // ── 둘러보기 가이드: 14단계가 끊기지 않고 이어진다 ──
+      w.guideStart();
+      if (!w.GUIDE_ON || !d.getElementById('coach').classList.contains('on')) fails.push('guide did not start');
+      if (on() !== 'g-phone' || !d.querySelector('.demo-keys button.gl')) fails.push('guide step 1 target not highlighted');
+      for (let k = 1; k < w.GUIDE.length; k++) {
+        w.guideNext();
+        const st = w.GUIDE[k];
+        const okView = Array.isArray(st.expect) ? st.expect.indexOf(on()) >= 0 : on() === st.expect;
+        if (!okView) { fails.push('guide step ' + (k + 1) + ' expected ' + st.expect + ' got ' + on()); break; }
+        if (st.target && !d.querySelector(st.target)) { fails.push('guide step ' + (k + 1) + ' target missing: ' + st.target); break; }
+        if (st.target && !d.querySelector(st.target).classList.contains('gl')) { fails.push('guide step ' + (k + 1) + ' not highlighted'); break; }
+      }
+      w.guideNext();
+      if (w.GUIDE_ON || d.getElementById('coach').classList.contains('on')) fails.push('guide did not end');
+
       // ── 이름 교체 ──
       if (d.body.innerHTML.indexOf('한빛') >= 0) fails.push('한빛 remains');
       if (d.head.innerHTML.indexOf('Gowun') >= 0) fails.push('Gowun Batang link remains');
 
       const result = fails.length === 0
-        ? 'PASS: gate + 3 roles + router + overflow + live state + absence + todos + remind + kakao'
+        ? 'PASS: gate + 3 roles + router + overflow + live state + absence + todos + remind + kakao + guide'
         : 'FAIL: ' + fails.join(' | ');
       document.getElementById('result').textContent = result;
       document.title = result.startsWith('PASS:') ? 'PASS' : 'FAIL';
