@@ -317,7 +317,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
     <details class="faq"><summary>수강료 납부일은 언제인가요?</summary><div class="a">매월 1일이에요. 5일까지는 괜찮습니다. 계좌이체 또는 카드 결제 모두 가능해요.</div></details>
     <details class="faq"><summary>교재는 어디서 사나요?</summary><div class="a">학원에서 일괄 구매해 드려요. 교재비는 학기 시작 때 한 번 안내드립니다.</div></details>
     <details class="faq"><summary>상담은 어떻게 신청하나요?</summary><div class="a">이 앱의 문의로 "상담 신청"이라고 보내주시면 원장님이 시간을 잡아 답해드려요.</div></details>
-    <details class="faq"><summary>등하원 시간은요?</summary><div class="a">고1 A는 월수금 7시~9시, 고2 B는 화목 8시~10시이에요. 10분 전 도착을 권해요.</div></details>
+    <details class="faq"><summary>등하원 시간은요?</summary><div class="a">고1 A는 월수금 7시~9시, 고2 B는 화목 8시~10시예요. 10분 전 도착을 권해요.</div></details>
   </div>
   <div class="btnrow"><button class="btn line" onclick="toast('질문 추가는 실제 버전에서 열려요')">질문 추가</button></div>
 </section>
@@ -391,11 +391,79 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 </section>
 
 <!-- ════ 학부모 (Task 6) ════ -->
-<section class="view" id="p-child"><div class="head"><h1 class="hello">우리 아이</h1></div></section>
-<section class="view" id="p-notice"><div class="head"><h1 class="hello">공지</h1></div></section>
-<section class="view" id="p-ask"><div class="head"><h1 class="hello">문의</h1></div></section>
-<section class="view" id="p-more"><div class="head"><h1 class="hello">더보기</h1></div></section>
-<section class="view" id="p-noti"><div class="head"><h1 class="hello">알림</h1></div></section>
+<section class="view" id="p-child">
+  <div class="head"><h1 class="hello">지훈이</h1><p class="lede">고1 A · 월수금 7시 · 오늘은 수업이 없는 날이에요.</p></div>
+  <div class="lab first">이번 주<span class="r">6/16 – 6/22</span></div>
+  <div class="box">
+    <div class="week"><i class="p">월</i><i>화</i><i class="p">수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>
+    <div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">6월 출석</span><span class="s">7회 중 7회 · 지각 0 · 결석 0</span></span><span class="tag ok">개근</span></div>
+  </div>
+  <div class="lab">다음 수업</div>
+  <div class="box soft">
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">6월 18일 수 · 7시</span><span class="s">고1 A · 모의고사 대비 특강 공지를 확인해 주세요</span></span></div>
+  </div>
+  <p class="muted" style="padding:18px 20px 0;text-align:center">결석·지각이 있으면 그날 바로 알림이 와요.</p>
+</section>
+<section class="view" id="p-notice">
+  <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>고1 A</b> 공지만 보여요.</p></div>
+  <div class="box">
+    <button class="post new" style="width:100%;text-align:left" onclick="push('notice-view')"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span></div></button>
+    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
+    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">고1 A 모의고사 대비 — 6월 27일(금) 특강</div><div class="pm"><b>고1 A</b><span>6월 12일</span><span>· 읽음</span></div></button>
+  </div>
+</section>
+
+<section class="view" id="p-notice-view">
+  <div class="head"><h1 class="hello">여름 특강 안내</h1><p class="lede">전체 · 6월 16일 · 김지영 원장</p></div>
+  <p class="para">7월 21일(월)부터 2주 동안 여름 특강을 엽니다. 고1 A는 오전 10시, 고2 B는 오후 2시예요.</p>
+  <p class="para">특강 기간에는 정규 수업이 쉬고, 특강 신청은 이 앱의 문의로 "특강 신청"이라고 보내주시면 됩니다. 7월 4일까지 알려주세요.</p>
+  <p class="muted" style="padding:20px 20px 0">이 공지를 읽은 것으로 표시됐어요.</p>
+</section>
+<section class="view" id="p-ask">
+  <div class="head"><h1 class="hello">문의</h1><p class="lede">자주 묻는 질문을 먼저 보시고, 없으면 <b>직접 문의</b>해 주세요. 원장님만 봅니다.</p></div>
+  <div class="lab first">자주 묻는 질문</div>
+  <div class="box">
+    <details class="faq"><summary>결석하면 보강이 되나요?</summary><div class="a">사전에 알려주신 결석은 같은 주 다른 요일에 보강해 드려요. 당일 결석은 자료로 대체합니다.</div></details>
+    <details class="faq"><summary>수강료 납부일은 언제인가요?</summary><div class="a">매월 1일이에요. 5일까지는 괜찮습니다. 계좌이체 또는 카드 결제 모두 가능해요.</div></details>
+    <details class="faq"><summary>교재는 어디서 사나요?</summary><div class="a">학원에서 일괄 구매해 드려요. 교재비는 학기 시작 때 한 번 안내드립니다.</div></details>
+    <details class="faq"><summary>상담은 어떻게 신청하나요?</summary><div class="a">이 앱의 문의로 "상담 신청"이라고 보내주시면 원장님이 시간을 잡아 답해드려요.</div></details>
+    <details class="faq"><summary>등하원 시간은요?</summary><div class="a">고1 A는 월수금 7시~9시, 고2 B는 화목 8시~10시예요. 10분 전 도착을 권해요.</div></details>
+  </div>
+  <div class="btnrow"><button class="btn line" onclick="push('ask-mine')">내 문의</button><button class="btn" onclick="push('ask-new')">직접 문의하기</button></div>
+</section>
+
+<section class="view" id="p-ask-new">
+  <div class="head"><p class="lede">원장님만 봅니다. 답이 오면 <b>알림</b>으로 알려드려요.</p></div>
+  <div class="lab first">문의 내용</div>
+  <div style="padding:0 20px"><textarea class="input" placeholder="예) 다음 주 수요일 결석 예정입니다."></textarea></div>
+  <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="toast('원장님께 문의를 보냈어요');back()">보내기</button></div>
+</section>
+
+<section class="view" id="p-ask-mine">
+  <div class="head"><p class="lede">보낸 문의와 원장님 답변이에요.</p></div>
+  <div class="lab first">어제</div>
+  <div class="bubble me"><div class="who">나</div>다음 주 화요일(6월 24일) 지훈이 가족 행사로 결석 예정입니다. 보강 가능할까요?</div>
+  <div class="bubble"><div class="who">김지영 원장 · 어제 오후 6:02</div>어머님 안녕하세요 :) 24일은 휴원일이라 원래 수업이 없어요. 걱정 안 하셔도 됩니다. 즐거운 행사 되세요!</div>
+</section>
+<section class="view" id="p-more">
+  <div class="head"><h1 class="hello">더보기</h1></div>
+  <div class="box">
+    <div class="rw" style="cursor:default"><span class="nm">박</span><span class="bd"><span class="t">박지훈 어머님</span><span class="s">010-1234-0001 · 고1 A</span></span></div>
+    <button class="rw" onclick="toast('알림 설정은 실제 버전에서 열려요')"><span class="bd"><span class="t">알림 설정</span><span class="s">공지 · 답변 · 출결</span></span><span class="go">›</span></button>
+  </div>
+  <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
+  <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
+</section>
+<section class="view" id="p-noti">
+  <div class="lab first" style="margin-top:20px">오늘</div>
+  <div class="box">
+    <div class="post new"><div class="pt">새 공지 「여름 특강 안내」</div><div class="pm"><b>공지</b><span>전체 · 오전 9:10</span></div></div>
+  </div>
+  <div class="lab">어제</div>
+  <div class="box">
+    <div class="post new"><div class="pt">원장님이 문의에 답했어요</div><div class="pm"><b>문의</b><span>다음 주 화요일 결석 예정 · 오후 6:02</span></div></div>
+  </div>
+</section>
 
 <!-- ════ 학생 (Task 7) ════ -->
 <section class="view" id="s-me"><div class="head"><h1 class="hello">나</h1></div></section>

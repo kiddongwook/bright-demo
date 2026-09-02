@@ -75,6 +75,14 @@
       w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
       if (w.ROLE !== 'p' || on() !== 'p-child') fails.push('parent lands on ' + on());
       if (d.querySelectorAll('.tabbar a').length !== 4) fails.push('parent tabs');
+      if (text('.appbar .badge') !== '2') fails.push('parent badge=' + text('.appbar .badge'));
+      if (d.querySelectorAll('#p-child .week i').length !== 7) fails.push('child week != 7');
+      if (d.querySelectorAll('#p-notice .post').length !== 3) fails.push('parent sees 3 notices (전체 2 + 고1 A 1), got ' + d.querySelectorAll('#p-notice .post').length);
+      if (d.querySelectorAll('#p-ask .faq').length !== 5) fails.push('parent faq != 5');
+      const dq = [...d.querySelectorAll('#d-faq .faq summary')].map(e => e.textContent.trim());
+      const pq = [...d.querySelectorAll('#p-ask .faq summary')].map(e => e.textContent.trim());
+      if (dq.join('|') !== pq.join('|')) fails.push('faq mismatch between director and parent');
+      if (!d.querySelector('#p-ask-new textarea')) fails.push('ask-new textarea missing');
       w.logout();
       w.gatePhone('010-1234-0104'); w.gateGo(); w.gateCode();
       if (w.ROLE !== 's' || on() !== 's-me') fails.push('student lands on ' + on());
