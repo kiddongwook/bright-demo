@@ -648,7 +648,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 `tests/mobile-nav-test.html`의 `// ── 라우터 ──` 바로 앞에 삽입:
 ```javascript
       // ── 원장: 오늘 / 더보기 ──
-      if (d.querySelectorAll('#d-today .marks').length !== 3) fails.push('today ledger rows != 3 (중등 B)');
+      if (d.querySelectorAll('#d-today .marks').length !== 3) fails.push('today ledger rows != 3 (고2 B)');
       if (d.querySelectorAll('#d-today .marks button.on.l').length !== 1) fails.push('김민수 지각 not marked');
       if (d.querySelectorAll('#d-today .marks button.on.a').length !== 1) fails.push('한지우 결석 not marked');
       if (d.querySelectorAll('#d-more .rw.soon').length !== 4) fails.push('준비 중 modules != 4');
@@ -659,7 +659,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - [ ] **Step 2: 실패 확인**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File tests/run-mobile-nav-test.ps1`
-Expected: `FAIL: today ledger rows != 3 (중등 B) | ...`
+Expected: `FAIL: today ledger rows != 3 (고2 B) | ...`
 
 - [ ] **Step 3: 원장 뷰 마크업**
 
@@ -668,12 +668,12 @@ Expected: `FAIL: today ledger rows != 3 (중등 B) | ...`
 ```html
 <section class="view" id="d-today">
   <div class="head">
-    <h1 class="hello">오늘 · 중등 B</h1>
-    <p class="lede">화목 7시 · 3명. 이름 옆을 누르면 바로 저장돼요.<br>결석·지각은 <b>학부모 알림까지 한 번에</b> 나갑니다.</p>
+    <h1 class="hello">오늘 · 고2 B</h1>
+    <p class="lede">화목 8시 · 3명. 이름 옆을 누르면 바로 저장돼요.<br>결석·지각은 <b>학부모 알림까지 한 번에</b> 나갑니다.</p>
   </div>
   <div class="seg">
-    <button onclick="toast('초등 A는 월수금 수업이에요. 오늘은 수업이 없습니다.')">초등 A</button>
-    <button class="on">중등 B</button>
+    <button onclick="toast('고1 A는 월수금 수업이에요. 오늘은 수업이 없습니다.')">고1 A</button>
+    <button class="on">고2 B</button>
   </div>
   <div class="lab">출석부<span class="r">6월 17일 화</span></div>
   <div class="box">
@@ -689,8 +689,8 @@ Expected: `FAIL: today ledger rows != 3 (중등 B) | ...`
 
   <div class="lab">이번 주</div>
   <div class="box soft">
-    <div class="rw" style="cursor:default"><span class="bd"><span class="t">중등 B 출석률</span><span class="s">화·목 2회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">83%</b></div>
-    <div class="rw" style="cursor:default"><span class="bd"><span class="t">초등 A 출석률</span><span class="s">월·수·금 3회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">100%</b></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">고2 B 출석률</span><span class="s">화·목 2회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">83%</b></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">고1 A 출석률</span><span class="s">월·수·금 3회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">100%</b></div>
   </div>
 </section>
 
@@ -717,13 +717,13 @@ Expected: `FAIL: today ledger rows != 3 (중등 B) | ...`
 
 <section class="view" id="d-roster">
   <div class="head"><p class="lede">명부에 있는 전화번호로만 앱에 들어올 수 있어요.<br>학생과 학부모는 <b>각자 번호로</b> 들어옵니다.</p></div>
-  <div class="lab first">초등 A<span class="r">월수금 4시 · 3명</span></div>
+  <div class="lab first">고1 A<span class="r">월수금 7시 · 3명</span></div>
   <div class="box">
     <div class="rw"><span class="nm">박</span><span class="bd"><span class="t">박지훈</span><span class="s">학생 010-1234-0101 · 어머님 010-1234-0001</span></span></div>
     <div class="rw"><span class="nm">최</span><span class="bd"><span class="t">최유나</span><span class="s">학생 010-1234-0102 · 어머님 010-1234-0002</span></span></div>
     <div class="rw"><span class="nm">이</span><span class="bd"><span class="t">이서연</span><span class="s">학생 010-1234-0103 · 어머님 010-1234-0003</span></span></div>
   </div>
-  <div class="lab">중등 B<span class="r">화목 7시 · 3명</span></div>
+  <div class="lab">고2 B<span class="r">화목 8시 · 3명</span></div>
   <div class="box">
     <div class="rw"><span class="nm">김</span><span class="bd"><span class="t">김민수</span><span class="s">학생 010-1234-0104 · 어머님 010-1234-0004</span></span></div>
     <div class="rw"><span class="nm">정</span><span class="bd"><span class="t">정하윤</span><span class="s">학생 010-1234-0105 · 어머님 010-1234-0005</span></span></div>
@@ -794,7 +794,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `push('notice-new')`, `toast`, `back`.
-- Produces: 공지 4건의 `.post` (id 없음, 순서 고정: 여름 특강 · 6월 휴원일 · 중등 B 단어시험 · 초등 A 견학).
+- Produces: 공지 4건의 `.post` (id 없음, 순서 고정: 여름 특강 · 6월 휴원일 · 고2 B 단어시험 · 고1 A 견학).
 
 - [ ] **Step 1: 실패하는 검사 추가**
 
@@ -803,7 +803,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
       // ── 원장: 공지 ──
       if (d.querySelectorAll('#d-notice .post').length !== 4) fails.push('director notices != 4');
       if (!d.querySelector('#d-notice-new textarea')) fails.push('notice-new textarea missing');
-      if (d.querySelectorAll('#d-notice-new .seg button').length !== 3) fails.push('notice target seg != 3 (전체/초등 A/중등 B)');
+      if (d.querySelectorAll('#d-notice-new .seg button').length !== 3) fails.push('notice target seg != 3 (전체/고1 A/고2 B)');
 ```
 
 - [ ] **Step 2: 실패 확인**
@@ -823,8 +823,8 @@ Expected: `FAIL: director notices != 4 | ...`
   <div class="box">
     <div class="post"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 학부모 6명 중 4명 읽음</span></div></div>
     <div class="post"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 학부모 6명 중 5명 읽음</span></div></div>
-    <div class="post"><div class="pt">중등 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>중등 B</b><span>6월 15일</span><span>· 3명 중 3명 읽음</span></div></div>
-    <div class="post"><div class="pt">초등 A 견학 — 6월 27일(금) 영어도서관</div><div class="pm"><b>초등 A</b><span>6월 12일</span><span>· 3명 중 3명 읽음</span></div></div>
+    <div class="post"><div class="pt">고2 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>고2 B</b><span>6월 15일</span><span>· 3명 중 3명 읽음</span></div></div>
+    <div class="post"><div class="pt">고1 A 모의고사 대비 — 6월 27일(금) 특강</div><div class="pm"><b>고1 A</b><span>6월 12일</span><span>· 3명 중 3명 읽음</span></div></div>
   </div>
 </section>
 
@@ -833,13 +833,13 @@ Expected: `FAIL: director notices != 4 | ...`
   <div class="lab first">대상</div>
   <div class="seg">
     <button class="on" onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">전체</button>
-    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">초등 A</button>
-    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">중등 B</button>
+    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">고1 A</button>
+    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">고2 B</button>
   </div>
   <div class="lab">제목</div>
   <div style="padding:0 20px"><input class="input" value="7월 수업 시간 변경 안내"></div>
   <div class="lab">내용</div>
-  <div style="padding:0 20px"><textarea class="input">7월부터 중등 B 수업이 화·목 7시 30분으로 30분 늦춰집니다. 여름 특강과 겹치지 않게 조정했어요. 불편한 점 있으시면 문의 주세요.</textarea></div>
+  <div style="padding:0 20px"><textarea class="input">7월부터 고2 B 수업이 화·목 8시 30분으로 30분 늦춰집니다. 여름 특강과 겹치지 않게 조정했어요. 불편한 점 있으시면 문의 주세요.</textarea></div>
   <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="toast('공지를 올리고 학부모 6명, 학생 6명에게 알렸어요');back()">올리고 알리기</button></div>
 </section>
 ```
@@ -908,7 +908,7 @@ Expected: `FAIL: unanswered inquiries=0 | ...`
 </section>
 
 <section class="view" id="d-answer">
-  <div class="head"><p class="lede">중등 B · 정하윤 어머님 · 오늘 오후 1:20</p></div>
+  <div class="head"><p class="lede">고2 B · 정하윤 어머님 · 오늘 오후 1:20</p></div>
   <div class="bubble"><div class="who">정하윤 어머님</div>안녕하세요 원장님. 하윤이가 목요일 단어시험 범위를 51~75라고 하는데 맞나요? 지난주 공지에는 41~75로 본 것 같아서 확인차 여쭤봅니다.</div>
   <div class="lab">답변</div>
   <div style="padding:0 20px"><textarea class="input">어머님 안녕하세요 :) 51~75가 맞아요. 지난주 공지는 41~75였는데 진도가 빨라서 범위를 줄였습니다. 하윤이가 정확히 알고 있네요. 목요일에 뵐게요!</textarea></div>
@@ -922,7 +922,7 @@ Expected: `FAIL: unanswered inquiries=0 | ...`
     <details class="faq"><summary>수강료 납부일은 언제인가요?</summary><div class="a">매월 1일이에요. 5일까지는 괜찮습니다. 계좌이체 또는 카드 결제 모두 가능해요.</div></details>
     <details class="faq"><summary>교재는 어디서 사나요?</summary><div class="a">학원에서 일괄 구매해 드려요. 교재비는 학기 시작 때 한 번 안내드립니다.</div></details>
     <details class="faq"><summary>상담은 어떻게 신청하나요?</summary><div class="a">이 앱의 문의로 "상담 신청"이라고 보내주시면 원장님이 시간을 잡아 답해드려요.</div></details>
-    <details class="faq"><summary>등하원 시간은요?</summary><div class="a">초등 A는 월수금 4시~5시 30분, 중등 B는 화목 7시~8시 30분이에요. 10분 전 도착을 권해요.</div></details>
+    <details class="faq"><summary>등하원 시간은요?</summary><div class="a">고1 A는 월수금 7시~9시, 고2 B는 화목 8시~10시이에요. 10분 전 도착을 권해요.</div></details>
   </div>
   <div class="btnrow"><button class="btn line" onclick="toast('질문 추가는 실제 버전에서 열려요')">질문 추가</button></div>
 </section>
@@ -960,7 +960,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 ```javascript
       if (text('.appbar .badge') !== '2') fails.push('parent badge=' + text('.appbar .badge'));
       if (d.querySelectorAll('#p-child .week i').length !== 7) fails.push('child week != 7');
-      if (d.querySelectorAll('#p-notice .post').length !== 3) fails.push('parent sees 3 notices (전체 2 + 초등 A 1), got ' + d.querySelectorAll('#p-notice .post').length);
+      if (d.querySelectorAll('#p-notice .post').length !== 3) fails.push('parent sees 3 notices (전체 2 + 고1 A 1), got ' + d.querySelectorAll('#p-notice .post').length);
       if (d.querySelectorAll('#p-ask .faq').length !== 5) fails.push('parent faq != 5');
       const dq = [...d.querySelectorAll('#d-faq .faq summary')].map(e => e.textContent.trim());
       const pq = [...d.querySelectorAll('#p-ask .faq summary')].map(e => e.textContent.trim());
@@ -979,7 +979,7 @@ Expected: `FAIL: child week != 7 | ...`
 
 ```html
 <section class="view" id="p-child">
-  <div class="head"><h1 class="hello">지훈이</h1><p class="lede">초등 A · 월수금 4시 · 오늘은 수업이 없는 날이에요.</p></div>
+  <div class="head"><h1 class="hello">지훈이</h1><p class="lede">고1 A · 월수금 7시 · 오늘은 수업이 없는 날이에요.</p></div>
   <div class="lab first">이번 주<span class="r">6/16 – 6/22</span></div>
   <div class="box">
     <div class="week"><i class="p">월</i><i>화</i><i class="p">수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>
@@ -987,23 +987,23 @@ Expected: `FAIL: child week != 7 | ...`
   </div>
   <div class="lab">다음 수업</div>
   <div class="box soft">
-    <div class="rw" style="cursor:default"><span class="bd"><span class="t">6월 18일 수 · 4시</span><span class="s">초등 A · 견학 안내 공지를 확인해 주세요</span></span></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">6월 18일 수 · 4시</span><span class="s">고1 A · 모의고사 대비 특강 공지를 확인해 주세요</span></span></div>
   </div>
   <p class="muted" style="padding:18px 20px 0;text-align:center">결석·지각이 있으면 그날 바로 알림이 와요.</p>
 </section>
 
 <section class="view" id="p-notice">
-  <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>초등 A</b> 공지만 보여요.</p></div>
+  <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>고1 A</b> 공지만 보여요.</p></div>
   <div class="box">
     <button class="post new" style="width:100%;text-align:left" onclick="push('notice-view')"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span></div></button>
     <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
-    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">초등 A 견학 — 6월 27일(금) 영어도서관</div><div class="pm"><b>초등 A</b><span>6월 12일</span><span>· 읽음</span></div></button>
+    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">고1 A 모의고사 대비 — 6월 27일(금) 특강</div><div class="pm"><b>고1 A</b><span>6월 12일</span><span>· 읽음</span></div></button>
   </div>
 </section>
 
 <section class="view" id="p-notice-view">
   <div class="head"><h1 class="hello">여름 특강 안내</h1><p class="lede">전체 · 6월 16일 · 김지영 원장</p></div>
-  <p class="para">7월 21일(월)부터 2주 동안 여름 특강을 엽니다. 초등 A는 오전 10시, 중등 B는 오후 2시예요.</p>
+  <p class="para">7월 21일(월)부터 2주 동안 여름 특강을 엽니다. 고1 A는 오전 10시, 고2 B는 오후 2시예요.</p>
   <p class="para">특강 기간에는 정규 수업이 쉬고, 특강 신청은 이 앱의 문의로 "특강 신청"이라고 보내주시면 됩니다. 7월 4일까지 알려주세요.</p>
   <p class="muted" style="padding:20px 20px 0">이 공지를 읽은 것으로 표시됐어요.</p>
 </section>
@@ -1016,7 +1016,7 @@ Expected: `FAIL: child week != 7 | ...`
     <details class="faq"><summary>수강료 납부일은 언제인가요?</summary><div class="a">매월 1일이에요. 5일까지는 괜찮습니다. 계좌이체 또는 카드 결제 모두 가능해요.</div></details>
     <details class="faq"><summary>교재는 어디서 사나요?</summary><div class="a">학원에서 일괄 구매해 드려요. 교재비는 학기 시작 때 한 번 안내드립니다.</div></details>
     <details class="faq"><summary>상담은 어떻게 신청하나요?</summary><div class="a">이 앱의 문의로 "상담 신청"이라고 보내주시면 원장님이 시간을 잡아 답해드려요.</div></details>
-    <details class="faq"><summary>등하원 시간은요?</summary><div class="a">초등 A는 월수금 4시~5시 30분, 중등 B는 화목 7시~8시 30분이에요. 10분 전 도착을 권해요.</div></details>
+    <details class="faq"><summary>등하원 시간은요?</summary><div class="a">고1 A는 월수금 7시~9시, 고2 B는 화목 8시~10시이에요. 10분 전 도착을 권해요.</div></details>
   </div>
   <div class="btnrow"><button class="btn line" onclick="push('ask-mine')">내 문의</button><button class="btn" onclick="push('ask-new')">직접 문의하기</button></div>
 </section>
@@ -1038,7 +1038,7 @@ Expected: `FAIL: child week != 7 | ...`
 <section class="view" id="p-more">
   <div class="head"><h1 class="hello">더보기</h1></div>
   <div class="box">
-    <div class="rw" style="cursor:default"><span class="nm">박</span><span class="bd"><span class="t">박지훈 어머님</span><span class="s">010-1234-0001 · 초등 A</span></span></div>
+    <div class="rw" style="cursor:default"><span class="nm">박</span><span class="bd"><span class="t">박지훈 어머님</span><span class="s">010-1234-0001 · 고1 A</span></span></div>
     <button class="rw" onclick="toast('알림 설정은 실제 버전에서 열려요')"><span class="bd"><span class="t">알림 설정</span><span class="s">공지 · 답변 · 출결</span></span><span class="go">›</span></button>
   </div>
   <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
@@ -1085,7 +1085,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `push('notice-view')`, `toast`, `logout`.
-- Produces: 학생(김민수, 중등 B)은 공지 **3건**(전체 2 + 중등 B 1).
+- Produces: 학생(김민수, 고2 B)은 공지 **3건**(전체 2 + 고2 B 1).
 
 - [ ] **Step 1: 실패하는 검사 추가**
 
@@ -1107,11 +1107,11 @@ Expected: `FAIL: student notices != 3 | ...`
 
 ```html
 <section class="view" id="s-me">
-  <div class="head"><h1 class="hello">민수</h1><p class="lede">중등 B · 화목 7시 · 오늘 수업 있어요.</p></div>
+  <div class="head"><h1 class="hello">민수</h1><p class="lede">고2 B · 화목 8시 · 오늘 수업 있어요.</p></div>
   <div class="lab first">이번 주<span class="r">6/16 – 6/22</span></div>
   <div class="box">
     <div class="week"><i>월</i><i class="l">화</i><i>수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>
-    <div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">7시 10분 도착 · 지각</span></span><span class="tag warn">지각</span></div>
+    <div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">8시 10분 도착 · 지각</span></span><span class="tag warn">지각</span></div>
   </div>
   <div class="lab">다음 수업</div>
   <div class="box soft">
@@ -1120,16 +1120,16 @@ Expected: `FAIL: student notices != 3 | ...`
 </section>
 
 <section class="view" id="s-notice">
-  <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>중등 B</b> 공지만 보여요.</p></div>
+  <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>고2 B</b> 공지만 보여요.</p></div>
   <div class="box">
-    <button class="post new" style="width:100%;text-align:left" onclick="push('notice-view')"><div class="pt">중등 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>중등 B</b><span>6월 15일</span></div></button>
+    <button class="post new" style="width:100%;text-align:left" onclick="push('notice-view')"><div class="pt">고2 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>고2 B</b><span>6월 15일</span></div></button>
     <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
     <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
   </div>
 </section>
 
 <section class="view" id="s-notice-view">
-  <div class="head"><h1 class="hello">중등 B 단어시험</h1><p class="lede">중등 B · 6월 15일 · 김지영 원장</p></div>
+  <div class="head"><h1 class="hello">고2 B 단어시험</h1><p class="lede">고2 B · 6월 15일 · 김지영 원장</p></div>
   <p class="para">6월 19일(목) 수업 시작하고 바로 단어시험 봅니다. 범위는 단어장 <b>51~75</b>예요.</p>
   <p class="para">지난주에 41~75라고 했는데 진도가 빨라서 줄였어요. 25개, 뜻 쓰기 15개 + 영작 10개.</p>
   <p class="muted" style="padding:20px 20px 0">이 공지를 읽은 것으로 표시됐어요.</p>
@@ -1138,7 +1138,7 @@ Expected: `FAIL: student notices != 3 | ...`
 <section class="view" id="s-more">
   <div class="head"><h1 class="hello">더보기</h1></div>
   <div class="box">
-    <div class="rw" style="cursor:default"><span class="nm">김</span><span class="bd"><span class="t">김민수</span><span class="s">010-1234-0104 · 중등 B</span></span></div>
+    <div class="rw" style="cursor:default"><span class="nm">김</span><span class="bd"><span class="t">김민수</span><span class="s">010-1234-0104 · 고2 B</span></span></div>
   </div>
   <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
   <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
@@ -1147,7 +1147,7 @@ Expected: `FAIL: student notices != 3 | ...`
 <section class="view" id="s-noti">
   <div class="lab first" style="margin-top:20px">6월 15일</div>
   <div class="box">
-    <div class="post new"><div class="pt">새 공지 「중등 B 단어시험」</div><div class="pm"><b>공지</b><span>중등 B · 오후 8:40</span></div></div>
+    <div class="post new"><div class="pt">새 공지 「고2 B 단어시험」</div><div class="pm"><b>공지</b><span>고2 B · 오후 8:40</span></div></div>
   </div>
 </section>
 ```

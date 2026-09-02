@@ -237,12 +237,12 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 <!-- ════ 원장 (Task 3~5에서 채움) ════ -->
 <section class="view" id="d-today">
   <div class="head">
-    <h1 class="hello">오늘 · 중등 B</h1>
-    <p class="lede">화목 7시 · 3명. 이름 옆을 누르면 바로 저장돼요.<br>결석·지각은 <b>학부모 알림까지 한 번에</b> 나갑니다.</p>
+    <h1 class="hello">오늘 · 고2 B</h1>
+    <p class="lede">화목 8시 · 3명. 이름 옆을 누르면 바로 저장돼요.<br>결석·지각은 <b>학부모 알림까지 한 번에</b> 나갑니다.</p>
   </div>
   <div class="seg">
-    <button onclick="toast('초등 A는 월수금 수업이에요. 오늘은 수업이 없습니다.')">초등 A</button>
-    <button class="on">중등 B</button>
+    <button onclick="toast('고1 A는 월수금 수업이에요. 오늘은 수업이 없습니다.')">고1 A</button>
+    <button class="on">고2 B</button>
   </div>
   <div class="lab">출석부<span class="r">6월 17일 화</span></div>
   <div class="box">
@@ -258,8 +258,8 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 
   <div class="lab">이번 주</div>
   <div class="box soft">
-    <div class="rw" style="cursor:default"><span class="bd"><span class="t">중등 B 출석률</span><span class="s">화·목 2회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">83%</b></div>
-    <div class="rw" style="cursor:default"><span class="bd"><span class="t">초등 A 출석률</span><span class="s">월·수·금 3회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">100%</b></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">고2 B 출석률</span><span class="s">화·목 2회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">83%</b></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">고1 A 출석률</span><span class="s">월·수·금 3회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">100%</b></div>
   </div>
 </section>
 <section class="view" id="d-notice">
@@ -269,8 +269,8 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="box">
     <div class="post"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 학부모 6명 중 4명 읽음</span></div></div>
     <div class="post"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 학부모 6명 중 5명 읽음</span></div></div>
-    <div class="post"><div class="pt">중등 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>중등 B</b><span>6월 15일</span><span>· 3명 중 3명 읽음</span></div></div>
-    <div class="post"><div class="pt">초등 A 견학 — 6월 27일(금) 영어도서관</div><div class="pm"><b>초등 A</b><span>6월 12일</span><span>· 3명 중 3명 읽음</span></div></div>
+    <div class="post"><div class="pt">고2 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>고2 B</b><span>6월 15일</span><span>· 3명 중 3명 읽음</span></div></div>
+    <div class="post"><div class="pt">고1 A 모의고사 대비 — 6월 27일(금) 특강</div><div class="pm"><b>고1 A</b><span>6월 12일</span><span>· 3명 중 3명 읽음</span></div></div>
   </div>
 </section>
 
@@ -279,13 +279,13 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="lab first">대상</div>
   <div class="seg">
     <button class="on" onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">전체</button>
-    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">초등 A</button>
-    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">중등 B</button>
+    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">고1 A</button>
+    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">고2 B</button>
   </div>
   <div class="lab">제목</div>
   <div style="padding:0 20px"><input class="input" value="7월 수업 시간 변경 안내"></div>
   <div class="lab">내용</div>
-  <div style="padding:0 20px"><textarea class="input">7월부터 중등 B 수업이 화·목 7시 30분으로 30분 늦춰집니다. 여름 특강과 겹치지 않게 조정했어요. 불편한 점 있으시면 문의 주세요.</textarea></div>
+  <div style="padding:0 20px"><textarea class="input">7월부터 고2 B 수업이 화·목 8시 30분으로 30분 늦춰집니다. 여름 특강과 겹치지 않게 조정했어요. 불편한 점 있으시면 문의 주세요.</textarea></div>
   <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="toast('공지를 올리고 학부모 6명, 학생 6명에게 알렸어요');back()">올리고 알리기</button></div>
 </section>
 <section class="view" id="d-inbox"><div class="head"><h1 class="hello">문의</h1></div></section>
@@ -311,13 +311,13 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 </section>
 <section class="view" id="d-roster">
   <div class="head"><p class="lede">명부에 있는 전화번호로만 앱에 들어올 수 있어요.<br>학생과 학부모는 <b>각자 번호로</b> 들어옵니다.</p></div>
-  <div class="lab first">초등 A<span class="r">월수금 4시 · 3명</span></div>
+  <div class="lab first">고1 A<span class="r">월수금 7시 · 3명</span></div>
   <div class="box">
     <div class="rw"><span class="nm">박</span><span class="bd"><span class="t">박지훈</span><span class="s">학생 010-1234-0101 · 어머님 010-1234-0001</span></span></div>
     <div class="rw"><span class="nm">최</span><span class="bd"><span class="t">최유나</span><span class="s">학생 010-1234-0102 · 어머님 010-1234-0002</span></span></div>
     <div class="rw"><span class="nm">이</span><span class="bd"><span class="t">이서연</span><span class="s">학생 010-1234-0103 · 어머님 010-1234-0003</span></span></div>
   </div>
-  <div class="lab">중등 B<span class="r">화목 7시 · 3명</span></div>
+  <div class="lab">고2 B<span class="r">화목 8시 · 3명</span></div>
   <div class="box">
     <div class="rw"><span class="nm">김</span><span class="bd"><span class="t">김민수</span><span class="s">학생 010-1234-0104 · 어머님 010-1234-0004</span></span></div>
     <div class="rw"><span class="nm">정</span><span class="bd"><span class="t">정하윤</span><span class="s">학생 010-1234-0105 · 어머님 010-1234-0005</span></span></div>
