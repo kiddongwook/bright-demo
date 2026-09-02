@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>한빛영어학원 · 우리 학원 앱</title>
 <meta name="description" content="출결·숙제·수강료·학부모 편지를 폰 하나로. 우리 학원 이름으로 나가는 앱.">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#2B57C4">
 
 <meta property="og:url" content="https://kiddongwook.github.io/bright-demo/">
 <meta property="og:image" content="https://kiddongwook.github.io/bright-demo/og.png">
@@ -64,15 +64,38 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 /* ── 앱 셸: 폰에서는 꽉 차게, PC에서는 폰 프레임 안에 ── */
 .shell{width:100%;height:100dvh}
 .app{height:100%;display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
-.appbar{flex:0 0 auto;background:var(--paper);border-bottom:1px solid var(--rule);
-  padding:calc(13px + env(safe-area-inset-top)) 20px 13px;display:flex;align-items:center;gap:9px;min-height:57px}
-.appbar .lg{width:25px;height:25px;border-radius:7px;background:var(--brand);color:#fff;
+.appbar{flex:0 0 auto;background:var(--brand);color:#fff;
+  padding:calc(13px + env(safe-area-inset-top)) 20px 13px;display:flex;align-items:center;gap:9px;min-height:57px;
+  transition:background .25s}
+.appbar .lg{width:25px;height:25px;border-radius:7px;background:#fff;color:var(--brand);
   display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto;
   font-family:var(--voice);line-height:1}
 .appbar .an{font-family:var(--voice);font-size:18px;font-weight:700;letter-spacing:-.02em}
-.appbar .ad{margin-left:auto;font-size:12px;font-weight:600;color:var(--ink3);letter-spacing:-.01em}
+.appbar .ad{margin-left:auto;font-size:12px;font-weight:600;color:rgba(255,255,255,.78);letter-spacing:-.01em}
 .appbar .bk{width:26px;height:28px;margin-left:-7px;display:grid;place-items:center;
-  font-size:25px;line-height:1;color:var(--ink2);flex:0 0 auto}
+  font-size:25px;line-height:1;color:#fff;flex:0 0 auto}
+
+/* 오늘 화면에선 간판이 앱바를 대신한다 — 이름을 두 번 쓰지 않는다 */
+.appbar.merged{min-height:0;padding-bottom:0}
+.appbar.merged .lg,.appbar.merged .an,.appbar.merged .ad,.appbar.merged .bk{display:none!important}
+
+/* ── 간판: 첫 화면은 인사가 아니라 학원 이름이다 ── */
+.hero{background:var(--brand);color:#fff;padding:20px 20px 28px;transition:background .25s}
+.hero .hn{font-family:var(--voice);font-size:32px;font-weight:700;line-height:1.3;letter-spacing:-.03em}
+.hero .hs{font-family:var(--voice);font-size:15.5px;line-height:1.7;margin-top:9px;color:rgba(255,255,255,.9)}
+.hero .ho{font-size:12.5px;font-weight:600;margin-top:22px;color:rgba(255,255,255,.8);
+  display:flex;gap:6px;flex-wrap:wrap}
+.hero .ho b{color:#fff;font-weight:700}
+
+/* ── 홈 화면: 학원이 앱 아이콘이 되는 순간 ── */
+.homescr{background:var(--ground);border-bottom:1px solid var(--rule);
+  padding:30px 20px 26px;display:flex;flex-direction:column;align-items:center}
+.appicon{width:78px;height:78px;border-radius:21px;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-family:var(--voice);font-size:38px;font-weight:700;
+  box-shadow:0 10px 26px rgba(0,0,0,.16);transition:background .25s}
+.homescr .hl{font-size:12.5px;font-weight:600;color:var(--ink);margin-top:10px}
+.homescr .hc{font-family:var(--voice);font-size:14px;color:var(--ink2);margin-top:18px;
+  text-align:center;line-height:1.7}
 .view{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;
   padding:0 0 34px;background:var(--paper)}
 .view.on{display:block;animation:rise .26s cubic-bezier(.2,.7,.3,1)}
@@ -89,7 +112,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   .shell{width:390px;height:min(812px,calc(100vh - 64px));background:#111;padding:13px;
     border-radius:46px;box-shadow:0 40px 90px rgba(0,0,0,.26)}
   .app{border-radius:34px}
-  .appbar{padding-top:15px}
+  .appbar{padding-top:16px}
   .tabbar{padding-bottom:9px}
   .credit{position:fixed;bottom:15px;left:0;right:0;text-align:center;
     font-size:11.5px;color:#8E8B84;font-weight:600}
@@ -252,12 +275,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 <!-- ════════ 탭 1 · 오늘 ════════ -->
 <section class="view on" id="t-today">
-  <div class="head">
-    <h1 class="hello">안녕하세요,<br>김지영 원장님</h1>
-    <p class="lede">오늘 남은 일은 <b>네 가지</b>예요.</p>
+  <div class="hero">
+    <h1 class="hn">한빛영어학원</h1>
+    <p class="hs">매일 조금씩, 확실하게.</p>
+    <div class="ho"><span>김지영 원장</span><span>·</span><span>6월 17일 화</span><span>·</span><span>남은 일 <b>4</b></span></div>
   </div>
 
-  <div class="lab">오늘 할 일</div>
+  <div class="lab" style="margin-top:24px">오늘 할 일</div>
   <div class="sheet">
     <button class="rw" onclick="push('attend')">
       <span class="mk" style="color:var(--ok);border-color:var(--ok)">○</span>
@@ -332,16 +356,21 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 <!-- ════════ 탭 3 · 우리 학원 ════════ -->
 <section class="view" id="t-academy">
-  <div class="head">
-    <h1 class="hello">우리 학원</h1>
-    <p class="lede">학부모에게 가는 모든 것에 <b>우리 학원 이름</b>이 붙습니다.</p>
+  <div class="homescr">
+    <div class="appicon" id="appicon">한</div>
+    <div class="hl">한빛영어학원</div>
+    <p class="hc">원장님과 학부모 폰 홈 화면에<br>이렇게 놓입니다.</p>
   </div>
 
-  <div class="lab">앱에 보이는 이름</div>
+  <div class="lab" style="margin-top:24px">앱에 보이는 것</div>
   <div class="sheet">
     <div class="fld">
       <label>학원 이름</label>
       <div class="val">한빛영어학원</div>
+    </div>
+    <div class="fld">
+      <label>한 줄 소개 — 앱 첫 화면과 학부모 화면에 보여요</label>
+      <div class="val" style="font-size:16px;font-weight:400">매일 조금씩, 확실하게.</div>
     </div>
     <div class="fld">
       <label>학원 색</label>
@@ -549,7 +578,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div class="lab">박지훈 어머님이 보는 화면</div>
   <div class="pv">
     <div class="pvh">
-      <div class="pn">한빛영어학원</div>
+      <div class="pn">한빛영어학원 · 매일 조금씩, 확실하게.</div>
       <div class="pt">지훈이 이번 주</div>
     </div>
     <div class="pvb">
@@ -601,6 +630,7 @@ function render(){
   document.getElementById(cur).classList.add('on');
 
   var isSub=cur.charAt(0)==='p';
+  document.querySelector('.appbar').classList.toggle('merged',cur==='t-today');
   document.getElementById('bk').style.display=isSub?'grid':'none';
   document.getElementById('lg').style.display=isSub?'none':'grid';
   document.getElementById('an').textContent=isSub?TITLE[cur][0]:'한빛영어학원';
@@ -640,7 +670,7 @@ function setBrand(color,el){
   var cs=el.parentNode.querySelectorAll('.chip');
   for(var i=0;i<cs.length;i++) cs[i].classList.remove('on');
   el.classList.add('on');
-  toast('학원 색이 앱과 학부모 화면에 함께 적용됐어요');
+  toast('학원 색이 앱 아이콘과 학부모 화면까지 함께 바뀌었어요');
 }
 
 var h=location.hash.replace('#','');
