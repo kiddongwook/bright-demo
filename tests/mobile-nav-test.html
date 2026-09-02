@@ -87,6 +87,9 @@
       w.gatePhone('010-1234-0104'); w.gateGo(); w.gateCode();
       if (w.ROLE !== 's' || on() !== 's-me') fails.push('student lands on ' + on());
       if (d.querySelectorAll('.tabbar a').length !== 3) fails.push('student tabs');
+      if (text('.appbar .badge') !== '1') fails.push('student badge=' + text('.appbar .badge'));
+      if (d.querySelectorAll('#s-notice .post').length !== 3) fails.push('student notices != 3');
+      if (!d.querySelector('#s-me .week i.l')) fails.push('김민수 오늘 지각 not shown');
 
       // ── 이름 교체 ──
       if (d.body.innerHTML.indexOf('한빛') >= 0) fails.push('한빛 remains');

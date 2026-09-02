@@ -466,10 +466,47 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 </section>
 
 <!-- ════ 학생 (Task 7) ════ -->
-<section class="view" id="s-me"><div class="head"><h1 class="hello">나</h1></div></section>
-<section class="view" id="s-notice"><div class="head"><h1 class="hello">공지</h1></div></section>
-<section class="view" id="s-more"><div class="head"><h1 class="hello">더보기</h1></div></section>
-<section class="view" id="s-noti"><div class="head"><h1 class="hello">알림</h1></div></section>
+<section class="view" id="s-me">
+  <div class="head"><h1 class="hello">민수</h1><p class="lede">고2 B · 화목 8시 · 오늘 수업 있어요.</p></div>
+  <div class="lab first">이번 주<span class="r">6/16 – 6/22</span></div>
+  <div class="box">
+    <div class="week"><i>월</i><i class="l">화</i><i>수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>
+    <div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">8시 10분 도착 · 지각</span></span><span class="tag warn">지각</span></div>
+  </div>
+  <div class="lab">다음 수업</div>
+  <div class="box soft">
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">6월 19일 목 · 8시</span><span class="s">단어시험 51~75 — 공지 확인</span></span></div>
+  </div>
+</section>
+<section class="view" id="s-notice">
+  <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>고2 B</b> 공지만 보여요.</p></div>
+  <div class="box">
+    <button class="post new" style="width:100%;text-align:left" onclick="push('notice-view')"><div class="pt">고2 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>고2 B</b><span>6월 15일</span></div></button>
+    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
+    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
+  </div>
+</section>
+
+<section class="view" id="s-notice-view">
+  <div class="head"><h1 class="hello">고2 B 단어시험</h1><p class="lede">고2 B · 6월 15일 · 김지영 원장</p></div>
+  <p class="para">6월 19일(목) 수업 시작하고 바로 단어시험 봅니다. 범위는 단어장 <b>51~75</b>예요.</p>
+  <p class="para">지난주에 41~75라고 했는데 진도가 빨라서 줄였어요. 25개, 뜻 쓰기 15개 + 영작 10개.</p>
+  <p class="muted" style="padding:20px 20px 0">이 공지를 읽은 것으로 표시됐어요.</p>
+</section>
+<section class="view" id="s-more">
+  <div class="head"><h1 class="hello">더보기</h1></div>
+  <div class="box">
+    <div class="rw" style="cursor:default"><span class="nm">김</span><span class="bd"><span class="t">김민수</span><span class="s">010-1234-0104 · 고2 B</span></span></div>
+  </div>
+  <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
+  <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
+</section>
+<section class="view" id="s-noti">
+  <div class="lab first" style="margin-top:20px">6월 15일</div>
+  <div class="box">
+    <div class="post new"><div class="pt">새 공지 「고2 B 단어시험」</div><div class="pm"><b>공지</b><span>고2 B · 오후 8:40</span></div></div>
+  </div>
+</section>
 
 <nav class="tabbar" id="tabbar" hidden></nav>
 
