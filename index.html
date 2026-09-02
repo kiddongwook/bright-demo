@@ -150,6 +150,21 @@ button{cursor:pointer;border:none;background:none}
 .todo .t{font-size:15px;font-weight:600;letter-spacing:-.02em;line-height:1.4}
 .todo .s{font-size:12.5px;color:var(--ink3);margin-top:3px}
 .todo.done .t{text-decoration:line-through;color:var(--ink3)}
+/* 카톡 미리보기 */
+.kchat{margin:0 20px;background:#B2C7DA;border-radius:14px;overflow:hidden}
+.khead{background:#A5BCD0;padding:10px 14px;display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:#1C1C1C}
+.khead .ktag{margin-left:auto;font-size:10.5px;font-weight:600;color:#3E5262;background:rgba(255,255,255,.55);padding:2px 7px;border-radius:4px}
+.kav{width:32px;height:32px;border-radius:12px;background:#fff;display:grid;place-items:center;flex:0 0 auto}
+.kav img{width:22px;height:auto}
+.kmsg{display:flex;gap:7px;padding:12px 12px 0;align-items:flex-end}
+.kcard{background:#fff;border-radius:4px 14px 14px 14px;max-width:250px;overflow:hidden;font-size:13.5px;line-height:1.6;color:#1C1C1C;align-self:flex-start}
+.kcard .klab{font-size:10.5px;color:#7A8791;padding:8px 12px 0}
+.kcard .kb{padding:5px 12px 10px}
+.kcard .kb b{display:block;margin-bottom:3px;font-weight:600}
+.kbtn{display:block;width:calc(100% - 20px);margin:0 10px 10px;border:1px solid #DDE3E8;border-radius:6px;padding:9px;text-align:center;font-size:13px;font-weight:600;background:#F7F8F9;color:#1C1C1C;box-sizing:border-box}
+.kbtn.off{color:#9BA5AD;font-weight:500}
+.ktime{font-size:10.5px;color:#4F6372;flex:0 0 auto}
+.kpad{height:12px}
 
 /* ── 공지 / 문의 ── */
 .post{padding:16px;border-bottom:1px solid var(--rule)}
@@ -325,6 +340,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
     <button class="rw" onclick="push('roster')"><span class="bd"><span class="t">학생·학부모 명부</span><span class="s">여기 있는 번호만 앱에 들어올 수 있어요</span></span><span class="go">›</span></button>
     <button class="rw" onclick="push('academy')"><span class="bd"><span class="t">우리 학원</span><span class="s">로고 · 이름 · 강조색 · 앱 아이콘</span></span><span class="go">›</span></button>
     <button class="rw" onclick="push('faq')"><span class="bd"><span class="t">자주 묻는 질문 관리</span><span class="s">학부모 문의 화면 맨 위에 보여요</span></span><span class="go">›</span></button>
+    <button class="rw" onclick="push('kakao')"><span class="bd"><span class="t">학부모 카톡에는 이렇게 도착해요</span><span class="s">앱을 안 열어도 카톡으로 먼저 받아요</span></span><span class="go">›</span></button>
   </div>
 
   <div class="lab">준비 중<span class="r">필요할 때 켭니다</span></div>
@@ -501,6 +517,16 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="btnrow" id="rd-action"></div>
 </section>
 
+<section class="view" id="d-kakao">
+  <div class="head"><p class="lede">학부모는 앱을 안 열어도 <b>카톡으로 먼저</b> 받아요.<br>「앱에서 보기」를 누르면 그 화면이 바로 열립니다.</p></div>
+  <div class="kchat">
+    <div class="khead"><span class="kav"><img src="assets/logo/yeongeo-jip.png" alt=""></span>영어의 집<span class="ktag">알림톡</span></div>
+    <div id="kk-list"></div>
+    <div class="kpad"></div>
+  </div>
+  <p class="muted" style="padding:14px 20px 0;line-height:1.7">실제로는 카카오 알림톡으로 나가요. 문구는 승인된 템플릿을 따르기 때문에 짧고 정형입니다. 자유로운 문장은 앱 안의 공지 본문에 씁니다.</p>
+</section>
+
 <nav class="tabbar" id="tabbar" hidden></nav>
 
 </div></div>
@@ -523,7 +549,7 @@ var ICON={
 var TABMETA={today:['오늘','list'],child:['우리 아이','list'],me:['나','list'],notice:['공지','notice'],inbox:['문의','chat'],ask:['문의','chat'],more:['더보기','house']};
 var TITLE={
   'd-roster':['명부','반별'],'d-noti':['알림',''],'d-academy':['우리 학원',''],'d-notice-new':['공지 쓰기',''],
-  'd-answer':['문의',''],'d-faq':['자주 묻는 질문','관리'],'d-makeup':['결석 신청','보강'],'d-readers':['읽은 사람',''],
+  'd-answer':['문의',''],'d-faq':['자주 묻는 질문','관리'],'d-makeup':['결석 신청','보강'],'d-readers':['읽은 사람',''],'d-kakao':['학부모 카톡','미리보기'],
   'p-noti':['알림',''],'p-notice-view':['공지',''],'p-ask-new':['직접 문의하기',''],'p-ask-mine':['내 문의',''],'p-absence':['결석 미리 알리기',''],
   's-noti':['알림',''],'s-notice-view':['공지','']
 };
@@ -545,6 +571,11 @@ var DB={
   absences:[
     {id:1,who:'x',child:'최유나',cls:'A',date:'6월 20일 금',reason:'병원 진료',status:'요청',makeup:null,at:'오늘 오전 11:05'},
     {id:2,who:'x',child:'한지우',cls:'B',date:'6월 12일 목',reason:'가족 여행',status:'보강 확정',makeup:'6월 14일 토 2시',at:'6월 10일'}
+  ],
+  outbox:[
+    {to:'박지훈 어머님',kind:'공지',title:'새 공지',text:'여름 특강 안내 — 7월 21일부터 2주. 신청은 7월 4일까지.',link:['notice-view',1],at:'오늘 오전 9:10'},
+    {to:'박지훈 어머님',kind:'문의',title:'문의에 답했어요',text:'다음 주 화요일 결석 예정 — 원장님 답변이 도착했어요.',link:['ask-mine',null],at:'어제 오후 6:02'},
+    {to:'한지우 어머님',kind:'출결',title:'보강 확정',text:'6월 12일 목 결석 → 6월 14일 토 2시 보강.',link:['child',null],at:'6월 10일'}
   ],
   todos:[
     {id:1,cls:'B',kind:'숙제',title:'독해 워크북 p.42–45',due:'6월 19일 목까지',done:false},
@@ -648,7 +679,7 @@ function rAtt(){
   set('s-me-box','<div class="week"><i>월</i><i class="'+k+'">화</i><i>수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>'
     +'<div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">'+L[2]+'</span></span><span class="tag '+L[1]+'" id="s-today-tag">'+L[0]+'</span></div>');
 }
-function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); rAbsence(); rMakeup(); rTodos(); rReaders(); }
+function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); rAbsence(); rMakeup(); rTodos(); rReaders(); rOutbox(); }
 
 /* ── 라우터 ── */
 function render(){
@@ -706,7 +737,7 @@ function saveAtt(){
   var names=[];
   ATT_ORDER.forEach(function(n){ DB.att[n]=draft[n]; if(draft[n]!=='p') names.push(n); });
   var k=DB.att['김민수'];
-  if(k!=='p') DB.noti.s.unshift({t:'오늘 '+(k==='l'?'지각':'결석')+'으로 기록됐어요',m:'출결 · 고2 B · 방금',n:true});
+  if(k!=='p'){ DB.noti.s.unshift({t:'오늘 '+(k==='l'?'지각':'결석')+'으로 기록됐어요',m:'출결 · 고2 B · 방금',n:true}); sendOut('김민수 어머님','출결','출결 안내','오늘 '+(k==='l'?'지각':'결석')+'으로 기록됐어요.',['child',null]); }
   toast(names.length?'출결을 저장하고, '+names.join('·')+' 학부모에게 알림을 보냈어요':'출결을 저장했어요. 모두 출석이라 알림은 없어요');
   refresh();
 }
@@ -717,9 +748,9 @@ function postNotice(){
   var id=1; DB.notices.forEach(function(n){ if(n.id>=id) id=n.id+1; });
   DB.notices.unshift({id:id,title:t,body:b?[b]:[],target:nnTarget,date:'오늘',readers:[],readP:false,readS:false});
   var to=[];
-  if(nnTarget!=='B'){ DB.noti.p.unshift({t:'새 공지 「'+t+'」',m:'공지 · '+tgt(nnTarget)+' · 방금',n:true}); to.push('학부모 '+(nnTarget==='all'?6:3)+'명'); }
+  if(nnTarget!=='B'){ DB.noti.p.unshift({t:'새 공지 「'+t+'」',m:'공지 · '+tgt(nnTarget)+' · 방금',n:true}); to.push('학부모 '+(nnTarget==='all'?6:3)+'명'); sendOut(ME.p.name,'공지','새 공지',t+(b?' — '+b.slice(0,40)+(b.length>40?'…':''):''),['notice-view',id]); }
   if(nnTarget!=='A'){ DB.noti.s.unshift({t:'새 공지 「'+t+'」',m:'공지 · '+tgt(nnTarget)+' · 방금',n:true}); to.push('학생 '+(nnTarget==='all'?6:3)+'명'); }
-  toast('공지를 올리고 '+to.join(', ')+'에게 알렸어요');
+  toast('공지를 올리고 '+to.join(', ')+'에게 알렸어요 · 카톡으로 나갔어요');
   back();
 }
 function openNotice(id){
@@ -749,7 +780,7 @@ function sendAnswer(){
   if(!a) return;
   if(!t){ toast('답변을 적어주세요'); return; }
   a.a=t; a.aAt='방금';
-  if(a.who==='p') DB.noti.p.unshift({t:'원장님이 문의에 답했어요',m:'문의 · '+a.topic+' · 방금',n:true});
+  if(a.who==='p'){ DB.noti.p.unshift({t:'원장님이 문의에 답했어요',m:'문의 · '+a.topic+' · 방금',n:true}); sendOut(ME.p.name,'문의','문의에 답했어요',a.topic+' — 원장님 답변이 도착했어요.',['ask-mine',null]); }
   toast(a.name+'께 답변을 보냈어요');
   back();
 }
@@ -804,7 +835,7 @@ function mkPick(el,o){ mkChoice=o; rMakeup(); }
 function confirmMakeup(){
   var a=byId(DB.absences,curAb); if(!a) return;
   a.status='보강 확정'; a.makeup=mkChoice;
-  if(a.who==='p') DB.noti.p.unshift({t:a.date+' 결석 → '+(mkChoice==='자료로 대체'?'자료로 대체':mkChoice+' 보강'),m:'출결 · 원장님이 잡았어요 · 방금',n:true});
+  if(a.who==='p'){ DB.noti.p.unshift({t:a.date+' 결석 → '+(mkChoice==='자료로 대체'?'자료로 대체':mkChoice+' 보강'),m:'출결 · 원장님이 잡았어요 · 방금',n:true}); sendOut(ME.p.name,'출결','보강 확정',a.date+' 결석 → '+(mkChoice==='자료로 대체'?'자료로 대체':mkChoice+' 보강')+'.',['child',null]); }
   toast(a.child+' 학부모에게 '+(mkChoice==='자료로 대체'?'자료 대체':'보강 일정')+'을 알렸어요');
   back();
 }
@@ -861,9 +892,32 @@ function remind(){
   var n=byId(DB.notices,curReaders); if(!n) return;
   var un=unreadOf(n); if(!un.length) return;
   n.remindedAt='방금';
-  if(un.indexOf(ME.p.name)>=0) DB.noti.p.unshift({t:'「'+n.title.split(' — ')[0]+'」 아직 안 읽으셨어요',m:'공지 · 원장님이 다시 알렸어요 · 방금',n:true});
+  if(un.indexOf(ME.p.name)>=0){ DB.noti.p.unshift({t:'「'+n.title.split(' — ')[0]+'」 아직 안 읽으셨어요',m:'공지 · 원장님이 다시 알렸어요 · 방금',n:true}); sendOut(ME.p.name,'공지','아직 안 읽으셨어요',n.title.split(' — ')[0]+' — 확인 부탁드려요.',['notice-view',n.id]); }
   toast('안 읽은 '+un.length+'명에게 다시 알렸어요');
   refresh();
+}
+
+/* ── 발송함: 학부모 카톡으로 나간 것 ── */
+function sendOut(to,kind,title,text,link){ DB.outbox.unshift({to:to,kind:kind,title:title,text:text,link:link,at:'방금'}); }
+function rOutbox(){
+  var list=DB.outbox.slice().reverse(), h='';
+  list.forEach(function(m){
+    var idx=DB.outbox.indexOf(m), mine=(m.to===ME.p.name);
+    var btn = mine ? '<button class="kbtn" onclick="kakaoOpen('+idx+')">앱에서 보기</button>'
+                   : '<span class="kbtn off">'+esc(m.to)+' 앱에서 열려요</span>';
+    h+='<div class="kmsg"><span class="kav"><img src="assets/logo/yeongeo-jip.png" alt=""></span>'
+      +'<div class="kcard"><div class="klab">알림톡 · '+esc(m.to)+'</div><div class="kb"><b>[영어의 집] '+esc(m.title)+'</b>'+esc(m.text)+'</div>'+btn+'</div>'
+      +'<span class="ktime">'+m.at+'</span></div>';
+  });
+  set('kk-list',h);
+}
+function kakaoOpen(idx){
+  var m=DB.outbox[idx]; if(!m) return;
+  enter('p');
+  if(m.link[0]==='notice-view') openNotice(m.link[1]);
+  else if(m.link[0]==='ask-mine'){ tab('ask'); push('ask-mine'); }
+  else if(m.link[0]==='child') tab('child');
+  toast('학부모가 카톡에서 누르면 이 화면이 열려요');
 }
 
 /* ── 조각 ── */
