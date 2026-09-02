@@ -235,12 +235,103 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 </section>
 
 <!-- ════ 원장 (Task 3~5에서 채움) ════ -->
-<section class="view" id="d-today"><div class="head"><h1 class="hello">오늘</h1></div></section>
+<section class="view" id="d-today">
+  <div class="head">
+    <h1 class="hello">오늘 · 중등 B</h1>
+    <p class="lede">화목 7시 · 3명. 이름 옆을 누르면 바로 저장돼요.<br>결석·지각은 <b>학부모 알림까지 한 번에</b> 나갑니다.</p>
+  </div>
+  <div class="seg">
+    <button onclick="toast('초등 A는 월수금 수업이에요. 오늘은 수업이 없습니다.')">초등 A</button>
+    <button class="on">중등 B</button>
+  </div>
+  <div class="lab">출석부<span class="r">6월 17일 화</span></div>
+  <div class="box">
+    <div class="rw"><span class="nm">김</span><span class="bd"><span class="t">김민수</span></span>
+      <span class="marks"><button onclick="att(this,'p')" aria-label="출석">○</button><button class="on l" onclick="att(this,'l')" aria-label="지각">△</button><button onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
+    <div class="rw"><span class="nm">정</span><span class="bd"><span class="t">정하윤</span></span>
+      <span class="marks"><button class="on p" onclick="att(this,'p')" aria-label="출석">○</button><button onclick="att(this,'l')" aria-label="지각">△</button><button onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
+    <div class="rw"><span class="nm">한</span><span class="bd"><span class="t">한지우</span></span>
+      <span class="marks"><button onclick="att(this,'p')" aria-label="출석">○</button><button onclick="att(this,'l')" aria-label="지각">△</button><button class="on a" onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
+  </div>
+  <div class="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
+  <div class="btnrow"><button class="btn" onclick="toast('출결을 저장하고, 김민수·한지우 학부모에게 알림을 보냈어요')">저장하고 알리기</button></div>
+
+  <div class="lab">이번 주</div>
+  <div class="box soft">
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">중등 B 출석률</span><span class="s">화·목 2회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">83%</b></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">초등 A 출석률</span><span class="s">월·수·금 3회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">100%</b></div>
+  </div>
+</section>
 <section class="view" id="d-notice"><div class="head"><h1 class="hello">공지</h1></div></section>
 <section class="view" id="d-inbox"><div class="head"><h1 class="hello">문의</h1></div></section>
-<section class="view" id="d-more"><div class="head"><h1 class="hello">더보기</h1></div></section>
-<section class="view" id="d-roster"><div class="head"><h1 class="hello">명부</h1></div></section>
-<section class="view" id="d-noti"><div class="head"><h1 class="hello">알림</h1></div></section>
+<section class="view" id="d-more">
+  <div class="head"><h1 class="hello">더보기</h1></div>
+  <div class="lab first" style="margin-top:0">운영</div>
+  <div class="box">
+    <button class="rw" onclick="push('roster')"><span class="bd"><span class="t">학생·학부모 명부</span><span class="s">여기 있는 번호만 앱에 들어올 수 있어요</span></span><span class="go">›</span></button>
+    <button class="rw" onclick="push('academy')"><span class="bd"><span class="t">우리 학원</span><span class="s">로고 · 이름 · 강조색 · 앱 아이콘</span></span><span class="go">›</span></button>
+    <button class="rw" onclick="push('faq')"><span class="bd"><span class="t">자주 묻는 질문 관리</span><span class="s">학부모 문의 화면 맨 위에 보여요</span></span><span class="go">›</span></button>
+  </div>
+
+  <div class="lab">준비 중<span class="r">필요할 때 켭니다</span></div>
+  <div class="box soft">
+    <button class="rw soon" onclick="toast('준비 중인 기능이에요')"><span class="bd"><span class="t">수강료</span><span class="s">미납 안내를 원장님 톤으로</span></span><span class="tag muted">준비 중</span></button>
+    <button class="rw soon" onclick="toast('준비 중인 기능이에요')"><span class="bd"><span class="t">첨삭</span><span class="s">AI가 짚고 원장님이 확정</span></span><span class="tag muted">준비 중</span></button>
+    <button class="rw soon" onclick="toast('준비 중인 기능이에요')"><span class="bd"><span class="t">편지</span><span class="s">채점 결과를 원장님 말투로</span></span><span class="tag muted">준비 중</span></button>
+    <button class="rw soon" onclick="toast('준비 중인 기능이에요')"><span class="bd"><span class="t">성장 기록</span><span class="s">틀리던 것이 줄어드는 추이</span></span><span class="tag muted">준비 중</span></button>
+  </div>
+
+  <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
+  <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
+</section>
+<section class="view" id="d-roster">
+  <div class="head"><p class="lede">명부에 있는 전화번호로만 앱에 들어올 수 있어요.<br>학생과 학부모는 <b>각자 번호로</b> 들어옵니다.</p></div>
+  <div class="lab first">초등 A<span class="r">월수금 4시 · 3명</span></div>
+  <div class="box">
+    <div class="rw"><span class="nm">박</span><span class="bd"><span class="t">박지훈</span><span class="s">학생 010-1234-0101 · 어머님 010-1234-0001</span></span></div>
+    <div class="rw"><span class="nm">최</span><span class="bd"><span class="t">최유나</span><span class="s">학생 010-1234-0102 · 어머님 010-1234-0002</span></span></div>
+    <div class="rw"><span class="nm">이</span><span class="bd"><span class="t">이서연</span><span class="s">학생 010-1234-0103 · 어머님 010-1234-0003</span></span></div>
+  </div>
+  <div class="lab">중등 B<span class="r">화목 7시 · 3명</span></div>
+  <div class="box">
+    <div class="rw"><span class="nm">김</span><span class="bd"><span class="t">김민수</span><span class="s">학생 010-1234-0104 · 어머님 010-1234-0004</span></span></div>
+    <div class="rw"><span class="nm">정</span><span class="bd"><span class="t">정하윤</span><span class="s">학생 010-1234-0105 · 어머님 010-1234-0005</span></span></div>
+    <div class="rw"><span class="nm">한</span><span class="bd"><span class="t">한지우</span><span class="s">학생 010-1234-0106 · 어머님 010-1234-0006</span></span></div>
+  </div>
+  <div class="btnrow"><button class="btn line" onclick="toast('학생 추가는 실제 버전에서 열려요')">학생 추가</button></div>
+</section>
+
+<section class="view" id="d-academy">
+  <div class="homescr">
+    <div class="appicon"><img src="assets/logo/yeongeo-jip.png" alt=""></div>
+    <div class="hl">영어의 집</div>
+    <p class="hc">원장님과 학부모, 학생 폰 홈 화면에<br>이렇게 놓입니다.</p>
+  </div>
+  <div class="lab">앱에 보이는 것</div>
+  <div class="box">
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">학원 이름</span><span class="s">영어의 집</span></span></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">강조색</span><span class="s">아직 정하지 않았어요 — 로고 컬러웨이 중 고르세요</span></span>
+      <span class="chips">
+        <button class="chip on" style="background:#1C1C1C" onclick="setBrand('#1C1C1C',this)" aria-label="먹"></button>
+        <button class="chip" style="background:#2A5BD7" onclick="setBrand('#2A5BD7',this)" aria-label="파랑"></button>
+        <button class="chip" style="background:#E8912D" onclick="setBrand('#E8912D',this)" aria-label="주황"></button>
+        <button class="chip" style="background:#5B7A5B" onclick="setBrand('#5B7A5B',this)" aria-label="초록"></button>
+        <button class="chip" style="background:#9C8B74" onclick="setBrand('#9C8B74',this)" aria-label="황갈"></button>
+      </span></div>
+  </div>
+  <p class="muted" style="padding:16px 20px 0;text-align:center">로고는 단색으로 두고, 강조색은 버튼과 표시에만 씁니다.</p>
+</section>
+<section class="view" id="d-noti">
+  <div class="lab first" style="margin-top:20px">오늘</div>
+  <div class="box">
+    <div class="post new"><div class="pt">정하윤 어머님이 문의를 보냈어요</div><div class="pm"><b>문의</b><span>숙제 범위 확인 · 오후 1:20</span></div></div>
+  </div>
+  <div class="lab">어제</div>
+  <div class="box soft">
+    <div class="post"><div class="pt">박지훈 어머님 문의에 답했어요</div><div class="pm"><b>문의</b><span>다음 주 화요일 결석 예정 · 어제 오후 6:02</span></div></div>
+    <div class="post"><div class="pt">공지 「6월 휴원일」을 올렸어요</div><div class="pm"><b>공지</b><span>전체 · 학부모 6명 중 5명 읽음</span></div></div>
+  </div>
+</section>
 
 <!-- ════ 학부모 (Task 6) ════ -->
 <section class="view" id="p-child"><div class="head"><h1 class="hello">우리 아이</h1></div></section>

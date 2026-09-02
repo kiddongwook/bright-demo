@@ -39,6 +39,14 @@
       if (de.scrollWidth > de.clientWidth) fails.push('h-overflow');
       if (text('.appbar .badge') !== '1') fails.push('director bell badge=' + text('.appbar .badge'));
 
+      // ── 원장: 오늘 / 더보기 ──
+      if (d.querySelectorAll('#d-today .marks').length !== 3) fails.push('today ledger rows != 3 (중등 B)');
+      if (d.querySelectorAll('#d-today .marks button.on.l').length !== 1) fails.push('김민수 지각 not marked');
+      if (d.querySelectorAll('#d-today .marks button.on.a').length !== 1) fails.push('한지우 결석 not marked');
+      if (d.querySelectorAll('#d-more .rw.soon').length !== 4) fails.push('준비 중 modules != 4');
+      if (!d.querySelector('#d-roster') || d.querySelectorAll('#d-roster .rw').length !== 6) fails.push('roster rows != 6');
+      if (!d.querySelector('#d-academy .appicon img')) fails.push('academy app icon missing');
+
       // ── 라우터 ──
       w.tab('more');
       if (on() !== 'd-more') fails.push('tab(more) -> ' + on());
