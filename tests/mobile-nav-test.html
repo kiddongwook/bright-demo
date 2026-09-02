@@ -129,12 +129,24 @@
       if (!/6월 21일/.test(text('#p-absence-list'))) fails.push('makeup not shown to parent');
       if (!d.querySelector('#p-child .week i.m')) fails.push('makeup not on week strip');
 
+      // ── 학생: 이번 주 할 것 ──
+      w.logout(); w.gatePhone('010-1234-0104'); w.gateGo(); w.gateCode();
+      if (d.querySelectorAll('#s-me .todo').length !== 3) fails.push('student todos=' + d.querySelectorAll('#s-me .todo').length);
+      if (d.querySelectorAll('#s-me .todo.done').length !== 1) fails.push('student done initially=' + d.querySelectorAll('#s-me .todo.done').length);
+      if (text('#s-todo-left') !== '2개 남음') fails.push('todo left text=' + text('#s-todo-left'));
+      const firstOpen = w.DB.todos.filter(t => t.cls === 'B' && !t.done)[0];
+      w.toggleTodo(firstOpen.id);
+      if (d.querySelectorAll('#s-me .todo.done').length !== 2) fails.push('toggle did not mark done');
+      if (text('#s-todo-left') !== '1개 남음') fails.push('todo left after toggle=' + text('#s-todo-left'));
+      w.logout(); w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
+      if (d.querySelectorAll('#p-child .todo').length < 1) fails.push('parent sees no todos for 고1 A');
+
       // ── 이름 교체 ──
       if (d.body.innerHTML.indexOf('한빛') >= 0) fails.push('한빛 remains');
       if (d.head.innerHTML.indexOf('Gowun') >= 0) fails.push('Gowun Batang link remains');
 
       const result = fails.length === 0
-        ? 'PASS: gate + 3 roles + router + overflow + live state + absence'
+        ? 'PASS: gate + 3 roles + router + overflow + live state + absence + todos'
         : 'FAIL: ' + fails.join(' | ');
       document.getElementById('result').textContent = result;
       document.title = result.startsWith('PASS:') ? 'PASS' : 'FAIL';

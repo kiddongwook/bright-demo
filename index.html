@@ -139,6 +139,17 @@ button{cursor:pointer;border:none;background:none}
 .week i.l{border-color:var(--warn);color:var(--warn)}
 .week i.a{border-color:var(--danger);color:var(--danger)}
 .week i.m{border-color:var(--ink);border-style:dashed;color:var(--ink)}
+/* 이번 주 할 것 */
+.todo{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-bottom:1px solid var(--rule)}
+.todo:last-child{border-bottom:0}
+.todo .cb{width:24px;height:24px;border-radius:50%;border:1px solid var(--ink);flex:0 0 auto;display:grid;place-items:center;font-size:13px;margin-top:3px;background:var(--paper);color:var(--ink)}
+.todo.done .cb{background:var(--ink);color:#fff}
+.todo .bd{flex:1;min-width:0}
+.todo .k{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:var(--ink3);margin-bottom:3px}
+.todo .k.exam{color:var(--danger)}
+.todo .t{font-size:15px;font-weight:600;letter-spacing:-.02em;line-height:1.4}
+.todo .s{font-size:12.5px;color:var(--ink3);margin-top:3px}
+.todo.done .t{text-decoration:line-through;color:var(--ink3)}
 
 /* ── 공지 / 문의 ── */
 .post{padding:16px;border-bottom:1px solid var(--rule)}
@@ -381,6 +392,9 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   </div>
   <div class="legend"><span><b>○</b>출석</span><span><b>✕</b>결석 예정</span><span><b>◌</b>보강</span></div>
 
+  <div class="lab">이번 주 할 것<span class="r">지훈이가 체크해요</span></div>
+  <div class="box soft" id="p-todo-list"></div>
+
   <div class="lab">미리 알린 결석<span class="r">보강은 원장님이 잡아요</span></div>
   <div id="p-absence-list"></div>
   <div class="btnrow" style="padding-top:12px"><button class="btn line" onclick="push('absence')">결석 미리 알리기</button></div>
@@ -434,11 +448,15 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 <!-- ════ 학생 (Task 7) ════ -->
 <section class="view" id="s-me">
   <div class="head"><h1 class="hello">민수</h1><p class="lede">고2 B · 화목 8시 · 오늘 수업 있어요.</p></div>
-  <div class="lab first">이번 주<span class="r">6/16 – 6/22</span></div>
+  <div class="lab first">이번 주 할 것<span class="r" id="s-todo-left"></span></div>
+  <div class="box" id="s-todo-list"></div>
+  <p class="muted" style="padding:10px 20px 0">했으면 동그라미를 눌러요. 시험은 눌러서 공지를 볼 수 있어요.</p>
+
+  <div class="lab">이번 주 출결<span class="r">6/16 – 6/22</span></div>
   <div class="box" id="s-me-box"></div>
   <div class="lab">다음 수업</div>
   <div class="box soft">
-    <div class="rw" style="cursor:default"><span class="bd"><span class="t">6월 19일 목 · 8시</span><span class="s">단어시험 51~75 — 공지 확인</span></span></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">6월 19일 목 · 8시</span><span class="s">고2 B · 수업 시작하고 단어시험</span></span></div>
   </div>
 </section>
 <section class="view" id="s-notice">
@@ -521,6 +539,13 @@ var DB={
   absences:[
     {id:1,who:'x',child:'최유나',cls:'A',date:'6월 20일 금',reason:'병원 진료',status:'요청',makeup:null,at:'오늘 오전 11:05'},
     {id:2,who:'x',child:'한지우',cls:'B',date:'6월 12일 목',reason:'가족 여행',status:'보강 확정',makeup:'6월 14일 토 2시',at:'6월 10일'}
+  ],
+  todos:[
+    {id:1,cls:'B',kind:'숙제',title:'독해 워크북 p.42–45',due:'6월 19일 목까지',done:false},
+    {id:2,cls:'B',kind:'시험',title:'단어시험 51~75',due:'6월 19일 목 · 수업 시작하고 바로',done:false,notice:3},
+    {id:3,cls:'B',kind:'숙제',title:'영작 1편 — My Summer Plan',due:'6월 17일 화까지',done:true},
+    {id:4,cls:'A',kind:'숙제',title:'모의고사 기출 3회',due:'6월 20일 금까지',done:false},
+    {id:5,cls:'A',kind:'숙제',title:'단어장 26~50 외우기',due:'6월 18일 수까지',done:true}
   ],
   noti:{
     d:[{t:'정하윤 어머님이 문의를 보냈어요',m:'문의 · 숙제 범위 확인 · 오후 1:20',n:true},
@@ -617,7 +642,7 @@ function rAtt(){
   set('s-me-box','<div class="week"><i>월</i><i class="'+k+'">화</i><i>수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>'
     +'<div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">'+L[2]+'</span></span><span class="tag '+L[1]+'" id="s-today-tag">'+L[0]+'</span></div>');
 }
-function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); rAbsence(); rMakeup(); }
+function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); rAbsence(); rMakeup(); rTodos(); }
 
 /* ── 라우터 ── */
 function render(){
@@ -776,6 +801,27 @@ function confirmMakeup(){
   if(a.who==='p') DB.noti.p.unshift({t:a.date+' 결석 → '+(mkChoice==='자료로 대체'?'자료로 대체':mkChoice+' 보강'),m:'출결 · 원장님이 잡았어요 · 방금',n:true});
   toast(a.child+' 학부모에게 '+(mkChoice==='자료로 대체'?'자료 대체':'보강 일정')+'을 알렸어요');
   back();
+}
+
+/* ── 이번 주 할 것: 학생이 체크, 학부모는 본다 ── */
+function rTodos(){
+  function row(t,editable){
+    var open = t.notice ? 'onclick="openNotice('+t.notice+')"' : '';
+    var cb = editable ? '<button class="cb" onclick="toggleTodo('+t.id+')" aria-label="했어요">'+(t.done?'✓':'')+'</button>'
+                      : '<span class="cb">'+(t.done?'✓':'')+'</span>';
+    return '<div class="todo'+(t.done?' done':'')+'">'+cb+'<div class="bd" '+open+' style="'+(t.notice?'cursor:pointer':'')+'">'
+      +'<div class="k'+(t.kind==='시험'?' exam':'')+'">'+t.kind+'</div><div class="t">'+esc(t.title)+'</div><div class="s">'+esc(t.due)+'</div></div></div>';
+  }
+  var B=DB.todos.filter(function(t){return t.cls==='B'}), A=DB.todos.filter(function(t){return t.cls==='A'});
+  set('s-todo-list', B.map(function(t){return row(t,true)}).join(''));
+  var left=B.filter(function(t){return !t.done}).length;
+  set('s-todo-left', left ? left+'개 남음' : '다 했어요');
+  set('p-todo-list', A.length ? A.map(function(t){return row(t,false)}).join('') : '<p class="muted" style="padding:14px 16px">이번 주 할 것이 아직 없어요.</p>');
+}
+function toggleTodo(id){
+  var t=byId(DB.todos,id); if(!t) return;
+  t.done=!t.done; rTodos();
+  toast(t.done ? '「'+t.title+'」 했어요로 표시했어요' : '「'+t.title+'」 다시 할 것으로 돌렸어요');
 }
 
 /* ── 조각 ── */
