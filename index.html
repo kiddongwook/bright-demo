@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>영어의 집 · 우리 학원 앱</title>
 <meta name="description" content="출결·공지·문의를 폰 하나로. 영어의 집 학생과 학부모를 위한 우리 학원 앱.">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#2B5BD9">
 <meta property="og:url" content="https://kiddongwook.github.io/bright-demo/">
 <meta property="og:image" content="https://kiddongwook.github.io/bright-demo/og.png">
 <meta property="og:type" content="website">
@@ -18,13 +18,13 @@
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
 :root{
-  --paper:#FFFFFF; --ground:#F7F7F5;
+  --paper:#FFFFFF; --ground:#F2F3F5;
   --ink:#1C1C1C; --ink2:#5A5A57; --ink3:#9A9A96;
-  --rule:#E6E6E3; --rule2:#F0F0ED;
+  --rule:#E2E4E8; --rule2:#EDEFF2;
   --warn:#B8860B; --warn-soft:#FBF4E0;
   --danger:#C0392B; --danger-soft:#FAE9E6;
-  --ok:#1C1C1C; --ok-soft:#EDEDEA;
-  --brand:#1C1C1C; --brand-soft:#EDEDEA;   /* 학원 강조색 — 미정, 먹 */
+  --ok:#1F7A4D; --ok-soft:#E4F3EA;
+  --brand:#2B5BD9; --brand-soft:#E8EEFB;   /* 학원 강조색 — 기본 남색, 원장이 칩으로 바꾼다 */
   --ui:"Pretendard Variable","Pretendard",system-ui,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -33,30 +33,30 @@ html,body{background:var(--ground);color:var(--ink);font-family:var(--ui);-webki
 a{color:inherit;text-decoration:none}
 button,input,textarea{font-family:inherit;color:inherit}
 button{cursor:pointer;border:none;background:none}
-:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
 
 /* ── 셸 ── */
 .shell{width:100%;height:100dvh}
 .app{height:100%;display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
-.appbar{flex:0 0 auto;background:var(--paper);border-bottom:1px solid var(--rule);
+.appbar{flex:0 0 auto;background:var(--brand);color:#fff;transition:background .25s;
   padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;gap:10px;min-height:56px}
-.appbar .bk{width:28px;height:30px;margin-left:-8px;display:grid;place-items:center;font-size:26px;line-height:1;color:var(--ink)}
-.appbar .logo{height:22px;width:auto;display:block}
+.appbar .bk{width:28px;height:30px;margin-left:-8px;display:grid;place-items:center;font-size:26px;line-height:1;color:#fff}
+.appbar .logo{height:30px;width:auto;display:block}
 .appbar .an{font-size:17px;font-weight:600;letter-spacing:-.02em}
-.appbar .ad{margin-left:auto;font-size:12px;font-weight:500;color:var(--ink3)}
+.appbar .ad{margin-left:auto;font-size:12px;font-weight:500;color:rgba(255,255,255,.82)}
 .appbar .bell{position:relative;width:32px;height:32px;display:grid;place-items:center;margin-right:-6px}
 .appbar .bell svg{width:22px;height:22px}
 .appbar .badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;
-  background:var(--danger);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center}
+  background:var(--danger);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;box-shadow:0 0 0 2px var(--brand)}
 .appbar .badge:empty{display:none}
 .appbar.gatebar{justify-content:center;border-bottom:0}
-.view{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding:0 0 34px;background:var(--paper)}
+.view{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding:0 0 34px;background:var(--ground)}
 .view.on{display:block;animation:rise .24s cubic-bezier(.2,.7,.3,1)}
 @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .tabbar{flex:0 0 auto;background:var(--paper);border-top:1px solid var(--rule);display:flex;padding:7px 6px calc(7px + env(safe-area-inset-bottom))}
 .tabbar a{flex:1;text-align:center;font-size:10.5px;font-weight:600;color:var(--ink3);padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:3px}
 .tabbar a svg{width:22px;height:22px;display:block}
-.tabbar a.on{color:var(--ink)}
+.tabbar a.on{color:var(--brand)}
 .tabbar[hidden]{display:none}
 @media(min-width:641px){
   body{display:grid;place-items:center;min-height:100vh;background:#E3E3DF;padding:26px 0}
@@ -76,8 +76,8 @@ button{cursor:pointer;border:none;background:none}
 .gate p{font-size:13.5px;color:var(--ink2);line-height:1.7;margin-top:8px}
 .field{width:100%;text-align:left;margin-top:26px}
 .field label{display:block;font-size:11.5px;font-weight:600;color:var(--ink3);margin-bottom:7px}
-.input{width:100%;border:1px solid var(--ink);border-radius:10px;padding:14px 15px;font-size:17px;font-weight:500;letter-spacing:.02em;background:var(--paper)}
-.input:focus{outline:none;box-shadow:0 0 0 2px var(--paper),0 0 0 3px var(--ink)}
+.input{width:100%;border:1px solid var(--rule);border-radius:10px;padding:14px 15px;font-size:17px;font-weight:500;letter-spacing:.02em;background:var(--paper)}
+.input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
 .demo-keys{width:100%;margin-top:30px;border-top:1px solid var(--rule);padding-top:16px;text-align:left}
 .demo-keys .lab{padding:0;margin-bottom:8px}
 .demo-keys button{display:flex;justify-content:space-between;width:100%;padding:11px 0;border-bottom:1px solid var(--rule2);font-size:14px;text-align:left}
@@ -87,28 +87,28 @@ button{cursor:pointer;border:none;background:none}
 
 /* ── 종이 ── */
 .head{padding:24px 20px 18px}
-.hello{font-size:22px;font-weight:600;letter-spacing:-.03em;line-height:1.4}
+.hello{font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.4}
 .lede{font-size:14px;line-height:1.75;color:var(--ink2);margin-top:6px}
 .lede b{color:var(--ink);font-weight:600}
-.lab{font-size:11.5px;font-weight:600;letter-spacing:.02em;color:var(--ink3);padding:0 20px;margin:22px 0 9px;display:flex;align-items:baseline;gap:8px}
+.lab{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--ink2);padding:0 20px;margin:22px 0 9px;display:flex;align-items:baseline;gap:8px}
 .lab.first{margin-top:0}
 .lab .r{margin-left:auto;font-weight:500}
-.box{margin:0 20px;border:1px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--paper)}
+.box{margin:0 20px;border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .box.soft{border-color:var(--rule)}
 .rw{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:14px 16px;border-bottom:1px solid var(--rule)}
 .rw:last-child{border-bottom:0}
 .rw:active{background:var(--rule2)}
 .rw .bd{flex:1;min-width:0;display:block}
-.rw .t{display:block;font-size:15px;font-weight:600;letter-spacing:-.02em}
+.rw .t{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.02em}
 .rw .s{display:block;font-size:12.5px;color:var(--ink3);margin-top:3px;line-height:1.45}
 .rw .go{color:var(--ink3);font-size:18px;flex:0 0 auto}
 .rw.soon .t{color:var(--ink2)}
-.nm{width:34px;height:34px;border-radius:50%;border:1px solid var(--ink);display:grid;place-items:center;font-size:13px;font-weight:600;flex:0 0 auto}
-.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;border:1px solid currentColor;flex:0 0 auto}
-.tag.ok{color:var(--ink)}
-.tag.warn{color:var(--warn)}
-.tag.danger{color:var(--danger)}
-.tag.muted{color:var(--ink3)}
+.nm{width:34px;height:34px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto}
+.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;flex:0 0 auto}
+.tag.ok{color:var(--ok);background:var(--ok-soft)}
+.tag.warn{color:var(--warn);background:var(--warn-soft)}
+.tag.danger{color:var(--danger);background:var(--danger-soft)}
+.tag.muted{color:var(--ink3);background:var(--rule2)}
 .big{display:flex;align-items:baseline;gap:8px;padding:0 20px;flex-wrap:wrap}
 .big b{font-size:30px;font-weight:600;letter-spacing:-.04em}
 .big b i{font-size:14px;font-style:normal;font-weight:600}
@@ -118,8 +118,8 @@ button{cursor:pointer;border:none;background:none}
 .muted{font-size:12.5px;color:var(--ink3);line-height:1.65}
 
 /* ── 버튼 ── */
-.btn{display:block;width:100%;background:var(--ink);color:#fff;font-weight:600;font-size:15px;padding:14px;border-radius:11px;letter-spacing:-.02em;text-align:center}
-.btn.line{background:var(--paper);color:var(--ink);border:1px solid var(--ink)}
+.btn{display:block;width:100%;background:var(--brand);color:#fff;font-weight:600;font-size:15px;padding:14px;border-radius:11px;letter-spacing:-.02em;text-align:center}
+.btn.line{background:var(--paper);color:var(--brand);border:1px solid var(--brand)}
 .btn.sm{width:auto;flex:0 0 auto;padding:8px 13px;font-size:12.5px;border-radius:8px}
 .btn:active{opacity:.82}
 .btnrow{display:flex;gap:9px;padding:20px 20px 0}
@@ -128,22 +128,22 @@ button{cursor:pointer;border:none;background:none}
 /* ── 출석부 ○△✕ ── */
 .marks{display:flex;gap:5px;flex:0 0 auto}
 .marks button{width:34px;height:34px;border-radius:50%;border:1px solid var(--rule);font-size:16px;line-height:1;color:var(--ink3)}
-.marks button.on.p{border-color:var(--ink);background:var(--ink);color:#fff}
+.marks button.on.p{border-color:var(--brand);background:var(--brand);color:#fff}
 .marks button.on.l{border-color:var(--warn);background:var(--warn);color:#fff}
 .marks button.on.a{border-color:var(--danger);background:var(--danger);color:#fff}
 .legend{display:flex;gap:14px;padding:12px 20px 0;font-size:11.5px;color:var(--ink3);font-weight:500}
 .legend b{color:var(--ink2);font-weight:600;margin-right:3px}
 .week{display:flex;gap:5px;padding:12px 16px 14px}
 .week i{flex:1;aspect-ratio:1;border-radius:50%;border:1px solid var(--rule);display:grid;place-items:center;font-size:11.5px;font-weight:500;color:var(--ink3);font-style:normal}
-.week i.p{border-color:var(--ink);color:var(--ink)}
+.week i.p{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
 .week i.l{border-color:var(--warn);color:var(--warn)}
 .week i.a{border-color:var(--danger);color:var(--danger)}
-.week i.m{border-color:var(--ink);border-style:dashed;color:var(--ink)}
+.week i.m{border-color:var(--brand);border-style:dashed;color:var(--brand)}
 /* 이번 주 할 것 */
 .todo{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-bottom:1px solid var(--rule)}
 .todo:last-child{border-bottom:0}
-.todo .cb{width:24px;height:24px;border-radius:50%;border:1px solid var(--ink);flex:0 0 auto;display:grid;place-items:center;font-size:13px;margin-top:3px;background:var(--paper);color:var(--ink)}
-.todo.done .cb{background:var(--ink);color:#fff}
+.todo .cb{width:24px;height:24px;border-radius:50%;border:1px solid var(--brand);flex:0 0 auto;display:grid;place-items:center;font-size:13px;margin-top:3px;background:var(--paper);color:var(--brand)}
+.todo.done .cb{background:var(--brand);color:#fff}
 .todo .bd{flex:1;min-width:0}
 .todo .k{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:var(--ink3);margin-bottom:3px}
 .todo .k.exam{color:var(--danger)}
@@ -171,23 +171,23 @@ button{cursor:pointer;border:none;background:none}
 .post:last-child{border-bottom:0}
 .post .pt{font-size:15px;font-weight:600;letter-spacing:-.02em;line-height:1.45}
 .post .pm{font-size:12px;color:var(--ink3);margin-top:5px;display:flex;gap:6px;flex-wrap:wrap}
-.post .pm b{color:var(--ink2);font-weight:600}
+.post .pm b{color:var(--brand);font-weight:700}
 .post.new .pt::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--danger);margin-right:7px;vertical-align:middle}
 .faq summary{list-style:none;cursor:pointer;padding:14px 16px;font-size:14.5px;font-weight:600;letter-spacing:-.02em;display:flex;gap:10px;align-items:center}
-.faq summary::before{content:"Q";font-size:12px;font-weight:700;color:var(--ink3);flex:0 0 auto}
+.faq summary::before{content:"Q";font-size:12px;font-weight:700;color:var(--brand);flex:0 0 auto}
 .faq summary::-webkit-details-marker{display:none}
 .faq[open] summary{border-bottom:1px solid var(--rule2)}
 .faq .a{padding:12px 16px 16px 36px;font-size:13.5px;line-height:1.75;color:var(--ink2)}
 .faq{border-bottom:1px solid var(--rule)}
 .faq:last-child{border-bottom:0}
-.bubble{margin:0 20px;border:1px solid var(--rule);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.75}
-.bubble.me{border-color:var(--ink)}
+.bubble{margin:0 20px;border:1px solid var(--rule);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.75;background:var(--paper)}
+.bubble.me{border-color:var(--brand);background:var(--brand-soft)}
 .bubble .who{font-size:11.5px;font-weight:600;color:var(--ink3);margin-bottom:5px}
 .bubble+.bubble{margin-top:10px}
 textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-weight:400}
 .seg{display:flex;gap:6px;padding:0 20px}
-.seg button{flex:1;padding:10px;border:1px solid var(--rule);border-radius:9px;font-size:13px;font-weight:600;color:var(--ink3)}
-.seg button.on{border-color:var(--ink);color:var(--ink)}
+.seg button{flex:1;padding:10px;border:1px solid var(--rule);border-radius:9px;font-size:13px;font-weight:600;color:var(--ink3);background:var(--paper)}
+.seg button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
 .seg.col{flex-direction:column}
 .seg.col button{text-align:left;padding:12px 14px}
 
@@ -195,9 +195,9 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 .chips{display:flex;gap:10px;padding:2px 0}
 .chip{width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.1);position:relative}
 .chip.on::after{content:"";position:absolute;inset:-4px;border:1px solid var(--ink);border-radius:50%}
-.appicon{width:70px;height:70px;border-radius:19px;border:1px solid var(--ink);background:var(--paper);display:grid;place-items:center;margin:0 auto}
+.appicon{width:70px;height:70px;border-radius:19px;background:var(--brand);display:grid;place-items:center;margin:0 auto;transition:background .25s;box-shadow:0 6px 18px rgba(0,0,0,.14)}
 .appicon img{width:52px;height:auto}
-.homescr{padding:26px 20px 22px;text-align:center;border-bottom:1px solid var(--rule)}
+.homescr{padding:26px 20px 22px;text-align:center;background:var(--paper);border-bottom:1px solid var(--rule)}
 .homescr .hl{font-size:12.5px;font-weight:600;margin-top:9px}
 .homescr .hc{font-size:13px;color:var(--ink2);margin-top:14px;line-height:1.7}
 .madeby{text-align:center;font-size:11.5px;color:var(--ink3);margin-top:28px;line-height:1.75}
@@ -212,7 +212,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 
 <header class="appbar" id="appbar">
   <button class="bk" id="bk" onclick="back()" style="display:none" aria-label="뒤로">&lsaquo;</button>
-  <img class="logo" id="logo" src="assets/logo/yeongeo-jip.png" alt="영어의 집">
+  <img class="logo" id="logo" src="assets/logo/yeongeo-jip-white.png" alt="영어의 집">
   <span class="an" id="an" style="display:none"></span>
   <span class="ad" id="ad"></span>
   <button class="bell" id="bell" onclick="push('noti')" aria-label="알림">
@@ -222,7 +222,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 </header>
 
 <!-- ════ 게이트 ════ -->
-<section class="view on" id="g-phone">
+<section class="view on" id="g-phone" style="background:var(--paper)">
   <div class="gate">
     <img class="gate-logo" src="assets/logo/yeongeo-jip.png" alt="영어의 집">
     <h1>문을 열어드릴게요</h1>
@@ -241,7 +241,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   </div>
 </section>
 
-<section class="view" id="g-code">
+<section class="view" id="g-code" style="background:var(--paper)">
   <div class="gate">
     <img class="gate-logo" src="assets/logo/yeongeo-jip.png" alt="영어의 집">
     <h1>인증번호를 보냈어요</h1>
@@ -255,7 +255,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   </div>
 </section>
 
-<section class="view" id="g-deny">
+<section class="view" id="g-deny" style="background:var(--paper)">
   <div class="gate">
     <img class="gate-logo" src="assets/logo/yeongeo-jip.png" alt="영어의 집">
     <h1>아직 등록되지 않은 번호예요</h1>
@@ -378,23 +378,23 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 
 <section class="view" id="d-academy">
   <div class="homescr">
-    <div class="appicon"><img src="assets/logo/yeongeo-jip.png" alt=""></div>
+    <div class="appicon"><img src="assets/logo/yeongeo-jip-white.png" alt=""></div>
     <div class="hl">영어의 집</div>
     <p class="hc">원장님과 학부모, 학생 폰 홈 화면에<br>이렇게 놓입니다.</p>
   </div>
   <div class="lab">앱에 보이는 것</div>
   <div class="box">
     <div class="rw" style="cursor:default"><span class="bd"><span class="t">학원 이름</span><span class="s">영어의 집</span></span></div>
-    <div class="rw" style="cursor:default"><span class="bd"><span class="t">강조색</span><span class="s">아직 정하지 않았어요 — 로고 컬러웨이 중 고르세요</span></span>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">강조색</span><span class="s">기본은 남색 — 로고 컬러웨이 중 고르세요</span></span>
       <span class="chips">
-        <button class="chip on" style="background:#1C1C1C" onclick="setBrand('#1C1C1C',this)" aria-label="먹"></button>
-        <button class="chip" style="background:#2A5BD7" onclick="setBrand('#2A5BD7',this)" aria-label="파랑"></button>
+        <button class="chip on" style="background:#2B5BD9" onclick="setBrand('#2B5BD9',this)" aria-label="남색"></button>
+        <button class="chip" style="background:#1C1C1C" onclick="setBrand('#1C1C1C',this)" aria-label="먹"></button>
         <button class="chip" style="background:#E8912D" onclick="setBrand('#E8912D',this)" aria-label="주황"></button>
         <button class="chip" style="background:#5B7A5B" onclick="setBrand('#5B7A5B',this)" aria-label="초록"></button>
         <button class="chip" style="background:#9C8B74" onclick="setBrand('#9C8B74',this)" aria-label="황갈"></button>
       </span></div>
   </div>
-  <p class="muted" style="padding:16px 20px 0;text-align:center">로고는 단색으로 두고, 강조색은 버튼과 표시에만 씁니다.</p>
+  <p class="muted" style="padding:16px 20px 0;text-align:center">로고는 단색으로 두고, 강조색은 앱바·버튼·표시에 씁니다.</p>
 </section>
 <section class="view" id="d-noti"><div id="d-noti-list"></div></section>
 
