@@ -495,6 +495,12 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="btnrow"><button class="btn line" onclick="back()">나중에</button><button class="btn" onclick="confirmMakeup()">확정하고 알리기</button></div>
 </section>
 
+<section class="view" id="d-readers">
+  <div id="rd-head"></div>
+  <div id="rd-lists"></div>
+  <div class="btnrow" id="rd-action"></div>
+</section>
+
 <nav class="tabbar" id="tabbar" hidden></nav>
 
 </div></div>
@@ -517,7 +523,7 @@ var ICON={
 var TABMETA={today:['오늘','list'],child:['우리 아이','list'],me:['나','list'],notice:['공지','notice'],inbox:['문의','chat'],ask:['문의','chat'],more:['더보기','house']};
 var TITLE={
   'd-roster':['명부','반별'],'d-noti':['알림',''],'d-academy':['우리 학원',''],'d-notice-new':['공지 쓰기',''],
-  'd-answer':['문의',''],'d-faq':['자주 묻는 질문','관리'],'d-makeup':['결석 신청','보강'],
+  'd-answer':['문의',''],'d-faq':['자주 묻는 질문','관리'],'d-makeup':['결석 신청','보강'],'d-readers':['읽은 사람',''],
   'p-noti':['알림',''],'p-notice-view':['공지',''],'p-ask-new':['직접 문의하기',''],'p-ask-mine':['내 문의',''],'p-absence':['결석 미리 알리기',''],
   's-noti':['알림',''],'s-notice-view':['공지','']
 };
@@ -525,10 +531,10 @@ var TITLE={
 /* ── 상태: 이 객체가 곧 2단계 백엔드 스키마의 초안이다 ── */
 var DB={
   notices:[
-    {id:1,title:'여름 특강 안내 — 7월 21일부터 2주',body:['7월 21일(월)부터 2주 동안 여름 특강을 엽니다. 고1 A는 오전 10시, 고2 B는 오후 2시예요.','특강 기간에는 정규 수업이 쉬고, 특강 신청은 이 앱의 문의로 "특강 신청"이라고 보내주시면 됩니다. 7월 4일까지 알려주세요.'],target:'all',date:'6월 16일',read:4,readP:false,readS:true},
-    {id:2,title:'6월 휴원일 — 6월 24일(화) 휴원합니다',body:['6월 24일(화)은 휴원합니다. 보강은 없고, 그 주 나머지 수업은 정상 진행돼요.'],target:'all',date:'6월 16일',read:5,readP:true,readS:true},
-    {id:3,title:'고2 B 단어시험 — 6월 19일(목) 51~75',body:['6월 19일(목) 수업 시작하고 바로 단어시험 봅니다. 범위는 단어장 51~75예요.','지난주에 41~75라고 했는데 진도가 빨라서 줄였어요. 25개, 뜻 쓰기 15개 + 영작 10개.'],target:'B',date:'6월 15일',read:2,readP:false,readS:false},
-    {id:4,title:'고1 A 모의고사 대비 — 6월 27일(금) 특강',body:['6월 27일(금)은 정규 수업 대신 모의고사 대비 특강을 합니다. 7시 시작, 교재는 학원에서 드려요.'],target:'A',date:'6월 12일',read:3,readP:true,readS:false}
+    {id:1,title:'여름 특강 안내 — 7월 21일부터 2주',body:['7월 21일(월)부터 2주 동안 여름 특강을 엽니다. 고1 A는 오전 10시, 고2 B는 오후 2시예요.','특강 기간에는 정규 수업이 쉬고, 특강 신청은 이 앱의 문의로 "특강 신청"이라고 보내주시면 됩니다. 7월 4일까지 알려주세요.'],target:'all',date:'6월 16일',readers:['최유나 어머님','이서연 어머님','김민수 어머님','정하윤 어머님'],readP:false,readS:true},
+    {id:2,title:'6월 휴원일 — 6월 24일(화) 휴원합니다',body:['6월 24일(화)은 휴원합니다. 보강은 없고, 그 주 나머지 수업은 정상 진행돼요.'],target:'all',date:'6월 16일',readers:['박지훈 어머님','최유나 어머님','이서연 어머님','김민수 어머님','정하윤 어머님'],readP:true,readS:true},
+    {id:3,title:'고2 B 단어시험 — 6월 19일(목) 51~75',body:['6월 19일(목) 수업 시작하고 바로 단어시험 봅니다. 범위는 단어장 51~75예요.','지난주에 41~75라고 했는데 진도가 빨라서 줄였어요. 25개, 뜻 쓰기 15개 + 영작 10개.'],target:'B',date:'6월 15일',readers:['김민수 어머님','정하윤 어머님'],readP:false,readS:false},
+    {id:4,title:'고1 A 모의고사 대비 — 6월 27일(금) 특강',body:['6월 27일(금)은 정규 수업 대신 모의고사 대비 특강을 합니다. 7시 시작, 교재는 학원에서 드려요.'],target:'A',date:'6월 12일',readers:['박지훈 어머님','최유나 어머님','이서연 어머님'],readP:true,readS:false}
   ],
   asks:[
     {id:1,who:'x',name:'정하윤 어머님',cls:'B',topic:'숙제 범위 확인',q:'안녕하세요 원장님. 하윤이가 목요일 단어시험 범위를 51~75라고 하는데 맞나요? 지난주 공지에는 41~75로 본 것 같아서 확인차 여쭤봅니다.',at:'오늘 오후 1:20',a:null,aAt:'',draft:'어머님 안녕하세요 :) 51~75가 맞아요. 지난주 공지는 41~75였는데 진도가 빨라서 범위를 줄였습니다. 하윤이가 정확히 알고 있네요. 목요일에 뵐게요!'},
@@ -557,7 +563,7 @@ var DB={
   }
 };
 var ATT_ORDER=['김민수','정하윤','한지우'];
-var ROLE=null, cur='g-phone', hist=[], phoneVal='', draft={}, curAsk=null, curNotice=null, nnTarget='all', abDate='6월 18일 수', curAb=null, mkChoice='6월 21일 토 2시';
+var ROLE=null, cur='g-phone', hist=[], phoneVal='', draft={}, curAsk=null, curNotice=null, nnTarget='all', abDate='6월 18일 수', curAb=null, mkChoice='6월 21일 토 2시', curReaders=null;
 
 /* ── 작은 도구 ── */
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
@@ -572,7 +578,7 @@ function isTab(id){ return ROLE && TABS[ROLE].indexOf(id.slice(2))>=0; }
 function rNotices(){
   var h='';
   DB.notices.forEach(function(n){
-    h+='<div class="post"><div class="pt">'+esc(n.title)+'</div><div class="pm"><b>'+tgt(n.target)+'</b><span>'+n.date+'</span><span>· '+(n.target==='all'?'학부모 ':'')+TOTAL[n.target]+'명 중 '+n.read+'명 읽음</span></div></div>';
+    h+='<button class="post" style="width:100%;text-align:left" onclick="openReaders('+n.id+')"><div class="pt">'+esc(n.title)+'</div><div class="pm"><b>'+tgt(n.target)+'</b><span>'+n.date+'</span><span>· 학부모 '+TOTAL[n.target]+'명 중 '+n.readers.length+'명 읽음</span>'+(n.remindedAt?'<span>· 다시 알림</span>':'')+'</div></button>';
   });
   set('d-notice-list',h);
   ['p','s'].forEach(function(r){
@@ -642,7 +648,7 @@ function rAtt(){
   set('s-me-box','<div class="week"><i>월</i><i class="'+k+'">화</i><i>수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>'
     +'<div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">'+L[2]+'</span></span><span class="tag '+L[1]+'" id="s-today-tag">'+L[0]+'</span></div>');
 }
-function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); rAbsence(); rMakeup(); rTodos(); }
+function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); rAbsence(); rMakeup(); rTodos(); rReaders(); }
 
 /* ── 라우터 ── */
 function render(){
@@ -709,7 +715,7 @@ function postNotice(){
   var t=document.getElementById('nn-title').value.trim(), b=document.getElementById('nn-body').value.trim();
   if(!t){ toast('제목을 적어주세요'); return; }
   var id=1; DB.notices.forEach(function(n){ if(n.id>=id) id=n.id+1; });
-  DB.notices.unshift({id:id,title:t,body:b?[b]:[],target:nnTarget,date:'오늘',read:0,readP:false,readS:false});
+  DB.notices.unshift({id:id,title:t,body:b?[b]:[],target:nnTarget,date:'오늘',readers:[],readP:false,readS:false});
   var to=[];
   if(nnTarget!=='B'){ DB.noti.p.unshift({t:'새 공지 「'+t+'」',m:'공지 · '+tgt(nnTarget)+' · 방금',n:true}); to.push('학부모 '+(nnTarget==='all'?6:3)+'명'); }
   if(nnTarget!=='A'){ DB.noti.s.unshift({t:'새 공지 「'+t+'」',m:'공지 · '+tgt(nnTarget)+' · 방금',n:true}); to.push('학생 '+(nnTarget==='all'?6:3)+'명'); }
@@ -718,8 +724,8 @@ function postNotice(){
 }
 function openNotice(id){
   curNotice=id; var n=byId(DB.notices,id); if(!n) return;
-  if(ROLE==='p'&&!n.readP){ n.readP=true; n.read++; }
-  if(ROLE==='s'&&!n.readS){ n.readS=true; n.read++; }
+  if(ROLE==='p'&&!n.readP){ n.readP=true; if(n.readers.indexOf(ME.p.name)<0) n.readers.push(ME.p.name); }
+  if(ROLE==='s'&&!n.readS){ n.readS=true; }
   push('notice-view');
 }
 function sendAsk(){
@@ -824,6 +830,42 @@ function toggleTodo(id){
   toast(t.done ? '「'+t.title+'」 했어요로 표시했어요' : '「'+t.title+'」 다시 할 것으로 돌렸어요');
 }
 
+/* ── 공지 읽은 사람 / 안 읽은 사람 / 다시 알리기 ── */
+var PARENTS={A:['박지훈 어머님','최유나 어머님','이서연 어머님'],B:['김민수 어머님','정하윤 어머님','한지우 어머님']};
+function audience(n){ return n.target==='all' ? PARENTS.A.concat(PARENTS.B) : PARENTS[n.target]; }
+function unreadOf(n){ return audience(n).filter(function(x){ return n.readers.indexOf(x)<0; }); }
+function openReaders(id){ curReaders=id; push('readers'); }
+function rReaders(){
+  if(!curReaders) return;
+  var n=byId(DB.notices,curReaders); if(!n) return;
+  var un=unreadOf(n), rd=n.readers;
+  set('rd-head','<div class="head"><h1 class="hello">'+esc(n.title.split(' — ')[0])+'</h1><p class="lede">'+tgt(n.target)+' · '+n.date+' · 학부모 '+audience(n).length+'명 중 <b>'+rd.length+'명 읽음</b></p></div>');
+  function row(x,cls,label){ return '<div class="rw" style="cursor:default"><span class="nm">'+x.charAt(0)+'</span><span class="bd"><span class="t">'+x+'</span></span><span class="tag '+cls+'">'+label+'</span></div>'; }
+  var h='<div class="lab first">안 읽음<span class="r">'+un.length+'</span></div>';
+  h+= un.length ? '<div class="box unread">'+un.map(function(x){return row(x,'danger','안 읽음')}).join('')+'</div>'
+                : '<p class="muted" style="padding:0 20px">모두 읽었어요.</p>';
+  h+='<div class="lab">읽음<span class="r">'+rd.length+'</span></div>';
+  h+= rd.length ? '<div class="box soft readers">'+rd.map(function(x){return row(x,'ok','읽음')}).join('')+'</div>'
+                : '<p class="muted" style="padding:0 20px">아직 아무도 안 읽었어요.</p>';
+  set('rd-lists',h);
+  var a='';
+  if(!un.length) a='';
+  else if(n.remindedAt) a='<button class="btn line" onclick="remind()">한 번 더 알리기</button>';
+  else a='<button class="btn" onclick="remind()">안 읽은 '+un.length+'명에게 다시 알리기</button>';
+  set('rd-action', a + (n.remindedAt ? '' : ''));
+  var note=document.getElementById('rd-note'); if(note) note.remove();
+  if(n.remindedAt){ var p=document.createElement('p'); p.id='rd-note'; p.className='muted'; p.style.cssText='padding:12px 20px 0;text-align:center'; p.textContent='다시 알렸어요 · '+n.remindedAt; document.getElementById('rd-action').insertAdjacentElement('afterend',p); }
+  TITLE['d-readers'][1]=tgt(n.target);
+}
+function remind(){
+  var n=byId(DB.notices,curReaders); if(!n) return;
+  var un=unreadOf(n); if(!un.length) return;
+  n.remindedAt='방금';
+  if(un.indexOf(ME.p.name)>=0) DB.noti.p.unshift({t:'「'+n.title.split(' — ')[0]+'」 아직 안 읽으셨어요',m:'공지 · 원장님이 다시 알렸어요 · 방금',n:true});
+  toast('안 읽은 '+un.length+'명에게 다시 알렸어요');
+  refresh();
+}
+
 /* ── 조각 ── */
 var toastT;
 function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show')},2600); }
@@ -843,7 +885,7 @@ function setBrand(color,el){
     ATT_ORDER.forEach(function(n){ draft[n]=DB.att[n]; });
     if(h==='d-answer'){ curAsk=1; document.getElementById('ans-body').value=DB.asks[0].draft; }
     if(h==='p-notice-view'){ curNotice=1; } if(h==='s-notice-view'){ curNotice=3; }
-    if(h==='d-makeup'){ curAb=1; }
+    if(h==='d-makeup'){ curAb=1; } if(h==='d-readers'){ curReaders=1; }
   }
   render();
 })();

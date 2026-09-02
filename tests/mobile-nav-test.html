@@ -99,7 +99,7 @@
       if (d.querySelectorAll('#p-notice .post').length !== 4) fails.push('parent notices after post=' + d.querySelectorAll('#p-notice .post').length);
       if (text('.appbar .badge') !== '3') fails.push('parent badge after post=' + text('.appbar .badge'));
       w.openNotice(w.DB.notices[0].id);
-      if (w.DB.notices[0].read !== 1) fails.push('read count after parent opened=' + w.DB.notices[0].read);
+      if (w.DB.notices[0].readers.length !== 1) fails.push('readers after parent opened=' + w.DB.notices[0].readers.length);
       w.back(); w.push('ask-new'); d.getElementById('an-body').value = '테스트 문의'; w.sendAsk();
       w.logout(); w.gatePhone('010-1000-0001'); w.gateGo(); w.gateCode();
       if (d.querySelectorAll('#d-inbox .tag.danger').length !== 2) fails.push('unanswered after ask=' + d.querySelectorAll('#d-inbox .tag.danger').length);
@@ -141,12 +141,25 @@
       w.logout(); w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
       if (d.querySelectorAll('#p-child .todo').length < 1) fails.push('parent sees no todos for 고1 A');
 
+      // ── 공지 안 읽은 사람 다시 알리기 ──
+      w.logout(); w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
+      const pb2 = +text('.appbar .badge');
+      w.logout(); w.gatePhone('010-1000-0001'); w.gateGo(); w.gateCode();
+      w.openReaders(1);
+      if (d.querySelectorAll('#d-readers .unread .rw').length !== 2) fails.push('unread for notice 1=' + d.querySelectorAll('#d-readers .unread .rw').length);
+      if (d.querySelectorAll('#d-readers .readers .rw').length !== 4) fails.push('readers for notice 1=' + d.querySelectorAll('#d-readers .readers .rw').length);
+      w.remind();
+      if (!w.DB.notices.filter(n => n.id === 1)[0].remindedAt) fails.push('remindedAt not set');
+      w.logout(); w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
+      if (+text('.appbar .badge') !== pb2 + 1) fails.push('parent badge after remind=' + text('.appbar .badge'));
+      if (!/아직/.test(text('#p-noti'))) fails.push('remind noti not shown to parent');
+
       // ── 이름 교체 ──
       if (d.body.innerHTML.indexOf('한빛') >= 0) fails.push('한빛 remains');
       if (d.head.innerHTML.indexOf('Gowun') >= 0) fails.push('Gowun Batang link remains');
 
       const result = fails.length === 0
-        ? 'PASS: gate + 3 roles + router + overflow + live state + absence + todos'
+        ? 'PASS: gate + 3 roles + router + overflow + live state + absence + todos + remind'
         : 'FAIL: ' + fails.join(' | ');
       document.getElementById('result').textContent = result;
       document.title = result.startsWith('PASS:') ? 'PASS' : 'FAIL';
