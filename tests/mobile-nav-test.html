@@ -47,6 +47,11 @@
       if (!d.querySelector('#d-roster') || d.querySelectorAll('#d-roster .rw').length !== 6) fails.push('roster rows != 6');
       if (!d.querySelector('#d-academy .appicon img')) fails.push('academy app icon missing');
 
+      // ── 원장: 공지 ──
+      if (d.querySelectorAll('#d-notice .post').length !== 4) fails.push('director notices != 4');
+      if (!d.querySelector('#d-notice-new textarea')) fails.push('notice-new textarea missing');
+      if (d.querySelectorAll('#d-notice-new .seg button').length !== 3) fails.push('notice target seg != 3 (전체/초등 A/중등 B)');
+
       // ── 라우터 ──
       w.tab('more');
       if (on() !== 'd-more') fails.push('tab(more) -> ' + on());

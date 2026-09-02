@@ -262,7 +262,32 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
     <div class="rw" style="cursor:default"><span class="bd"><span class="t">초등 A 출석률</span><span class="s">월·수·금 3회 기준</span></span><b class="num" style="font-size:20px;font-weight:600">100%</b></div>
   </div>
 </section>
-<section class="view" id="d-notice"><div class="head"><h1 class="hello">공지</h1></div></section>
+<section class="view" id="d-notice">
+  <div class="head"><h1 class="hello">공지</h1><p class="lede">올리면 대상 반의 학부모와 학생에게 <b>알림이 갑니다.</b></p></div>
+  <div class="btnrow" style="padding-top:0"><button class="btn" onclick="push('notice-new')">공지 쓰기</button></div>
+  <div class="lab">올린 공지<span class="r">읽은 사람 수</span></div>
+  <div class="box">
+    <div class="post"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 학부모 6명 중 4명 읽음</span></div></div>
+    <div class="post"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 학부모 6명 중 5명 읽음</span></div></div>
+    <div class="post"><div class="pt">중등 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>중등 B</b><span>6월 15일</span><span>· 3명 중 3명 읽음</span></div></div>
+    <div class="post"><div class="pt">초등 A 견학 — 6월 27일(금) 영어도서관</div><div class="pm"><b>초등 A</b><span>6월 12일</span><span>· 3명 중 3명 읽음</span></div></div>
+  </div>
+</section>
+
+<section class="view" id="d-notice-new">
+  <div class="head"><p class="lede">대상을 고르고 올리면 그 반의 학부모와 학생에게 <b>알림이 갑니다.</b></p></div>
+  <div class="lab first">대상</div>
+  <div class="seg">
+    <button class="on" onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">전체</button>
+    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">초등 A</button>
+    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">중등 B</button>
+  </div>
+  <div class="lab">제목</div>
+  <div style="padding:0 20px"><input class="input" value="7월 수업 시간 변경 안내"></div>
+  <div class="lab">내용</div>
+  <div style="padding:0 20px"><textarea class="input">7월부터 중등 B 수업이 화·목 7시 30분으로 30분 늦춰집니다. 여름 특강과 겹치지 않게 조정했어요. 불편한 점 있으시면 문의 주세요.</textarea></div>
+  <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="toast('공지를 올리고 학부모 6명, 학생 6명에게 알렸어요');back()">올리고 알리기</button></div>
+</section>
 <section class="view" id="d-inbox"><div class="head"><h1 class="hello">문의</h1></div></section>
 <section class="view" id="d-more">
   <div class="head"><h1 class="hello">더보기</h1></div>
