@@ -31,7 +31,7 @@
 html,body{background:var(--ground);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum"}
 .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 a{color:inherit;text-decoration:none}
-button,input{font-family:inherit;color:inherit}
+button,input,textarea{font-family:inherit;color:inherit}
 button{cursor:pointer;border:none;background:none}
 :focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
 
@@ -246,16 +246,9 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
     <button class="on">고2 B</button>
   </div>
   <div class="lab">출석부<span class="r">6월 17일 화</span></div>
-  <div class="box">
-    <div class="rw"><span class="nm">김</span><span class="bd"><span class="t">김민수</span></span>
-      <span class="marks"><button onclick="att(this,'p')" aria-label="출석">○</button><button class="on l" onclick="att(this,'l')" aria-label="지각">△</button><button onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
-    <div class="rw"><span class="nm">정</span><span class="bd"><span class="t">정하윤</span></span>
-      <span class="marks"><button class="on p" onclick="att(this,'p')" aria-label="출석">○</button><button onclick="att(this,'l')" aria-label="지각">△</button><button onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
-    <div class="rw"><span class="nm">한</span><span class="bd"><span class="t">한지우</span></span>
-      <span class="marks"><button onclick="att(this,'p')" aria-label="출석">○</button><button onclick="att(this,'l')" aria-label="지각">△</button><button class="on a" onclick="att(this,'a')" aria-label="결석">✕</button></span></div>
-  </div>
+  <div class="box" id="d-att-box"></div>
   <div class="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
-  <div class="btnrow"><button class="btn" onclick="toast('출결을 저장하고, 김민수·한지우 학부모에게 알림을 보냈어요')">저장하고 알리기</button></div>
+  <div class="btnrow"><button class="btn" onclick="saveAtt()">저장하고 알리기</button></div>
 
   <div class="lab">이번 주</div>
   <div class="box soft">
@@ -267,48 +260,34 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="head"><h1 class="hello">공지</h1><p class="lede">올리면 대상 반의 학부모와 학생에게 <b>알림이 갑니다.</b></p></div>
   <div class="btnrow" style="padding-top:0"><button class="btn" onclick="push('notice-new')">공지 쓰기</button></div>
   <div class="lab">올린 공지<span class="r">읽은 사람 수</span></div>
-  <div class="box">
-    <div class="post"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 학부모 6명 중 4명 읽음</span></div></div>
-    <div class="post"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 학부모 6명 중 5명 읽음</span></div></div>
-    <div class="post"><div class="pt">고2 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>고2 B</b><span>6월 15일</span><span>· 3명 중 3명 읽음</span></div></div>
-    <div class="post"><div class="pt">고1 A 모의고사 대비 — 6월 27일(금) 특강</div><div class="pm"><b>고1 A</b><span>6월 12일</span><span>· 3명 중 3명 읽음</span></div></div>
-  </div>
+  <div class="box" id="d-notice-list"></div>
 </section>
 
 <section class="view" id="d-notice-new">
   <div class="head"><p class="lede">대상을 고르고 올리면 그 반의 학부모와 학생에게 <b>알림이 갑니다.</b></p></div>
   <div class="lab first">대상</div>
   <div class="seg">
-    <button class="on" onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">전체</button>
-    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">고1 A</button>
-    <button onclick="var b=this.parentNode.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].className='';this.className='on'">고2 B</button>
+    <button class="on" onclick="segPick(this,'all')">전체</button>
+    <button onclick="segPick(this,'A')">고1 A</button>
+    <button onclick="segPick(this,'B')">고2 B</button>
   </div>
   <div class="lab">제목</div>
-  <div style="padding:0 20px"><input class="input" value="7월 수업 시간 변경 안내"></div>
+  <div style="padding:0 20px"><input class="input" id="nn-title" value="7월 수업 시간 변경 안내"></div>
   <div class="lab">내용</div>
-  <div style="padding:0 20px"><textarea class="input">7월부터 고2 B 수업이 화·목 8시 30분으로 30분 늦춰집니다. 여름 특강과 겹치지 않게 조정했어요. 불편한 점 있으시면 문의 주세요.</textarea></div>
-  <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="toast('공지를 올리고 학부모 6명, 학생 6명에게 알렸어요');back()">올리고 알리기</button></div>
+  <div style="padding:0 20px"><textarea class="input" id="nn-body">7월부터 고2 B 수업이 화·목 8시 30분으로 30분 늦춰집니다. 여름 특강과 겹치지 않게 조정했어요. 불편한 점 있으시면 문의 주세요.</textarea></div>
+  <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="postNotice()">올리고 알리기</button></div>
 </section>
 <section class="view" id="d-inbox">
   <div class="head"><h1 class="hello">문의</h1><p class="lede">학부모가 보낸 1:1 문의예요. 답하면 <b>그 학부모에게만</b> 알림이 갑니다.</p></div>
-  <div class="lab first">답변 대기<span class="r">1</span></div>
-  <div class="box">
-    <button class="rw" onclick="push('answer')"><span class="nm">정</span><span class="bd"><span class="t">정하윤 어머님</span><span class="s">숙제 범위 확인 · 오늘 오후 1:20</span></span><span class="tag danger">답변 대기</span></button>
-  </div>
-  <div class="lab">답변 완료</div>
-  <div class="box soft">
-    <button class="rw" onclick="toast('데모에서는 정하윤 어머님 문의만 열립니다')"><span class="nm">박</span><span class="bd"><span class="t">박지훈 어머님</span><span class="s">다음 주 화요일 결석 예정 · 어제</span></span><span class="tag muted">답변 완료</span></button>
-    <button class="rw" onclick="toast('데모에서는 정하윤 어머님 문의만 열립니다')"><span class="nm">최</span><span class="bd"><span class="t">최유나 어머님</span><span class="s">레벨 테스트 언제 · 6월 14일</span></span><span class="tag muted">답변 완료</span></button>
-  </div>
+  <div id="d-inbox-list"></div>
   <div class="btnrow"><button class="btn line" onclick="push('faq')">자주 묻는 질문 관리</button></div>
 </section>
 
 <section class="view" id="d-answer">
-  <div class="head"><p class="lede">고2 B · 정하윤 어머님 · 오늘 오후 1:20</p></div>
-  <div class="bubble"><div class="who">정하윤 어머님</div>안녕하세요 원장님. 하윤이가 목요일 단어시험 범위를 51~75라고 하는데 맞나요? 지난주 공지에는 41~75로 본 것 같아서 확인차 여쭤봅니다.</div>
+  <div id="ans-q"></div>
   <div class="lab">답변</div>
-  <div style="padding:0 20px"><textarea class="input">어머님 안녕하세요 :) 51~75가 맞아요. 지난주 공지는 41~75였는데 진도가 빨라서 범위를 줄였습니다. 하윤이가 정확히 알고 있네요. 목요일에 뵐게요!</textarea></div>
-  <div class="btnrow"><button class="btn line" onclick="back()">나중에</button><button class="btn" onclick="toast('정하윤 어머님께 답변을 보냈어요');back()">답하고 알리기</button></div>
+  <div style="padding:0 20px"><textarea class="input" id="ans-body" placeholder="답변을 적어주세요"></textarea></div>
+  <div class="btnrow"><button class="btn line" onclick="back()">나중에</button><button class="btn" onclick="sendAnswer()">답하고 알리기</button></div>
 </section>
 
 <section class="view" id="d-faq">
@@ -337,6 +316,11 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
     <button class="rw soon" onclick="toast('준비 중인 기능이에요')"><span class="bd"><span class="t">첨삭</span><span class="s">AI가 짚고 원장님이 확정</span></span><span class="tag muted">준비 중</span></button>
     <button class="rw soon" onclick="toast('준비 중인 기능이에요')"><span class="bd"><span class="t">편지</span><span class="s">채점 결과를 원장님 말투로</span></span><span class="tag muted">준비 중</span></button>
     <button class="rw soon" onclick="toast('준비 중인 기능이에요')"><span class="bd"><span class="t">성장 기록</span><span class="s">틀리던 것이 줄어드는 추이</span></span><span class="tag muted">준비 중</span></button>
+  </div>
+
+  <div class="lab">데모</div>
+  <div class="box soft">
+    <button class="rw" onclick="location.reload()"><span class="bd"><span class="t">데모 처음 상태로</span><span class="s">올린 공지·문의·출결을 지우고 다시 시작</span></span><span class="go">›</span></button>
   </div>
 
   <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
@@ -379,17 +363,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   </div>
   <p class="muted" style="padding:16px 20px 0;text-align:center">로고는 단색으로 두고, 강조색은 버튼과 표시에만 씁니다.</p>
 </section>
-<section class="view" id="d-noti">
-  <div class="lab first" style="margin-top:20px">오늘</div>
-  <div class="box">
-    <div class="post new"><div class="pt">정하윤 어머님이 문의를 보냈어요</div><div class="pm"><b>문의</b><span>숙제 범위 확인 · 오후 1:20</span></div></div>
-  </div>
-  <div class="lab">어제</div>
-  <div class="box soft">
-    <div class="post"><div class="pt">박지훈 어머님 문의에 답했어요</div><div class="pm"><b>문의</b><span>다음 주 화요일 결석 예정 · 어제 오후 6:02</span></div></div>
-    <div class="post"><div class="pt">공지 「6월 휴원일」을 올렸어요</div><div class="pm"><b>공지</b><span>전체 · 학부모 6명 중 5명 읽음</span></div></div>
-  </div>
-</section>
+<section class="view" id="d-noti"><div id="d-noti-list"></div></section>
 
 <!-- ════ 학부모 (Task 6) ════ -->
 <section class="view" id="p-child">
@@ -407,19 +381,10 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 </section>
 <section class="view" id="p-notice">
   <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>고1 A</b> 공지만 보여요.</p></div>
-  <div class="box">
-    <button class="post new" style="width:100%;text-align:left" onclick="push('notice-view')"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span></div></button>
-    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
-    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">고1 A 모의고사 대비 — 6월 27일(금) 특강</div><div class="pm"><b>고1 A</b><span>6월 12일</span><span>· 읽음</span></div></button>
-  </div>
+  <div class="box" id="p-notice-list"></div>
 </section>
 
-<section class="view" id="p-notice-view">
-  <div class="head"><h1 class="hello">여름 특강 안내</h1><p class="lede">전체 · 6월 16일 · 김지영 원장</p></div>
-  <p class="para">7월 21일(월)부터 2주 동안 여름 특강을 엽니다. 고1 A는 오전 10시, 고2 B는 오후 2시예요.</p>
-  <p class="para">특강 기간에는 정규 수업이 쉬고, 특강 신청은 이 앱의 문의로 "특강 신청"이라고 보내주시면 됩니다. 7월 4일까지 알려주세요.</p>
-  <p class="muted" style="padding:20px 20px 0">이 공지를 읽은 것으로 표시됐어요.</p>
-</section>
+<section class="view" id="p-notice-view"><div id="p-nv"></div></section>
 <section class="view" id="p-ask">
   <div class="head"><h1 class="hello">문의</h1><p class="lede">자주 묻는 질문을 먼저 보시고, 없으면 <b>직접 문의</b>해 주세요. 원장님만 봅니다.</p></div>
   <div class="lab first">자주 묻는 질문</div>
@@ -436,15 +401,13 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 <section class="view" id="p-ask-new">
   <div class="head"><p class="lede">원장님만 봅니다. 답이 오면 <b>알림</b>으로 알려드려요.</p></div>
   <div class="lab first">문의 내용</div>
-  <div style="padding:0 20px"><textarea class="input" placeholder="예) 다음 주 수요일 결석 예정입니다."></textarea></div>
-  <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="toast('원장님께 문의를 보냈어요');back()">보내기</button></div>
+  <div style="padding:0 20px"><textarea class="input" id="an-body" placeholder="예) 다음 주 수요일 결석 예정입니다."></textarea></div>
+  <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="sendAsk()">보내기</button></div>
 </section>
 
 <section class="view" id="p-ask-mine">
   <div class="head"><p class="lede">보낸 문의와 원장님 답변이에요.</p></div>
-  <div class="lab first">어제</div>
-  <div class="bubble me"><div class="who">나</div>다음 주 화요일(6월 24일) 지훈이 가족 행사로 결석 예정입니다. 보강 가능할까요?</div>
-  <div class="bubble"><div class="who">김지영 원장 · 어제 오후 6:02</div>어머님 안녕하세요 :) 24일은 휴원일이라 원래 수업이 없어요. 걱정 안 하셔도 됩니다. 즐거운 행사 되세요!</div>
+  <div id="p-mine-list"></div>
 </section>
 <section class="view" id="p-more">
   <div class="head"><h1 class="hello">더보기</h1></div>
@@ -455,25 +418,13 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
   <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
 </section>
-<section class="view" id="p-noti">
-  <div class="lab first" style="margin-top:20px">오늘</div>
-  <div class="box">
-    <div class="post new"><div class="pt">새 공지 「여름 특강 안내」</div><div class="pm"><b>공지</b><span>전체 · 오전 9:10</span></div></div>
-  </div>
-  <div class="lab">어제</div>
-  <div class="box">
-    <div class="post new"><div class="pt">원장님이 문의에 답했어요</div><div class="pm"><b>문의</b><span>다음 주 화요일 결석 예정 · 오후 6:02</span></div></div>
-  </div>
-</section>
+<section class="view" id="p-noti"><div id="p-noti-list"></div></section>
 
 <!-- ════ 학생 (Task 7) ════ -->
 <section class="view" id="s-me">
   <div class="head"><h1 class="hello">민수</h1><p class="lede">고2 B · 화목 8시 · 오늘 수업 있어요.</p></div>
   <div class="lab first">이번 주<span class="r">6/16 – 6/22</span></div>
-  <div class="box">
-    <div class="week"><i>월</i><i class="l">화</i><i>수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>
-    <div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">8시 10분 도착 · 지각</span></span><span class="tag warn">지각</span></div>
-  </div>
+  <div class="box" id="s-me-box"></div>
   <div class="lab">다음 수업</div>
   <div class="box soft">
     <div class="rw" style="cursor:default"><span class="bd"><span class="t">6월 19일 목 · 8시</span><span class="s">단어시험 51~75 — 공지 확인</span></span></div>
@@ -481,19 +432,10 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 </section>
 <section class="view" id="s-notice">
   <div class="head"><h1 class="hello">공지</h1><p class="lede">전체 공지와 <b>고2 B</b> 공지만 보여요.</p></div>
-  <div class="box">
-    <button class="post new" style="width:100%;text-align:left" onclick="push('notice-view')"><div class="pt">고2 B 단어시험 — 6월 19일(목) 51~75</div><div class="pm"><b>고2 B</b><span>6월 15일</span></div></button>
-    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">여름 특강 안내 — 7월 21일부터 2주</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
-    <button class="post" style="width:100%;text-align:left" onclick="toast('데모에서는 첫 공지만 열립니다')"><div class="pt">6월 휴원일 — 6월 24일(화) 휴원합니다</div><div class="pm"><b>전체</b><span>6월 16일</span><span>· 읽음</span></div></button>
-  </div>
+  <div class="box" id="s-notice-list"></div>
 </section>
 
-<section class="view" id="s-notice-view">
-  <div class="head"><h1 class="hello">고2 B 단어시험</h1><p class="lede">고2 B · 6월 15일 · 김지영 원장</p></div>
-  <p class="para">6월 19일(목) 수업 시작하고 바로 단어시험 봅니다. 범위는 단어장 <b>51~75</b>예요.</p>
-  <p class="para">지난주에 41~75라고 했는데 진도가 빨라서 줄였어요. 25개, 뜻 쓰기 15개 + 영작 10개.</p>
-  <p class="muted" style="padding:20px 20px 0">이 공지를 읽은 것으로 표시됐어요.</p>
-</section>
+<section class="view" id="s-notice-view"><div id="s-nv"></div></section>
 <section class="view" id="s-more">
   <div class="head"><h1 class="hello">더보기</h1></div>
   <div class="box">
@@ -502,12 +444,7 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
   <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
 </section>
-<section class="view" id="s-noti">
-  <div class="lab first" style="margin-top:20px">6월 15일</div>
-  <div class="box">
-    <div class="post new"><div class="pt">새 공지 「고2 B 단어시험」</div><div class="pm"><b>공지</b><span>고2 B · 오후 8:40</span></div></div>
-  </div>
-</section>
+<section class="view" id="s-noti"><div id="s-noti-list"></div></section>
 
 <nav class="tabbar" id="tabbar" hidden></nav>
 
@@ -518,8 +455,10 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 <script>
 /* ── 데모 명부: 번호 → 역할 ── */
 var PHONES={'010-1000-0001':'d','010-1234-0001':'p','010-1234-0104':'s'};
+var ME={p:{name:'박지훈 어머님',child:'박지훈',cls:'A'}, s:{name:'김민수',cls:'B'}};
+var CLS={A:'고1 A',B:'고2 B'};
+var TOTAL={all:6,A:3,B:3};
 var TABS={d:['today','notice','inbox','more'], p:['child','notice','ask','more'], s:['me','notice','more']};
-var NOTI={d:1,p:2,s:1};
 var ICON={
   list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg>',
   notice:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6h3l6 4V5L8 9z"/><path d="M17 9.5a3.5 3.5 0 0 1 0 5"/></svg>',
@@ -527,17 +466,127 @@ var ICON={
   house:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9.6L12 4l8 5.6V20"/><path d="M15 6.5V4h2v4"/></svg>'
 };
 var TABMETA={today:['오늘','list'],child:['우리 아이','list'],me:['나','list'],notice:['공지','notice'],inbox:['문의','chat'],ask:['문의','chat'],more:['더보기','house']};
-/* 진입 뷰 제목 [제목, 오른쪽] — 탭 뷰는 로고를 보인다 */
 var TITLE={
   'd-roster':['명부','반별'],'d-noti':['알림',''],'d-academy':['우리 학원',''],'d-notice-new':['공지 쓰기',''],
-  'd-answer':['문의','정하윤 어머님'],'d-faq':['자주 묻는 질문','관리'],
+  'd-answer':['문의',''],'d-faq':['자주 묻는 질문','관리'],
   'p-noti':['알림',''],'p-notice-view':['공지',''],'p-ask-new':['직접 문의하기',''],'p-ask-mine':['내 문의',''],
   's-noti':['알림',''],'s-notice-view':['공지','']
 };
-var ROLE=null, cur='g-phone', hist=[], phoneVal='';
 
+/* ── 상태: 이 객체가 곧 2단계 백엔드 스키마의 초안이다 ── */
+var DB={
+  notices:[
+    {id:1,title:'여름 특강 안내 — 7월 21일부터 2주',body:['7월 21일(월)부터 2주 동안 여름 특강을 엽니다. 고1 A는 오전 10시, 고2 B는 오후 2시예요.','특강 기간에는 정규 수업이 쉬고, 특강 신청은 이 앱의 문의로 "특강 신청"이라고 보내주시면 됩니다. 7월 4일까지 알려주세요.'],target:'all',date:'6월 16일',read:4,readP:false,readS:true},
+    {id:2,title:'6월 휴원일 — 6월 24일(화) 휴원합니다',body:['6월 24일(화)은 휴원합니다. 보강은 없고, 그 주 나머지 수업은 정상 진행돼요.'],target:'all',date:'6월 16일',read:5,readP:true,readS:true},
+    {id:3,title:'고2 B 단어시험 — 6월 19일(목) 51~75',body:['6월 19일(목) 수업 시작하고 바로 단어시험 봅니다. 범위는 단어장 51~75예요.','지난주에 41~75라고 했는데 진도가 빨라서 줄였어요. 25개, 뜻 쓰기 15개 + 영작 10개.'],target:'B',date:'6월 15일',read:2,readP:false,readS:false},
+    {id:4,title:'고1 A 모의고사 대비 — 6월 27일(금) 특강',body:['6월 27일(금)은 정규 수업 대신 모의고사 대비 특강을 합니다. 7시 시작, 교재는 학원에서 드려요.'],target:'A',date:'6월 12일',read:3,readP:true,readS:false}
+  ],
+  asks:[
+    {id:1,who:'x',name:'정하윤 어머님',cls:'B',topic:'숙제 범위 확인',q:'안녕하세요 원장님. 하윤이가 목요일 단어시험 범위를 51~75라고 하는데 맞나요? 지난주 공지에는 41~75로 본 것 같아서 확인차 여쭤봅니다.',at:'오늘 오후 1:20',a:null,aAt:'',draft:'어머님 안녕하세요 :) 51~75가 맞아요. 지난주 공지는 41~75였는데 진도가 빨라서 범위를 줄였습니다. 하윤이가 정확히 알고 있네요. 목요일에 뵐게요!'},
+    {id:2,who:'p',name:'박지훈 어머님',cls:'A',topic:'다음 주 화요일 결석 예정',q:'다음 주 화요일(6월 24일) 지훈이 가족 행사로 결석 예정입니다. 보강 가능할까요?',at:'어제',a:'어머님 안녕하세요 :) 24일은 휴원일이라 원래 수업이 없어요. 걱정 안 하셔도 됩니다. 즐거운 행사 되세요!',aAt:'어제 오후 6:02'},
+    {id:3,who:'x',name:'최유나 어머님',cls:'A',topic:'레벨 테스트 언제',q:'레벨 테스트는 언제 보나요?',at:'6월 14일',a:'다음 주 월요일 수업 끝나고 20분 정도 봐요. 따로 준비하실 건 없어요.',aAt:'6월 14일'}
+  ],
+  att:{'김민수':'l','정하윤':'p','한지우':'a'},
+  noti:{
+    d:[{t:'정하윤 어머님이 문의를 보냈어요',m:'문의 · 숙제 범위 확인 · 오후 1:20',n:true},
+       {t:'박지훈 어머님 문의에 답했어요',m:'문의 · 어제 오후 6:02',n:false},
+       {t:'공지 「6월 휴원일」을 올렸어요',m:'공지 · 전체 · 6명 중 5명 읽음',n:false}],
+    p:[{t:'새 공지 「여름 특강 안내」',m:'공지 · 전체 · 오전 9:10',n:true},
+       {t:'원장님이 문의에 답했어요',m:'문의 · 다음 주 화요일 결석 예정 · 어제 오후 6:02',n:true}],
+    s:[{t:'새 공지 「고2 B 단어시험」',m:'공지 · 고2 B · 6월 15일',n:true}]
+  }
+};
+var ATT_ORDER=['김민수','정하윤','한지우'];
+var ROLE=null, cur='g-phone', hist=[], phoneVal='', draft={}, curAsk=null, curNotice=null, nnTarget='all';
+
+/* ── 작은 도구 ── */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function set(id,h){ var e=document.getElementById(id); if(e) e.innerHTML=h; }
+function byId(list,id){ for(var i=0;i<list.length;i++) if(list[i].id===id) return list[i]; return null; }
+function badge(role){ var n=0,l=DB.noti[role]||[]; for(var i=0;i<l.length;i++) if(l[i].n) n++; return n; }
+function tgt(t){ return t==='all'?'전체':CLS[t]; }
+function sees(n,role){ return n.target==='all' || n.target===ME[role].cls; }
 function isTab(id){ return ROLE && TABS[ROLE].indexOf(id.slice(2))>=0; }
+
+/* ── 그리기: 상태에서 화면으로 ── */
+function rNotices(){
+  var h='';
+  DB.notices.forEach(function(n){
+    h+='<div class="post"><div class="pt">'+esc(n.title)+'</div><div class="pm"><b>'+tgt(n.target)+'</b><span>'+n.date+'</span><span>· '+(n.target==='all'?'학부모 ':'')+TOTAL[n.target]+'명 중 '+n.read+'명 읽음</span></div></div>';
+  });
+  set('d-notice-list',h);
+  ['p','s'].forEach(function(r){
+    var k='';
+    DB.notices.forEach(function(n){
+      if(!sees(n,r)) return;
+      var rd=(r==='p')?n.readP:n.readS;
+      k+='<button class="post'+(rd?'':' new')+'" style="width:100%;text-align:left" onclick="openNotice('+n.id+')"><div class="pt">'+esc(n.title)+'</div><div class="pm"><b>'+tgt(n.target)+'</b><span>'+n.date+'</span>'+(rd?'<span>· 읽음</span>':'')+'</div></button>';
+    });
+    set(r+'-notice-list',k);
+  });
+}
+function rNoticeView(){
+  if(!curNotice) return;
+  var n=byId(DB.notices,curNotice); if(!n) return;
+  var h='<div class="head"><h1 class="hello">'+esc(n.title.split(' — ')[0])+'</h1><p class="lede">'+tgt(n.target)+' · '+n.date+' · 김지영 원장</p></div>';
+  n.body.forEach(function(p){ h+='<p class="para">'+esc(p)+'</p>'; });
+  h+='<p class="muted" style="padding:20px 20px 0">이 공지를 읽은 것으로 표시됐어요.</p>';
+  set('p-nv',h); set('s-nv',h);
+}
+function rInbox(){
+  var open=DB.asks.filter(function(a){return !a.a}), done=DB.asks.filter(function(a){return a.a});
+  function row(a,cls){
+    return '<button class="rw" onclick="openAsk('+a.id+')"><span class="nm">'+a.name.charAt(0)+'</span><span class="bd"><span class="t">'+esc(a.name)+'</span><span class="s">'+esc(a.topic)+' · '+a.at+'</span></span><span class="tag '+cls+'">'+(a.a?'답변 완료':'답변 대기')+'</span></button>';
+  }
+  var h='<div class="lab first">답변 대기<span class="r">'+open.length+'</span></div>';
+  h+=open.length ? '<div class="box">'+open.map(function(a){return row(a,'danger')}).join('')+'</div>'
+                 : '<p class="muted" style="padding:0 20px">답변 대기 중인 문의가 없어요.</p>';
+  h+='<div class="lab">답변 완료</div><div class="box soft">'+done.map(function(a){return row(a,'muted')}).join('')+'</div>';
+  set('d-inbox-list',h);
+
+  var mine=DB.asks.filter(function(a){return a.who==='p'}), m='';
+  mine.forEach(function(a,i){
+    m+='<div class="lab'+(i?'':' first')+'">'+a.at+'</div><div class="bubble me"><div class="who">나</div>'+esc(a.q)+'</div>';
+    m+= a.a ? '<div class="bubble"><div class="who">김지영 원장 · '+a.aAt+'</div>'+esc(a.a)+'</div>'
+            : '<p class="muted" style="padding:10px 20px 0">원장님이 아직 답하지 않았어요. 답이 오면 알림으로 알려드려요.</p>';
+  });
+  set('p-mine-list', m || '<p class="muted" style="padding:0 20px">보낸 문의가 없어요.</p>');
+}
+function rAnswer(){
+  if(!curAsk) return;
+  var a=byId(DB.asks,curAsk); if(!a) return;
+  set('ans-q','<div class="head"><p class="lede">'+CLS[a.cls]+' · '+esc(a.name)+' · '+a.at+'</p></div><div class="bubble"><div class="who">'+esc(a.name)+'</div>'+esc(a.q)+'</div>');
+  TITLE['d-answer'][1]=a.name;
+}
+function rNoti(){
+  ['d','p','s'].forEach(function(r){
+    var l=DB.noti[r], h='<div class="lab first" style="margin-top:20px">알림</div>';
+    if(!l.length){ set(r+'-noti-list',h+'<p class="muted" style="padding:0 20px">아직 알림이 없어요.</p>'); return; }
+    h+='<div class="box">';
+    l.forEach(function(x){ h+='<div class="post'+(x.n?' new':'')+'"><div class="pt">'+esc(x.t)+'</div><div class="pm"><span>'+esc(x.m)+'</span></div></div>'; });
+    set(r+'-noti-list',h+'</div>');
+  });
+}
+function rAtt(){
+  var h='';
+  ATT_ORDER.forEach(function(n){
+    var k=draft[n];
+    h+='<div class="rw"><span class="nm">'+n.charAt(0)+'</span><span class="bd"><span class="t">'+n+'</span></span><span class="marks">'
+      +'<button class="'+(k==='p'?'on p':'')+'" onclick="att(\''+n+'\',\'p\')" aria-label="출석">○</button>'
+      +'<button class="'+(k==='l'?'on l':'')+'" onclick="att(\''+n+'\',\'l\')" aria-label="지각">△</button>'
+      +'<button class="'+(k==='a'?'on a':'')+'" onclick="att(\''+n+'\',\'a\')" aria-label="결석">✕</button></span></div>';
+  });
+  set('d-att-box',h);
+  var k=DB.att['김민수'];
+  var L={p:['출석','ok','8시 도착 · 출석'],l:['지각','warn','8시 10분 도착 · 지각'],a:['결석','danger','오늘 결석으로 기록됐어요']}[k];
+  set('s-me-box','<div class="week"><i>월</i><i class="'+k+'">화</i><i>수</i><i>목</i><i>금</i><i>토</i><i>일</i></div>'
+    +'<div class="rw" style="cursor:default;border-top:1px solid var(--rule)"><span class="bd"><span class="t">오늘</span><span class="s">'+L[2]+'</span></span><span class="tag '+L[1]+'" id="s-today-tag">'+L[0]+'</span></div>');
+}
+function refresh(){ rNotices(); rNoticeView(); rInbox(); rAnswer(); rNoti(); rAtt(); }
+
+/* ── 라우터 ── */
 function render(){
+  refresh();
   var vs=document.querySelectorAll('.view');
   for(var i=0;i<vs.length;i++) vs[i].classList.remove('on');
   document.getElementById(cur).classList.add('on');
@@ -552,7 +601,8 @@ function render(){
   an.style.display=sub?'block':'none';
   an.textContent=sub&&TITLE[cur]?TITLE[cur][0]:'';
   document.getElementById('ad').textContent=sub?(TITLE[cur]?TITLE[cur][1]:''):'6월 17일 화';
-  document.getElementById('badge').textContent=ROLE?String(NOTI[ROLE]):'';
+  var n=ROLE?badge(ROLE):0;
+  document.getElementById('badge').textContent=n?String(n):'';
   document.getElementById('bell').style.display=(ROLE&&cur.slice(2)!=='noti')?'grid':'none';
   var tb=document.getElementById('tabbar');
   if(gate){ tb.hidden=true; }
@@ -565,9 +615,11 @@ function render(){
     }
     tb.innerHTML=html;
   }
+  /* 알림 화면을 열면 읽은 것으로 — 배지는 다음 화면부터 줄어든다 */
+  if(ROLE && cur.slice(2)==='noti'){ DB.noti[ROLE].forEach(function(x){ x.n=false; }); }
   document.getElementById(cur).scrollTop=0;
 }
-function enter(role){ ROLE=role; hist=[]; cur=role+'-'+TABS[role][0]; render(); }
+function enter(role){ ROLE=role; hist=[]; cur=role+'-'+TABS[role][0]; draft={}; ATT_ORDER.forEach(function(n){ draft[n]=DB.att[n]; }); render(); }
 function tab(t){ hist=[]; cur=ROLE+'-'+t; render(); }
 function push(v){ hist.push(cur); cur=(v.charAt(0)==='g'?v:ROLE+'-'+v); render(); }
 function back(){ cur=hist.pop()||(ROLE?ROLE+'-'+TABS[ROLE][0]:'g-phone'); render(); }
@@ -582,10 +634,63 @@ function gateGo(){
 }
 function gateCode(){ enter(PHONES[phoneVal]); }
 
+/* ── 행동: 화면에서 상태로 ── */
+function att(n,k){ draft[n]=k; rAtt(); }
+function saveAtt(){
+  var names=[];
+  ATT_ORDER.forEach(function(n){ DB.att[n]=draft[n]; if(draft[n]!=='p') names.push(n); });
+  var k=DB.att['김민수'];
+  if(k!=='p') DB.noti.s.unshift({t:'오늘 '+(k==='l'?'지각':'결석')+'으로 기록됐어요',m:'출결 · 고2 B · 방금',n:true});
+  toast(names.length?'출결을 저장하고, '+names.join('·')+' 학부모에게 알림을 보냈어요':'출결을 저장했어요. 모두 출석이라 알림은 없어요');
+  refresh();
+}
+function segPick(el,t){ var b=el.parentNode.querySelectorAll('button'); for(var i=0;i<b.length;i++) b[i].className=''; el.className='on'; nnTarget=t; }
+function postNotice(){
+  var t=document.getElementById('nn-title').value.trim(), b=document.getElementById('nn-body').value.trim();
+  if(!t){ toast('제목을 적어주세요'); return; }
+  var id=1; DB.notices.forEach(function(n){ if(n.id>=id) id=n.id+1; });
+  DB.notices.unshift({id:id,title:t,body:b?[b]:[],target:nnTarget,date:'오늘',read:0,readP:false,readS:false});
+  var to=[];
+  if(nnTarget!=='B'){ DB.noti.p.unshift({t:'새 공지 「'+t+'」',m:'공지 · '+tgt(nnTarget)+' · 방금',n:true}); to.push('학부모 '+(nnTarget==='all'?6:3)+'명'); }
+  if(nnTarget!=='A'){ DB.noti.s.unshift({t:'새 공지 「'+t+'」',m:'공지 · '+tgt(nnTarget)+' · 방금',n:true}); to.push('학생 '+(nnTarget==='all'?6:3)+'명'); }
+  toast('공지를 올리고 '+to.join(', ')+'에게 알렸어요');
+  back();
+}
+function openNotice(id){
+  curNotice=id; var n=byId(DB.notices,id); if(!n) return;
+  if(ROLE==='p'&&!n.readP){ n.readP=true; n.read++; }
+  if(ROLE==='s'&&!n.readS){ n.readS=true; n.read++; }
+  push('notice-view');
+}
+function sendAsk(){
+  var q=document.getElementById('an-body').value.trim();
+  if(!q){ toast('문의 내용을 적어주세요'); return; }
+  var id=1; DB.asks.forEach(function(a){ if(a.id>=id) id=a.id+1; });
+  var topic=q.length>14?q.slice(0,14)+'…':q;
+  DB.asks.unshift({id:id,who:'p',name:ME.p.name,cls:'A',topic:topic,q:q,at:'방금',a:null,aAt:''});
+  DB.noti.d.unshift({t:ME.p.name+'이 문의를 보냈어요',m:'문의 · '+topic+' · 방금',n:true});
+  document.getElementById('an-body').value='';
+  toast('원장님께 문의를 보냈어요');
+  back();
+}
+function openAsk(id){
+  curAsk=id; var a=byId(DB.asks,id); if(!a) return;
+  document.getElementById('ans-body').value=a.a||a.draft||'';
+  push('answer');
+}
+function sendAnswer(){
+  var a=byId(DB.asks,curAsk), t=document.getElementById('ans-body').value.trim();
+  if(!a) return;
+  if(!t){ toast('답변을 적어주세요'); return; }
+  a.a=t; a.aAt='방금';
+  if(a.who==='p') DB.noti.p.unshift({t:'원장님이 문의에 답했어요',m:'문의 · '+a.topic+' · 방금',n:true});
+  toast(a.name+'께 답변을 보냈어요');
+  back();
+}
+
 /* ── 조각 ── */
 var toastT;
 function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show')},2600); }
-function att(el,kind){ var row=el.parentNode.querySelectorAll('button'); for(var i=0;i<row.length;i++) row[i].className=''; el.className='on '+kind; }
 function hex(c){c=c.replace('#','');return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)];}
 function tint(c,p){var a=hex(c);return '#'+a.map(function(v){return Math.round(v+(255-v)*p).toString(16).padStart(2,'0')}).join('');}
 function setBrand(color,el){
@@ -597,7 +702,12 @@ function setBrand(color,el){
 /* 해시 딥링크: #d-today 처럼 역할-뷰 로 바로 연다 */
 (function(){
   var h=location.hash.replace('#','');
-  if(h && document.getElementById(h) && h.charAt(0)!=='g'){ ROLE=h.charAt(0); hist=isTab(h)?[]:[ROLE+'-'+TABS[ROLE][0]]; cur=h; }
+  if(h && document.getElementById(h) && h.charAt(0)!=='g'){
+    ROLE=h.charAt(0); hist=isTab(h)?[]:[ROLE+'-'+TABS[ROLE][0]]; cur=h;
+    ATT_ORDER.forEach(function(n){ draft[n]=DB.att[n]; });
+    if(h==='d-answer'){ curAsk=1; document.getElementById('ans-body').value=DB.asks[0].draft; }
+    if(h==='p-notice-view'){ curNotice=1; } if(h==='s-notice-view'){ curNotice=3; }
+  }
   render();
 })();
 </script>

@@ -91,12 +91,35 @@
       if (d.querySelectorAll('#s-notice .post').length !== 3) fails.push('student notices != 3');
       if (!d.querySelector('#s-me .week i.l')) fails.push('김민수 오늘 지각 not shown');
 
+      // ── 상태 연결: 역할 간에 데이터가 이어진다 ──
+      w.logout(); w.gatePhone('010-1000-0001'); w.gateGo(); w.gateCode();
+      w.push('notice-new'); d.getElementById('nn-title').value = '테스트 공지'; d.getElementById('nn-body').value = '본문'; w.postNotice();
+      if (d.querySelectorAll('#d-notice .post').length !== 5) fails.push('director notices after post=' + d.querySelectorAll('#d-notice .post').length);
+      w.logout(); w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
+      if (d.querySelectorAll('#p-notice .post').length !== 4) fails.push('parent notices after post=' + d.querySelectorAll('#p-notice .post').length);
+      if (text('.appbar .badge') !== '3') fails.push('parent badge after post=' + text('.appbar .badge'));
+      w.openNotice(w.DB.notices[0].id);
+      if (w.DB.notices[0].read !== 1) fails.push('read count after parent opened=' + w.DB.notices[0].read);
+      w.back(); w.push('ask-new'); d.getElementById('an-body').value = '테스트 문의'; w.sendAsk();
+      w.logout(); w.gatePhone('010-1000-0001'); w.gateGo(); w.gateCode();
+      if (d.querySelectorAll('#d-inbox .tag.danger').length !== 2) fails.push('unanswered after ask=' + d.querySelectorAll('#d-inbox .tag.danger').length);
+      if (text('.appbar .badge') !== '2') fails.push('director badge after ask=' + text('.appbar .badge'));
+      w.openAsk(w.DB.asks[0].id); d.getElementById('ans-body').value = '테스트 답변'; w.sendAnswer();
+      if (d.querySelectorAll('#d-inbox .tag.danger').length !== 1) fails.push('unanswered after answer');
+      w.tab('today'); w.att('김민수', 'a'); w.saveAtt();
+      w.logout(); w.gatePhone('010-1234-0001'); w.gateGo(); w.gateCode();
+      if (text('.appbar .badge') !== '4') fails.push('parent badge after answer=' + text('.appbar .badge'));
+      if (!/테스트 답변/.test(text('#p-ask-mine'))) fails.push('answer not shown in 내 문의');
+      w.logout(); w.gatePhone('010-1234-0104'); w.gateGo(); w.gateCode();
+      if (text('#s-today-tag') !== '결석') fails.push('student today tag=' + text('#s-today-tag'));
+      if (text('.appbar .badge') !== '3') fails.push('student badge after post+att=' + text('.appbar .badge'));
+
       // ── 이름 교체 ──
       if (d.body.innerHTML.indexOf('한빛') >= 0) fails.push('한빛 remains');
       if (d.head.innerHTML.indexOf('Gowun') >= 0) fails.push('Gowun Batang link remains');
 
       const result = fails.length === 0
-        ? 'PASS: gate + 3 roles + router + overflow'
+        ? 'PASS: gate + 3 roles + router + overflow + live state'
         : 'FAIL: ' + fails.join(' | ');
       document.getElementById('result').textContent = result;
       document.title = result.startsWith('PASS:') ? 'PASS' : 'FAIL';
