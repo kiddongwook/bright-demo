@@ -52,6 +52,14 @@
       if (!d.querySelector('#d-notice-new textarea')) fails.push('notice-new textarea missing');
       if (d.querySelectorAll('#d-notice-new .seg button').length !== 3) fails.push('notice target seg != 3 (전체/고1 A/고2 B)');
 
+      // ── 원장: 문의 정합 ──
+      const open = d.querySelectorAll('#d-inbox .tag.danger').length;
+      if (open !== 1) fails.push('unanswered inquiries=' + open);
+      if (String(open) !== text('.appbar .badge')) fails.push('inbox badge != unanswered');
+      if (d.querySelectorAll('#d-inbox .rw').length !== 3) fails.push('inquiries != 3');
+      if (d.querySelectorAll('#d-faq .faq').length !== 5) fails.push('faq items != 5');
+      if (!d.querySelector('#d-answer textarea')) fails.push('answer textarea missing');
+
       // ── 라우터 ──
       w.tab('more');
       if (on() !== 'd-more') fails.push('tab(more) -> ' + on());

@@ -288,7 +288,39 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
   <div style="padding:0 20px"><textarea class="input">7월부터 고2 B 수업이 화·목 8시 30분으로 30분 늦춰집니다. 여름 특강과 겹치지 않게 조정했어요. 불편한 점 있으시면 문의 주세요.</textarea></div>
   <div class="btnrow"><button class="btn line" onclick="back()">취소</button><button class="btn" onclick="toast('공지를 올리고 학부모 6명, 학생 6명에게 알렸어요');back()">올리고 알리기</button></div>
 </section>
-<section class="view" id="d-inbox"><div class="head"><h1 class="hello">문의</h1></div></section>
+<section class="view" id="d-inbox">
+  <div class="head"><h1 class="hello">문의</h1><p class="lede">학부모가 보낸 1:1 문의예요. 답하면 <b>그 학부모에게만</b> 알림이 갑니다.</p></div>
+  <div class="lab first">답변 대기<span class="r">1</span></div>
+  <div class="box">
+    <button class="rw" onclick="push('answer')"><span class="nm">정</span><span class="bd"><span class="t">정하윤 어머님</span><span class="s">숙제 범위 확인 · 오늘 오후 1:20</span></span><span class="tag danger">답변 대기</span></button>
+  </div>
+  <div class="lab">답변 완료</div>
+  <div class="box soft">
+    <button class="rw" onclick="toast('데모에서는 정하윤 어머님 문의만 열립니다')"><span class="nm">박</span><span class="bd"><span class="t">박지훈 어머님</span><span class="s">다음 주 화요일 결석 예정 · 어제</span></span><span class="tag muted">답변 완료</span></button>
+    <button class="rw" onclick="toast('데모에서는 정하윤 어머님 문의만 열립니다')"><span class="nm">최</span><span class="bd"><span class="t">최유나 어머님</span><span class="s">레벨 테스트 언제 · 6월 14일</span></span><span class="tag muted">답변 완료</span></button>
+  </div>
+  <div class="btnrow"><button class="btn line" onclick="push('faq')">자주 묻는 질문 관리</button></div>
+</section>
+
+<section class="view" id="d-answer">
+  <div class="head"><p class="lede">고2 B · 정하윤 어머님 · 오늘 오후 1:20</p></div>
+  <div class="bubble"><div class="who">정하윤 어머님</div>안녕하세요 원장님. 하윤이가 목요일 단어시험 범위를 51~75라고 하는데 맞나요? 지난주 공지에는 41~75로 본 것 같아서 확인차 여쭤봅니다.</div>
+  <div class="lab">답변</div>
+  <div style="padding:0 20px"><textarea class="input">어머님 안녕하세요 :) 51~75가 맞아요. 지난주 공지는 41~75였는데 진도가 빨라서 범위를 줄였습니다. 하윤이가 정확히 알고 있네요. 목요일에 뵐게요!</textarea></div>
+  <div class="btnrow"><button class="btn line" onclick="back()">나중에</button><button class="btn" onclick="toast('정하윤 어머님께 답변을 보냈어요');back()">답하고 알리기</button></div>
+</section>
+
+<section class="view" id="d-faq">
+  <div class="head"><p class="lede">학부모 문의 화면 맨 위에 이 목록이 보여요.<br>자주 오는 질문을 미리 답해두면 <b>문의가 줄어듭니다.</b></p></div>
+  <div class="box">
+    <details class="faq"><summary>결석하면 보강이 되나요?</summary><div class="a">사전에 알려주신 결석은 같은 주 다른 요일에 보강해 드려요. 당일 결석은 자료로 대체합니다.</div></details>
+    <details class="faq"><summary>수강료 납부일은 언제인가요?</summary><div class="a">매월 1일이에요. 5일까지는 괜찮습니다. 계좌이체 또는 카드 결제 모두 가능해요.</div></details>
+    <details class="faq"><summary>교재는 어디서 사나요?</summary><div class="a">학원에서 일괄 구매해 드려요. 교재비는 학기 시작 때 한 번 안내드립니다.</div></details>
+    <details class="faq"><summary>상담은 어떻게 신청하나요?</summary><div class="a">이 앱의 문의로 "상담 신청"이라고 보내주시면 원장님이 시간을 잡아 답해드려요.</div></details>
+    <details class="faq"><summary>등하원 시간은요?</summary><div class="a">고1 A는 월수금 7시~9시, 고2 B는 화목 8시~10시이에요. 10분 전 도착을 권해요.</div></details>
+  </div>
+  <div class="btnrow"><button class="btn line" onclick="toast('질문 추가는 실제 버전에서 열려요')">질문 추가</button></div>
+</section>
 <section class="view" id="d-more">
   <div class="head"><h1 class="hello">더보기</h1></div>
   <div class="lab first" style="margin-top:0">운영</div>
