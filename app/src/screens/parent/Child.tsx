@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { myChildren, weekAttendance, listTodos, listAbsences, requestAbsence, weekRange, nextClassDays, fmtMDW, fmtDT, fmtDayOrToday, kstDay, DOW, dowOf, type Student, type Todo, type Absence, type AttStatus } from '../../lib/api';
+import { myChildren, weekAttendance, listTodos, listAbsences, requestAbsence, closedDays, weekRange, nextClassDays, fmtMDW, fmtDT, fmtDayOrToday, kstDay, DOW, dowOf, type Student, type Todo, type Absence, type AttStatus } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
@@ -34,11 +34,11 @@ export function WeekStrip({ studentId, absences }: { studentId: string; absences
 
 export function Child() {
   const nav = useNav(); const child = useChild();
-  const [todos, setTodos] = useState<Todo[]>([]); const [absences, setAbsences] = useState<Absence[]>([]);
-  useEffect(() => { if (!child) return; listTodos(child.classes.map(c => c.id), child.id).then(setTodos).catch(errToast); listAbsences().then(setAbsences).catch(errToast); }, [child?.id]);
+  const [todos, setTodos] = useState<Todo[]>([]); const [absences, setAbsences] = useState<Absence[]>([]); const [closed, setClosed] = useState<Set<string>>(new Set());
+  useEffect(() => { if (!child) return; listTodos(child.classes.map(c => c.id), child.id).then(setTodos).catch(errToast); listAbsences().then(setAbsences).catch(errToast); closedDays().then(setClosed).catch(() => {}); }, [child?.id]);
   if (!child) return <section className="view on" />;
   const sched = child.classes.flatMap(c => c.schedule ?? []);
-  const next = nextClassDays(sched, 1)[0];
+  const next = nextClassDays(sched, 1, closed)[0];
   const nextCls = next ? child.classes.find(c => (c.schedule ?? []).some(s => s.dow === dowOf(next))) : undefined;
   const mine = absences.filter(a => a.student_id === child.id);
   const short = child.name.replace(/^[가-힣]/, '');
@@ -62,8 +62,10 @@ export function Child() {
 export function Absence() {
   const nav = useNav(); const child = useChild();
   const [date, setDate] = useState(''); const [reason, setReason] = useState(''); const [busy, setBusy] = useState(false);
+  const [closed, setClosed] = useState<Set<string>>(new Set());
+  useEffect(() => { closedDays().then(setClosed).catch(() => {}); }, []);
   if (!child) return <section className="view on" />;
-  const opts = nextClassDays(child.classes.flatMap(c => c.schedule ?? []), 3);
+  const opts = nextClassDays(child.classes.flatMap(c => c.schedule ?? []), 3, closed);
   const pick = date || opts[0];
   async function send() {
     if (!reason.trim()) { toast('사유를 적어주세요'); return; }

@@ -18,7 +18,16 @@ Deno.serve(async (req) => {
   // 활성 역할이 이 학원 것이 아니면 이 학원의 첫 소속으로 (학부모·학생 우선)
   const inAcademy = memberships.filter(m => m.academy_id === lt.academy_id);
   if (!inAcademy.length) return json(401, { error: 'bad_token' });
-  if (!inAcademy.some(m => m.id === u.active_membership_id)) {
+  // 자녀가 둘인 학부모: 링크가 가리키는 결석·출결 행의 자녀 소속을 활성으로 (그 자녀 화면이 열리게)
+  let wantStudent: string | null = null;
+  if (lt.view === 'child' && lt.ref_id) {
+    const { data: ab } = await admin.from('absence_requests').select('student_id').eq('id', lt.ref_id).maybeSingle();
+    const { data: at } = ab ? { data: null } : await admin.from('attendance').select('student_id').eq('id', lt.ref_id).maybeSingle();
+    wantStudent = ab?.student_id ?? at?.student_id ?? null;
+  }
+  const byStudent = wantStudent ? inAcademy.find(m => m.student_id === wantStudent) : null;
+  if (byStudent && byStudent.id !== u.active_membership_id) await admin.from('users').update({ active_membership_id: byStudent.id }).eq('id', u.id);
+  else if (!inAcademy.some(m => m.id === u.active_membership_id)) {
     const pick = inAcademy.find(m => m.role === 'parent' || m.role === 'student') ?? inAcademy[0];
     await admin.from('users').update({ active_membership_id: pick.id }).eq('id', u.id);
   }

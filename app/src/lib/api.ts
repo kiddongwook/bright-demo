@@ -9,7 +9,7 @@ export type Notice = { id: string; title: string; body: string; target_class_id:
 export type Reader = { user_id: string; name: string; read_at: string | null };
 export type Inquiry = { id: string; student_id: string | null; asked_by: string; asker_name: string; student_name: string | null; topic: string; body: string; answer: string | null; answered_at: string | null; created_at: string };
 export type Faq = { id: string; q: string; a: string; sort: number };
-export type Absence = { id: string; student_id: string; student_name: string; date: string; reason: string; status: 'requested' | 'confirmed' | 'declined'; makeup_kind: 'saturday' | 'material' | null; makeup_at: string | null; created_at: string };
+export type Absence = { id: string; student_id: string; student_name: string; date: string; reason: string; status: 'requested' | 'confirmed' | 'declined'; makeup_kind: 'saturday' | 'material' | null; makeup_at: string | null; attended_at: string | null; created_at: string };
 export type Todo = { id: string; class_id: string; kind: 'homework' | 'exam'; title: string; due_date: string; notice_id: string | null; done: boolean };
 export type Noti = { id: string; kind: string; title: string; body: string; link: string | null; read_at: string | null; created_at: string };
 export type Academy = { id: string; name: string; slug: string; brand_color: string };
@@ -179,7 +179,7 @@ export async function listFaqs(): Promise<Faq[]> { return must(await supabase.fr
 
 /* ── 결석·보강 ── */
 export async function listAbsences(): Promise<Absence[]> {
-  const rows = must(await supabase.from('absence_requests').select('id, student_id, date, reason, status, makeup_kind, makeup_at, created_at, students(name)').order('created_at', { ascending: false })) as any[];
+  const rows = must(await supabase.from('absence_requests').select('id, student_id, date, reason, status, makeup_kind, makeup_at, attended_at, created_at, students(name)').order('created_at', { ascending: false })) as any[];
   return rows.map(r => ({ ...r, student_name: r.students?.name ?? '' }));
 }
 export async function requestAbsence(studentId: string, date: string, reason: string) {

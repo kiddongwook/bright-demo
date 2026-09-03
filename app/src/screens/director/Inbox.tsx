@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { listInquiries, answerInquiry, listFaqs, type Inquiry } from '../../lib/api';
+import { listInquiries, answerInquiry, listFaqs, type Inquiry, saveFaq, deleteFaq } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
@@ -51,12 +51,27 @@ export function Answer() {
 }
 
 export function FaqManage() {
-  const { data } = useLoad(listFaqs);
+  const { data, reload } = useLoad(listFaqs);
+  const [edit, setEdit] = useState<{ id: string | null; q: string; a: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  async function save() {
+    if (!edit || !edit.q.trim() || !edit.a.trim()) { toast('질문과 답을 모두 적어주세요'); return; }
+    setBusy(true);
+    try { await saveFaq(edit.id, edit.q.trim(), edit.a.trim(), (data?.length ?? 0) + 1); toast('저장했어요'); setEdit(null); reload(); } catch (e) { errToast(e); } finally { setBusy(false); }
+  }
+  async function del(id: string, q: string) { if (!confirm(`「${q}」를 지울까요?`)) return; try { await deleteFaq(id); reload(); } catch (e) { errToast(e); } }
   return (
     <section className="view on">
       <div className="head"><p className="lede">학부모 문의 화면 맨 위에 이 목록이 보여요.<br />자주 오는 질문을 미리 답해두면 <b>문의가 줄어듭니다.</b></p></div>
-      {data && (data.length ? <div className="box">{data.map(f => <details key={f.id} className="faq"><summary>{f.q}</summary><div className="a">{f.a}</div></details>)}</div> : <p className="muted" style={{ padding: '0 20px' }}>아직 없어요.</p>)}
-      <div className="btnrow"><button className="btn line" onClick={() => toast('질문 추가·수정은 다음 주에 열려요')}>질문 추가</button></div>
+      {data && (data.length ? <div className="box">{data.map(f => <details key={f.id} className="faq"><summary>{f.q}</summary><div className="a">{f.a}<div style={{ display: 'flex', gap: 8, marginTop: 10 }}><button className="btn sm line" onClick={() => setEdit({ id: f.id, q: f.q, a: f.a })}>고치기</button><button className="btn sm line" onClick={() => del(f.id, f.q)}>지우기</button></div></div></details>)}</div> : <p className="muted" style={{ padding: '0 20px' }}>아직 없어요.</p>)}
+      {edit ? <>
+        <div className="lab">{edit.id ? '질문 고치기' : '새 질문'}</div>
+        <div style={{ padding: '0 20px', display: 'grid', gap: 8 }}>
+          <input className="input" value={edit.q} onChange={e => setEdit({ ...edit, q: e.target.value })} placeholder="질문 (예: 결석하면 보강이 되나요?)" />
+          <textarea className="input" style={{ minHeight: 90 }} value={edit.a} onChange={e => setEdit({ ...edit, a: e.target.value })} placeholder="답" />
+        </div>
+        <div className="btnrow"><button className="btn line" onClick={() => setEdit(null)}>취소</button><button className="btn" disabled={busy} onClick={save}>저장</button></div>
+      </> : <div className="btnrow"><button className="btn line" onClick={() => setEdit({ id: null, q: '', a: '' })}>질문 추가</button></div>}
     </section>
   );
 }

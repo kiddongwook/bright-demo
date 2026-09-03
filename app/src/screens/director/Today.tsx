@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { listClasses, todayAttendance, saveAttendance, listAbsences, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
+import { listClasses, todayAttendance, saveAttendance, listAbsences, closedDays, markMakeupAttended, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { toast, errToast } from '../../lib/toast';
 
@@ -14,8 +14,10 @@ export function Today() {
   const [rows, setRows] = useState<AttRow[]>([]);
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [busy, setBusy] = useState(false);
+  const [closed, setClosed] = useState<Set<string>>(new Set());
   useEffect(() => { (async () => {
     const cs = await listClasses(); setClasses(cs);
+    closedDays().then(setClosed).catch(() => {});
     const todayDow = dowOf(today);
     const pick = cs.find(c => (c.schedule ?? []).some(s => s.dow === todayDow)) ?? cs[0];
     if (pick) setCid(pick.id);
@@ -33,17 +35,24 @@ export function Today() {
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
   const pending = absences.filter(a => a.status === 'requested'), done = absences.filter(a => a.status !== 'requested');
+  const isClosed = closed.has(today);
+  async function attended(a: Absence) {
+    try { await markMakeupAttended(a.id); toast(`${a.student_name} 보강 출석으로 기록했어요`); setAbsences(await listAbsences()); } catch (e) { errToast(e); }
+  }
   const absRow = (a: Absence) => (
     <button key={a.id} className="rw" onClick={() => nav.push('makeup', { id: a.id })}>
       <span className="nm">{a.student_name.charAt(0)}</span>
       <span className="bd"><span className="t">{a.student_name} · {fmtMDW(a.date)}</span><span className="s">{a.reason}{a.makeup_at ? ` · 보강 ${fmtDT(a.makeup_at)}` : ''}</span></span>
-      {a.status === 'requested' ? <span className="tag danger">요청</span> : <span className="tag ok">{a.makeup_kind === 'material' ? '자료 대체' : '보강'}</span>}
+      {a.status === 'requested' ? <span className="tag danger">요청</span>
+        : a.attended_at ? <span className="tag muted">완료</span>
+        : a.makeup_kind === 'material' ? <span className="tag ok">자료 대체</span>
+        : <span className="btn sm line" role="button" onClick={e => { e.stopPropagation(); attended(a); }}>보강 왔어요</span>}
     </button>);
   return (
     <section className="view on">
       <div className="head">
         <h1 className="hello">오늘{cls ? ` · ${cls.name}` : ''}</h1>
-        <p className="lede">{hasClassToday ? '이름 옆을 누르면 바로 표시돼요. 저장하면 ' : '오늘은 이 반 수업이 없는 날이에요. 그래도 기록할 수 있어요. 저장하면 '}<b>결석·지각 학부모 알림까지 한 번에</b> 나갑니다.</p>
+        <p className="lede">{isClosed ? '오늘은 휴원일이에요. 그래도 기록할 수 있어요. 저장하면 ' : hasClassToday ? '이름 옆을 누르면 바로 표시돼요. 저장하면 ' : '오늘은 이 반 수업이 없는 날이에요. 그래도 기록할 수 있어요. 저장하면 '}<b>결석·지각 학부모 알림까지 한 번에</b> 나갑니다.</p>
       </div>
       {classes.length > 1 && <div className="seg">{classes.map(c => <button key={c.id} className={c.id === cid ? 'on' : ''} onClick={() => setCid(c.id)}>{c.name}</button>)}</div>}
       <div className="lab">출석부<span className="r">{fmtMDW(today)}</span></div>
