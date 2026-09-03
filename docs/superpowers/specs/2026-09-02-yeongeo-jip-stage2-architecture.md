@@ -162,7 +162,7 @@
 
 ## 10. 범위 밖 · 바꿀 시점
 
-- 범위 밖: 수강료·첨삭·편지·성장 기록(준비 중 유지), 앱 푸시, 실시간 동기화(포커스 시 재조회로 충분), 강사 다중 권한 세분화.
+- 범위 밖(구현): 첨삭·편지·성장 기록(준비 중 유지), 앱 푸시, 실시간 동기화(포커스 시 재조회로 충분), 강사 다중 권한 세분화. **수강료는 §12에 스키마·흐름을 미리 반영**하고 구현은 3단계.
 - 바꿀 시점: 학원 10곳 → Supabase 컴퓨트 상향 · 알림 월 1만 건 → 요율 재협상 · 스토어 필요 → Capacitor 감싸기(코드 재작성 없음) · 실시간 필요 → Supabase Realtime.
 
 ## 11. 학원 관리 관점의 빈 곳 (2026-09-02 추가)
@@ -184,7 +184,7 @@
 ### 뒤로 둔다 (준비 중 유지)
 | 빈 곳 | 왜 미룸 |
 |---|---|
-| 수강료 납부 상태·안내 | 관리 차원 최대 구멍이지만 규칙(할인·일할·CMS)이 원장 답 없이는 못 정한다 → 실물 청구서 받은 뒤 |
+| 수강료 납부 상태·안내 | 관리 차원 최대 구멍이지만 규칙(할인·일할·CMS)이 원장 답 없이는 못 정한다 → 실물 청구서 받은 뒤. **스키마·흐름은 §12에 미리 반영** |
 | 시험 점수·성적 추이 | 고등에선 핵심이나 채점 체계를 먼저 받아야 함 (성장 기록과 합쳐서) |
 | 숙제 검사(원장 확인) | 지금은 학생 자기 체크. 반별 완료 현황은 작은 추가라 3단계 초입 |
 | 공지 첨부(이미지·PDF)·예약 발송 | Storage 연결 후 |
@@ -192,3 +192,46 @@
 | 학부모 알림 설정, 보호자 여럿 우선순위 | guardians 로 구조는 준비됨, 화면은 뒤로 |
 
 기간 영향: 2단계에 넣는 8개는 2~4주차에 흡수하되 파일럿까지 **7~9주**로 본다.
+
+## 12. 수강료 — 미리 반영 (2026-09-02 추가)
+
+업계는 기본 기능을 무료로 주고 결제에서 번다. 우리도 3단계에서 여기서 번다. 구현은 3단계지만 **스키마는 지금 넣어** 2단계 데이터가 그대로 이어지게 한다.
+
+### 12.1 원칙
+- **자금 비보관.** 돈은 PG가 학원 계좌로 직접 정산한다. BRIGHT 는 청구·기록·안내만 한다.
+- **규칙 먼저.** 청구 주기·납부일·형제/장기 할인·중도 일할·교재비 별도·환불을 원장의 실물 청구서에서 복원해 `billing_rules` 에 넣는다. 규칙이 틀리면 원장이 매달 손으로 고치고, 그러면 안 쓴다.
+- **두 단계로 연다.** ① 청구서 발송 + 납부 상태 + 미납 안내 (결제 없음, 이체하면 원장이 '납부' 한 번) → ② PG 링크 결제(카드·간편결제) + 현금영수증 자동. ①만으로 통장 대조가 사라진다.
+
+### 12.2 테이블 (`0003_billing.sql`, 2단계에 함께 적용)
+| 테이블 | 컬럼 (핵심) |
+|---|---|
+| billing_rules | academy_id UNIQUE, billing_day(기본 1), due_day(기본 5), sibling_discount_pct, prorate(중도 일할), textbook_separate, refund_policy text |
+| fee_plans | id, academy_id, class_id(null=학원 공통), name, amount, period `monthly\|per_session`, active |
+| invoices | id, academy_id, student_id, period_ym('2026-03'), amount, discount, textbook, total, due_date, status `issued\|paid\|partial\|overdue\|void`, issued_at, paid_at, memo, reminded_at, UNIQUE(student_id, period_ym) |
+| payments | id, academy_id, invoice_id, amount, method `transfer\|card\|cash\|pg`, paid_at, pg_provider, pg_tx_id, receipt_no, recorded_by |
+
+권한: 원장은 자기 학원 전부, 강사는 읽기만. 학부모는 **자기 자녀의 invoices·payments 읽기**만. 학생은 없음. 쓰기는 원장(①)과 PG 콜백을 받는 Edge Function(②, 서비스 키).
+
+### 12.3 흐름
+```
+매월 billing_day   pg_cron → 활성 학생마다 invoices 생성 (fee_plan × 규칙) → outbox BILL_ISSUED
+납부(①)          학부모 이체 → 원장이 '납부' 누름 → payments(transfer) → invoice paid → outbox PAYMENT_CONFIRMED
+납부(②)          알림톡 버튼 → 결제 페이지(토큰 링크) → PG → 콜백 Edge Function → payments(pg) → paid
+due_day 지나면    status overdue → outbox BILL_REMIND (원장 톤 문구) — 하루 1회, 최대 3회
+월말              원장 「수강료」 화면: 납부/미납/합계 표, CSV 내보내기
+```
+
+### 12.4 알림톡 템플릿 (추가 3개)
+| 코드 | 문구 | 버튼 |
+|---|---|---|
+| BILL_ISSUED | [영어의 집] #{월} 수강료 청구서가 나왔어요. #{금액}원 · #{납부일}까지 | 청구서 보기 |
+| BILL_REMIND | [영어의 집] #{월} 수강료가 아직 확인되지 않았어요. #{금액}원 | 청구서 보기 |
+| PAYMENT_CONFIRMED | [영어의 집] #{월} 수강료 #{금액}원 납부가 확인됐어요. 감사합니다. | 영수증 보기 |
+
+### 12.5 수익 훅 (3단계에서 고른다)
+청구서 건당 정액 / 결제액의 일부(PG 수수료 위에) / 플러스 요금제. 어느 쪽이든 `payments.pg_provider`·`pg_tx_id` 로 집계된다.
+
+### 12.6 필요한 것 · 확인 항목
+- 원장의 실물 청구서 1장 (첫 미팅 실물 5종) — 규칙 복원의 원재료
+- PG 계약(사업자 등록·심사·정산 계좌), 현금영수증·교육비 소득공제 자료 발급 방식, 환불 처리 규정 — **확인 항목**
+- 알림톡 템플릿에 금액 변수 허용 여부·길이 — 확인 항목
