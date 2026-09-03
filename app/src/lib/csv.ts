@@ -43,6 +43,16 @@ export function parseRosterCsv(text: string): ParsedRoster {
   return { rows, errors };
 }
 
+const BOM = '﻿';
+/** 표(행×열) → CSV 문자열. BOM(엑셀 호환) + CRLF, 쉼표·따옴표·줄바꿈이 있는 칸만 따옴표로 감싼다(따옴표는 두 배로). */
+export function toCsv(rows: (string | number | null | undefined)[][]): string {
+  const cell = (v: string | number | null | undefined) => {
+    const s = v === null || v === undefined ? '' : String(v);
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  return BOM + rows.map(r => r.map(cell).join(',')).join('\r\n');
+}
+
 /** 같은 학생(이름+학생번호)의 여러 줄(보호자 둘·반 둘)을 하나로 — saveStudent 는 전체 목록을 덮어쓰므로 */
 export type RosterStudent = { key: string; name: string; student_phone: string; classes: string[]; parent_phones: string[] };
 export function groupRoster(rows: RosterRow[]): { students: RosterStudent[]; classes: { name: string; dows: number[]; start: string; end: string }[] } {

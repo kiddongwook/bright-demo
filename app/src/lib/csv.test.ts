@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseRosterCsv, splitCsv, groupRoster } from './csv';
+import { parseRosterCsv, splitCsv, groupRoster, toCsv } from './csv';
 const HEAD = '반,요일,시작,끝,학생,학생번호,보호자,보호자번호,관계';
 describe('splitCsv', () => {
   it('따옴표 안 쉼표·이중 따옴표·CRLF·BOM', () => {
@@ -28,5 +28,16 @@ describe('groupRoster', () => {
     expect(g.students[0].parent_phones).toEqual(['01012340001', '01012340002']);
     expect(g.classes.map(c => c.name)).toEqual(['고1 A', '독해반']);
     expect(g.classes[1].dows).toEqual([6]);
+  });
+});
+describe('toCsv', () => {
+  it('평범한 칸은 그대로, BOM + CRLF 로 이어붙인다', () => {
+    expect(toCsv([['이름', '점수'], ['박지훈', 90]])).toBe('﻿이름,점수\r\n박지훈,90');
+  });
+  it('쉼표·따옴표·줄바꿈이 있는 칸은 따옴표로 감싸고 따옴표는 두 배로', () => {
+    expect(toCsv([['a,b', 'c"d', 'e\nf']])).toBe('﻿"a,b","c""d","e\nf"');
+  });
+  it('빈 칸(null·undefined) 은 빈 문자열로', () => {
+    expect(toCsv([['x', null, undefined]])).toBe('﻿x,,');
   });
 });
