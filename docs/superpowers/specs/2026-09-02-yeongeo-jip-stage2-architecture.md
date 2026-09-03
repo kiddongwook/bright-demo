@@ -241,3 +241,6 @@ due_day 지나면    status overdue → outbox BILL_REMIND (원장 톤 문구) �
 
 ### 11.2 구현 상태 (2026-09-03, 5주차 끝)
 강사 역할 ✓(담당 반·학생으로 읽기·쓰기 범위, 원장 전용 관리) · 시간표·휴원일 ✓(반별 휴원 반영) · 재입학 ✓ · 출결 통계 ✓(반별 월 출결표, 넓은 화면) · 학부모 월 달력 ✓ · §5.6 CSV 올리기·내보내기 ✓ · 배포 ✓(GitHub Pages `/bright-demo/pwa/`, 푸시 뒤 유효). 남음: 요일별 다른 시간, 화이트라벨(slug), PC 표 확장.
+
+### 6.1 운영 추가 (2026-09-03, 6주차)
+살림: `housekeeping()` 매일 04:00 KST(만료 OTP·토큰, 90일 지난 읽은 알림·보낸 outbox, 30일 지난 클라 오류). 오류 보고: 앱이 `client_errors` 에 남긴다(본인 insert 만, 번호 가림) — 대시보드 SQL 로 본다. 파일럿 절차는 `docs/ops/pilot.md`, 배포는 `docs/ops/deploy.md`.
