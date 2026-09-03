@@ -10,11 +10,13 @@ export function More() {
   const nav = useNav(); const { logout, active, session } = useSession();
   const isDirector = active?.role === 'director';
   const { data: myClasses } = useLoad(() => isDirector ? Promise.resolve([]) : listClassesFull().then(l => l.filter(c => c.teacher_id === session?.user.id)));
+  const { data: myAcademy } = useLoad(academy);
   const [busy, setBusy] = useState(false);
   const [invite, setInvite] = useState<string | null>(null);   // 클립보드가 안 되면 직접 눌러 복사하게 펼친다
+  const inviteUrl = `${location.origin}${import.meta.env.BASE_URL}${myAcademy?.slug ? `?a=${myAcademy.slug}` : ''}`;
   const inviteText = `[${active?.academy_name ?? '우리 학원'}] 학부모님, 학원 앱을 열었어요.
 아래 주소를 누르고 등록된 휴대폰 번호로 들어오시면 출결·공지·문의를 바로 보실 수 있어요.
-${location.origin + import.meta.env.BASE_URL}
+${inviteUrl}
 홈 화면에 추가하면 앱처럼 쓸 수 있어요 (앱 안 더보기 → 홈 화면에 추가).`;
   async function copyInvite() {
     try {

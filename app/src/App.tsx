@@ -40,7 +40,7 @@ function Frame() {
   const refreshBadge = () => unreadCount().then(setBadge).catch(() => {});
   useEffect(() => { refreshBadge(); }, [nav.view]);
   useEffect(() => { setReportScreen(nav.view); }, [nav.view]);   // 오류 보고에 "어느 화면에서" 를 싣는다
-  useEffect(() => { academy().then(a => document.documentElement.style.setProperty('--brand', a.brand_color)).catch(() => {}); }, [active!.academy_id]);
+  useEffect(() => { academy().then(a => { document.documentElement.style.setProperty('--brand', a.brand_color); document.title = active!.academy_name ?? a.name; }).catch(() => {}); }, [active!.academy_id]);
   const key = `${role}:${nav.view}`;
   const Screen: ComponentType<any> = nav.view === 'noti' ? (() => <Noti onRead={refreshBadge} />) : (SCREENS[key] ?? SCREENS[`*:${nav.view}`] ?? (() => <Placeholder name={nav.view} />));
   const title = TITLE[nav.view];
