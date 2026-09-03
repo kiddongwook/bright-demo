@@ -30,6 +30,7 @@ Deno.serve(async (req) => {
     await admin.from('memberships').upsert({ user_id: uid, academy_id: r.academy_id, role: r.role, student_id: r.student_id }, { onConflict: 'user_id,academy_id,role,student_id', ignoreDuplicates: true });
     if (r.role === 'parent' && r.student_id) await admin.from('guardians').upsert({ student_id: r.student_id, user_id: uid }, { onConflict: 'student_id,user_id', ignoreDuplicates: true });
     if (r.role === 'student' && r.student_id) await admin.from('students').update({ user_id: uid }).eq('id', r.student_id).is('user_id', null);
+    if (r.role === 'teacher') await admin.rpc('link_teacher_classes', { p_user: uid, p_phone: phone });   // 번호로 잡아 둔 담당 반을 이어 준다
   }
   const { data: ms } = await admin.from('memberships').select('id, academy_id, role, student_id, academies(name), students(name)').eq('user_id', uid);
   const memberships = (ms ?? []).map((m: any) => ({ id: m.id, academy_id: m.academy_id, role: m.role, student_id: m.student_id, academy_name: m.academies?.name, student_name: m.students?.name }));

@@ -86,7 +86,27 @@ r = await d.rpc('roster_save_teacher', { p_name: '이강사', p_phone: P_T }); o
 ok(((await admin.from('roster_phones').select('id').eq('academy_id', A).eq('role', 'teacher')).data ?? []).length === 1, '강사 roster 행 하나');
 r = await d.rpc('list_teachers'); ok(!r.error && r.data.length === 1 && r.data[0].name === '이강사', 'list_teachers');
 ok((await otpSend(P_T)).status === 200, '강사 otp-send 200');
+// 담당 반 배정: 아직 앱에 안 들어온 강사도 번호로 바로 배정된다 (teacher_id 는 null 인 채)
+r = await d.rpc('assign_class_teacher', { p_class: c1.id, p_phone: P_T }); ok(!r.error, 'assign_class_teacher(안 들어온 강사): ' + r.error?.message);
+let cl = (await admin.from('classes').select('teacher_phone, teacher_id').eq('id', c1.id).single()).data;
+ok(cl?.teacher_phone === P_T && cl?.teacher_id === null, `배정은 번호로, teacher_id 는 아직 null (got ${JSON.stringify(cl)})`);
+// 그 강사가 처음 들어오면(otp-verify 가 부르는 RPC) 담당 반이 이어진다
+const tch1Id = await mkUser('이강사', P_T);
+r = await admin.rpc('link_teacher_classes', { p_user: tch1Id, p_phone: P_T });
+ok(!r.error && r.data === 1, `link_teacher_classes 1행: ${r.error?.message ?? r.data}`);
+cl = (await admin.from('classes').select('teacher_phone, teacher_id').eq('id', c1.id).single()).data;
+ok(cl?.teacher_id === tch1Id && cl?.teacher_phone === P_T, '들어온 뒤 teacher_id 연결');
+ok((await d.rpc('link_teacher_classes', { p_user: tch1Id, p_phone: P_T })).error, '원장도 link_teacher_classes 는 못 부른다(service_role 전용)');
+ok((await d.rpc('assign_class_teacher', { p_class: c1.id, p_phone: P_MOM })).error, '강사가 아닌 번호는 배정 거절');
+ok((await p.rpc('assign_class_teacher', { p_class: c1.id, p_phone: P_T })).error, '학부모는 담당 강사 배정 못 함');
+r = await d.rpc('assign_class_teacher', { p_class: c1.id, p_phone: '' }); ok(!r.error, "assign_class_teacher(''): " + r.error?.message);
+cl = (await admin.from('classes').select('teacher_phone, teacher_id').eq('id', c1.id).single()).data;
+ok(cl?.teacher_phone === null && cl?.teacher_id === null, '빈 번호는 담당 강사를 지운다');
+// 명부에서 빼면 담당 반도 같이 풀린다 (번호·사용자 양쪽)
+await d.rpc('assign_class_teacher', { p_class: c1.id, p_phone: P_T });
 r = await d.rpc('roster_remove_teacher', { p_phone: P_T }); ok(!r.error && (await d.rpc('list_teachers')).data.length === 0, '강사 빼기');
+cl = (await admin.from('classes').select('teacher_phone, teacher_id').eq('id', c1.id).single()).data;
+ok(cl?.teacher_phone === null && cl?.teacher_id === null, `강사를 빼면 담당 반도 풀린다 (got ${JSON.stringify(cl)})`);
 ok((await p.rpc('roster_save_teacher', { p_name: 'x', p_phone: P_T })).error, '학부모는 강사 추가 못 함');
 
 // ---- G. 퇴원 → 학부모 차단, 데이터 보존

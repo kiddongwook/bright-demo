@@ -17,7 +17,7 @@ export function Noti({ onRead }: { onRead: () => void }) {
       <div className="lab first" style={{ marginTop: 20 }}>최근</div>
       {list === null ? null : list.length === 0
         ? <p className="muted" style={{ padding: '0 20px' }}>아직 알림이 없어요.</p>
-        : <div className="box">{list.map(n => (
+        : <div className="list">{list.map(n => (
             <button key={n.id} className={'post' + (n.read_at ? '' : ' new')} style={{ width: '100%', textAlign: 'left' }} onClick={() => open(n)}>
               <div className="pt">{n.title}</div><div className="pm"><span>{n.body}</span><span>· {new Date(n.created_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span></div>
             </button>))}</div>}

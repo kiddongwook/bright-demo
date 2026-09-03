@@ -45,6 +45,7 @@ export function More() {
       <div className="lab first" style={{ marginTop: 0 }}>운영</div>
       <div className="box">
         <button className="rw" onClick={() => nav.push('roster')}><span className="bd"><span className="t">학생·학부모 명부</span><span className="s">여기 있는 번호만 앱에 들어올 수 있어요</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('teachers')}><span className="bd"><span className="t">강사</span><span className="s">담당 반을 지정하면 그 반만 봐요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('academy')}><span className="bd"><span className="t">우리 학원</span><span className="s">이름 · 강조색 · 앱 아이콘</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('calendar')}><span className="bd"><span className="t">휴원일·특강</span><span className="s">정하면 다음 수업·결석 신청에서 빠져요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('classes')}><span className="bd"><span className="t">반·시간표</span><span className="s">요일 · 시간 · 담당 강사</span></span><span className="go">›</span></button>

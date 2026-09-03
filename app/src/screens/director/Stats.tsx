@@ -9,7 +9,6 @@ export function Stats() {
   const { data: classes } = useLoad(listClasses);
   const [cid, setCid] = useState(''); const [ym, setYm] = useState(kstToday().slice(0, 7));
   useEffect(() => { if (classes?.length && !cid) setCid(classes[0].id); }, [classes]);
-  useEffect(() => { document.body.classList.add('wide'); return () => document.body.classList.remove('wide'); }, []);
   const { data } = useLoad(() => cid ? classMonthTable(cid, ym) : Promise.resolve(null), [cid, ym]);
   const g = monthGrid(ym);
   const rate = (sid: string) => { const c = data?.cells[sid] ?? {}; const n = data?.days.filter(d => c[d]).length ?? 0; const came = data?.days.filter(d => c[d] && c[d] !== 'absent').length ?? 0; return n ? Math.round(came / n * 100) : null; };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { listCalendar, addCalendar, removeCalendar, listClasses, listClassesFull, createClass, updateClass, listTeachers, kstToday, fmtMDW, DOW, scheduleSummary, type CalItem, type Sched, type ClsFull } from '../../lib/api';
+import { listCalendar, addCalendar, removeCalendar, listClasses, listClassesFull, createClass, updateClass, assignClassTeacher, listTeachers, kstToday, fmtMDW, DOW, scheduleSummary, type CalItem, type Sched, type ClsFull, type Teacher } from '../../lib/api';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
 
@@ -48,7 +48,7 @@ export function Classes() {
       <div className="lab first">반<span className="r">{data ? `${data.length}개` : ''}</span></div>
       {data && <div className="box">{data.map(c => open === c.id
         ? <ClassForm key={c.id} cls={c} teachers={teachers ?? []} onDone={() => { setOpen(null); reload(); }} />
-        : <button key={c.id} className="rw" onClick={() => setOpen(c.id)}><span className="bd"><span className="t">{c.name}</span><span className="s">{scheduleSummary(c.schedule)}{c.teacher_id ? ` · ${teachers?.find(t => t.user_id === c.teacher_id)?.name ?? '강사'}` : ''}</span></span><span className="go">›</span></button>)}</div>}
+        : <button key={c.id} className="rw" onClick={() => setOpen(c.id)}><span className="bd"><span className="t">{c.name}</span><span className="s">{scheduleSummary(c.schedule)}{tname(c, teachers) ? ` · ${tname(c, teachers)}` : ''}</span></span><span className="go">›</span></button>)}</div>}
       {adding ? <div className="box" style={{ marginTop: 12 }}><ClassForm cls={null} teachers={teachers ?? []} onDone={() => { setAdding(false); reload(); }} /></div>
         : <div className="btnrow"><button className="btn line" onClick={() => setAdding(true)}>반 추가</button></div>}
     </section>
@@ -57,7 +57,11 @@ export function Classes() {
 
 const DOW_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
-function ClassForm({ cls, teachers, onDone }: { cls: ClsFull | null; teachers: { user_id: string | null; name: string }[]; onDone: () => void }) {
+/* 담당 강사 이름: 번호로 맞춰 보고, 옛 데이터를 위해 user_id 로도 맞춰 본다 */
+const tname = (c: ClsFull, teachers: Teacher[] | null) =>
+  teachers?.find(t => (c.teacher_phone && t.phone === c.teacher_phone) || (!c.teacher_phone && c.teacher_id && t.user_id === c.teacher_id))?.name ?? '';
+
+function ClassForm({ cls, teachers, onDone }: { cls: ClsFull | null; teachers: Teacher[]; onDone: () => void }) {
   const [name, setName] = useState(cls?.name ?? '');
   const [dows, setDows] = useState<number[]>(cls ? [...new Set(cls.schedule.map(s => s.dow))] : []);
   const [start, setStart] = useState(cls?.schedule[0]?.start ?? '19:00'); const [end, setEnd] = useState(cls?.schedule[0]?.end ?? '21:00');
@@ -67,7 +71,7 @@ function ClassForm({ cls, teachers, onDone }: { cls: ClsFull | null; teachers: {
     for (const s of cls?.schedule ?? []) m[s.dow] = { start: s.start, end: s.end };
     return m;
   });
-  const [teacher, setTeacher] = useState<string | null>(cls?.teacher_id ?? null);
+  const [teacher, setTeacher] = useState(cls?.teacher_phone ?? '');
   const [busy, setBusy] = useState(false);
   function togglePerDowOn() {
     setPerDowOn(v => {
@@ -85,7 +89,12 @@ function ClassForm({ cls, teachers, onDone }: { cls: ClsFull | null; teachers: {
     const schedule: Sched[] = sorted.map(dow => { const t = perDowOn ? (perDow[dow] ?? { start, end }) : { start, end }; return { dow, start: t.start, end: t.end }; });
     if (schedule.some(s => s.start >= s.end)) { toast('끝나는 시간이 시작보다 늦어야 해요'); return; }
     setBusy(true);
-    try { if (cls) await updateClass(cls.id, name.trim(), schedule, teacher); else await createClass(name.trim(), schedule); toast('저장했어요'); onDone(); }
+    try {
+      let id = cls?.id;
+      if (cls) await updateClass(cls.id, name.trim(), schedule); else id = await createClass(name.trim(), schedule);
+      if (id) await assignClassTeacher(id, teacher || null);
+      toast('저장했어요'); onDone();
+    }
     catch (e) { errToast(e); setBusy(false); }
   }
   return (
@@ -103,11 +112,11 @@ function ClassForm({ cls, teachers, onDone }: { cls: ClsFull | null; teachers: {
             </div>
           ); })}</div>
         : <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input className="input" type="time" value={start} onChange={e => setStart(e.target.value)} /><span className="muted">–</span><input className="input" type="time" value={end} onChange={e => setEnd(e.target.value)} /></div>}
-      <select className="input" value={teacher ?? ''} onChange={e => setTeacher(e.target.value || null)}>
+      <select className="input" value={teacher} onChange={e => setTeacher(e.target.value)}>
         <option value="">담당 강사 없음 (원장님)</option>
-        {teachers.filter(t => t.user_id).map(t => <option key={t.user_id!} value={t.user_id!}>{t.name}</option>)}
+        {teachers.map(t => <option key={t.phone} value={t.phone}>{t.name}{t.user_id ? '' : ' · 아직 안 들어옴'}</option>)}
       </select>
-      {teachers.some(t => !t.user_id) && <p className="muted" style={{ padding: 0 }}>아직 안 들어온 강사는 들어온 뒤에 고를 수 있어요.</p>}
+      <p className="muted" style={{ padding: 0 }}>강사가 앱에 들어오면 자동으로 연결돼 담당 반만 보게 돼요.</p>
       <div className="btnrow" style={{ padding: 0 }}><button className="btn line" onClick={onDone}>취소</button><button className="btn" disabled={busy} onClick={save}>저장</button></div>
     </div>
   );

@@ -19,7 +19,7 @@ export type Note = { id: string; kind: 'consult' | 'memo'; body: string; created
 export type CalItem = { id: string; date: string; kind: 'closed' | 'makeup' | 'special'; note: string | null; class_id: string | null };
 export type TimelineItem = { ts: string; kind: 'attendance' | 'absence' | 'inquiry' | 'note'; title: string; body: string; ref: string };
 export type Teacher = { user_id: string | null; name: string; phone: string };
-export type ClsFull = Cls & { teacher_id: string | null };
+export type ClsFull = Cls & { teacher_id: string | null; teacher_phone: string | null };
 
 let ctx = { academyId: '', userId: '' };
 export const setContext = (academyId: string, userId: string) => { ctx = { academyId, userId }; };
@@ -144,13 +144,17 @@ export async function exportAcademy(): Promise<Blob> {
   return await r.blob();
 }
 export async function listClassesFull(): Promise<ClsFull[]> {
-  return must(await supabase.from('classes').select('id, name, schedule, teacher_id').order('name')) as ClsFull[];
+  return must(await supabase.from('classes').select('id, name, schedule, teacher_id, teacher_phone').order('name')) as ClsFull[];
 }
 export async function createClass(name: string, schedule: Sched[]): Promise<string> {
   return (must(await supabase.from('classes').insert({ academy_id: ctx.academyId, name, schedule }).select('id').single()) as { id: string }).id;
 }
-export async function updateClass(id: string, name: string, schedule: Sched[], teacherId: string | null) {
-  must(await supabase.from('classes').update({ name, schedule, teacher_id: teacherId }).eq('id', id));
+export async function updateClass(id: string, name: string, schedule: Sched[]) {
+  must(await supabase.from('classes').update({ name, schedule }).eq('id', id));
+}
+/* 담당 강사는 번호로 잡는다 — 아직 앱에 안 들어온 강사도 배정되고, 들어올 때 사용자가 이어진다 */
+export async function assignClassTeacher(classId: string, phone: string | null) {
+  must(await supabase.rpc('assign_class_teacher', { p_class: classId, p_phone: phone ?? '' }));
 }
 export async function markMakeupAttended(aid: string) { must(await supabase.rpc('makeup_attended', { aid })); }
 export async function saveFaq(id: string | null, q: string, a: string, sort: number) {

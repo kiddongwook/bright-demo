@@ -16,7 +16,7 @@ export function NoticeFeed({ who }: { who: string }) {
     <section className="view on">
       <div className="head"><h1 className="hello">공지</h1><p className="lede">전체 공지와 <b>{who}</b> 공지만 보여요.</p></div>
       {notices && (notices.length === 0 ? <p className="muted" style={{ padding: '0 20px' }}>아직 공지가 없어요.</p>
-        : <div className="box">{notices.map(n => (
+        : <div className="list">{notices.map(n => (
           <button key={n.id} className={'post' + (n.read ? '' : ' new')} style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.push('notice-view', { id: n.id })}>
             <div className="pt">{n.photos?.length ? '📷 ' : ''}{n.title}</div><div className="pm"><b>{cname(n.target_class_id)}</b><span>{fmt(n.created_at)}</span>{n.read && <span>· 읽음</span>}</div>
           </button>))}</div>)}

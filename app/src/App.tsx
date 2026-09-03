@@ -6,8 +6,8 @@ import { Otp } from './screens/Otp';
 import { PickRole } from './screens/PickRole';
 import { Noti } from './screens/Noti';
 import { Placeholder } from './screens/Placeholder';
-import { NavProvider, useNav, TABS, TABMETA, TITLE, ICON, type Role } from './lib/nav';
-import { setContext, unreadCount, kstToday, fmtMDW, academy, type Academy } from './lib/api';
+import { NavProvider, useNav, TABS, TABMETA, TITLE, ICON, WIDE_VIEWS, type Role } from './lib/nav';
+import { setContext, unreadCount, academy, type Academy } from './lib/api';
 import { logoUrl } from './lib/logo';
 import { SCREENS } from './screens/registry';
 import { LinkEntry, type LinkTarget } from './screens/LinkEntry';
@@ -42,18 +42,20 @@ function Frame() {
   const refreshBadge = () => unreadCount().then(setBadge).catch(() => {});
   useEffect(() => { refreshBadge(); }, [nav.view]);
   useEffect(() => { setReportScreen(nav.view); }, [nav.view]);   // 오류 보고에 "어느 화면에서" 를 싣는다
+  // 관리 화면은 넓은 화면에서 대시보드로 펼친다
+  useEffect(() => { document.body.classList.toggle('wide', WIDE_VIEWS.has(nav.view)); return () => document.body.classList.remove('wide'); }, [nav.view]);
   useEffect(() => { academy().then(a => { setAcad(a); document.documentElement.style.setProperty('--brand', a.brand_color); document.title = active!.academy_name ?? a.name; }).catch(() => {}); }, [active!.academy_id]);
   const key = `${role}:${nav.view}`;
   const Screen: ComponentType<any> = nav.view === 'noti' ? (() => <Noti onRead={refreshBadge} />) : (SCREENS[key] ?? SCREENS[`*:${nav.view}`] ?? (() => <Placeholder name={nav.view} />));
   const title = TITLE[nav.view];
-  // 로고가 있으면 앱바는 학원 이름 텍스트로 대신한다 — 지금 로고 이미지는 흰 배경 위 남색이라 강조색 앱바엔 흰색 변형이 필요한데, 3단계 전까진 단순하게 텍스트로 둔다.
+  // 학원이 올린 로고가 있으면 앱바는 학원 이름 텍스트로 대신한다 — 올린 로고의 배경·비율을 앱바가 보장할 수 없어서.
   const logoSrc = acad?.logo_path ? logoUrl(acad.logo_path) : null;
   return (
     <div className="shell"><div className="app">
       <UpdateBanner />
       <header className="appbar">
         {nav.isTab
-          ? <>{logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset('logo/yeongeo-jip-bold-white.png')} alt={active!.academy_name} />}<span className="ad">{fmtMDW(kstToday())}</span></>
+          ? <>{logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset('logo/yeongeo-jip-bold.png')} alt={active!.academy_name} />}</>
           : <><button className="bk" onClick={nav.back} aria-label="뒤로">&lsaquo;</button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}
         {nav.view !== 'noti' && !nav.limited && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>

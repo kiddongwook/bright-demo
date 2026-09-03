@@ -21,6 +21,9 @@ export const TITLE: Record<string, [string, string]> = {
   todos: ['이번 주 할 것', '관리'],
 };
 
+/* 넓은 화면에서 폰 틀을 벗고 대시보드로 펼칠 관리 화면들 — App 이 body.wide 를 붙였다 뗀다 */
+export const WIDE_VIEWS = new Set(['stats', 'roster', 'student', 'student-edit', 'import', 'todos', 'calendar', 'classes', 'teachers', 'readers', 'inbox', 'answer']);
+
 type Entry = { view: string; params: Record<string, string> };
 type Nav = { view: string; params: Record<string, string>; isTab: boolean; tabBase: string; limited: boolean; tab: (n: string) => void; push: (n: string, p?: Record<string, string>) => void; back: () => void; replace: (n: string, p?: Record<string, string>) => void };
 const C = createContext<Nav>(null!);

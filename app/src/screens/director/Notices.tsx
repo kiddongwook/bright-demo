@@ -19,7 +19,7 @@ export function NoticeList() {
       <div className="lab">올린 공지<span className="r">누르면 읽은 사람</span></div>
       {notices && (notices.length === 0
         ? <p className="muted" style={{ padding: '0 20px' }}>아직 공지가 없어요. 첫 공지를 올려보세요.</p>
-        : <div className="box">{notices.map(n => (
+        : <div className="list">{notices.map(n => (
           <button key={n.id} className="post" style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.push('readers', { id: n.id })}>
             <div className="pt">{n.photos?.length ? '📷 ' : ''}{n.title}</div>
             <div className="pm"><b>{cname(n.target_class_id)}</b><span>{fmt(n.created_at)}</span><span>· {n.read_count}명 읽음</span>{n.reminded_at && <span>· 다시 알림</span>}</div>

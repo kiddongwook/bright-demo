@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { myChildren, weekAttendance, listTodos, listAbsences, requestAbsence, closedByClass, nextClassDaysFor, weekRange, type Closed, fmtMDW, fmtDT, fmtDayOrToday, kstDay, DOW, dowOf, type Student, type Todo, type Absence, type AttStatus } from '../../lib/api';
+import { myChildren, weekAttendance, listTodos, listAbsences, requestAbsence, closedByClass, nextClassDaysFor, weekRange, kstToday, type Closed, fmtMDW, fmtDT, fmtDayOrToday, kstDay, DOW, dowOf, type Student, type Todo, type Absence, type AttStatus } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
@@ -43,7 +43,7 @@ export function Child() {
   const short = child.name.replace(/^[가-힣]/, '');
   return (
     <section className="view on">
-      <div className="head"><h1 className="hello">{short}이</h1><p className="lede">{child.classes.map(c => c.name).join(' · ')}{nextCls ? ` · 다음 수업 ${fmtDayOrToday(next)} ${nextCls.schedule.find(s => s.dow === dowOf(next))?.start ?? ''}` : ''}</p></div>
+      <div className="head"><h1 className="hello">{short}이</h1><p className="lede">{fmtMDW(kstToday())} · {child.classes.map(c => c.name).join(' · ')}{nextCls ? ` · 다음 수업 ${fmtDayOrToday(next)} ${nextCls.schedule.find(s => s.dow === dowOf(next))?.start ?? ''}` : ''}</p></div>
       <div className="lab first">이번 주<span className="r">{fmtMDW(weekRange().from)} – {fmtMDW(weekRange().to)}</span></div>
       <div className="box"><WeekStrip studentId={child.id} absences={absences} /></div>
       <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span><span><b>◌</b>보강</span><button className="more" onClick={() => nav.push('child-month')}>이번 달 달력 ›</button></div>
