@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { nextClassDays, nextClassDaysFor, monthGrid, dowOf } from './api';
+import { nextClassDays, nextClassDaysFor, monthGrid, dowOf, scheduleSummary } from './api';
 describe('nextClassDays + 휴원일', () => {
   it('휴원일은 건너뛴다', () => {
     const sched = [1, 2, 3, 4, 5, 6, 0].map(dow => ({ dow, start: '00:01', end: '23:59' })); // 매일 수업, 오늘은 시작이 지나 제외
@@ -35,4 +35,15 @@ describe('monthGrid', () => {
     expect(g.label).toBe('2026년 9월'); expect(g.prev).toBe('2026-08'); expect(g.next).toBe('2026-10');
   });
   it('12월 → 다음 해 1월', () => { const g = monthGrid('2026-12'); expect(g.next).toBe('2027-01'); expect(g.prev).toBe('2026-11'); });
+});
+describe('scheduleSummary', () => {
+  it('시간표가 없으면', () => { expect(scheduleSummary([])).toBe('시간표 없음'); });
+  it('요일마다 시간이 같으면 요일을 묶어서', () => {
+    const s = [{ dow: 1, start: '19:00', end: '21:00' }, { dow: 3, start: '19:00', end: '21:00' }, { dow: 5, start: '19:00', end: '21:00' }];
+    expect(scheduleSummary(s)).toBe('월수금 19:00–21:00');
+  });
+  it('요일마다 시간이 다르면 요일별로', () => {
+    const s = [{ dow: 1, start: '19:00', end: '21:00' }, { dow: 6, start: '10:00', end: '12:00' }];
+    expect(scheduleSummary(s)).toBe('월 19:00–21:00 · 토 10:00–12:00');
+  });
 });

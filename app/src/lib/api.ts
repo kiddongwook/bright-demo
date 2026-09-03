@@ -237,6 +237,16 @@ export async function setTodoDone(todoId: string, studentId: string, done: boole
   else must(await supabase.from('todo_done').delete().eq('todo_id', todoId).eq('student_id', studentId));
 }
 
+/** 반 시간표 요약. 요일이 같은 시간이면 "월수금 19:00–21:00", 요일마다 다르면 "월 19:00–21:00 · 토 10:00–12:00" */
+export function scheduleSummary(s: Sched[]): string {
+  if (!s.length) return '시간표 없음';
+  const order = (d: number) => (d + 6) % 7; // 월화수목금토일
+  const sorted = [...s].sort((a, b) => order(a.dow) - order(b.dow));
+  const same = sorted.every(x => x.start === sorted[0].start && x.end === sorted[0].end);
+  if (same) return `${[...new Set(sorted.map(x => x.dow))].map(d => DOW[d]).join('')} ${sorted[0].start}–${sorted[0].end}`;
+  return sorted.map(x => `${DOW[x.dow]} ${x.start}–${x.end}`).join(' · ');
+}
+
 /* ── 달력 도우미 ── */
 export function nextClassDays(schedule: Sched[], count: number, closed?: Set<string>): string[] {
   // 오늘도 수업 시작 전이면 후보에 넣는다 — 낮에 보면 "다음 수업 오늘 20:00". 휴원일(closed)은 건너뛴다.
