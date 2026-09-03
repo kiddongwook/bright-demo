@@ -33,3 +33,6 @@
 - `ALIMTALK_PROVIDER=console`: 실제 발송 없이 로그만. `outbox-send` 응답의 `debug` 에 받는 번호·URL 이 들어 있어 테스트가 토큰을 얻는다. 받는 번호가 `9999` 로 끝나면 일부러 실패한다(dead·문자 대체 경로).
 - 통합 테스트: `cd tools && node --env-file=../.env.local outbox-test.mjs` → `PASS: outbox A~E`. 테스트는 도는 동안 `app_settings.outbox_url` 을 잠시 빼서 틱이 끼어들지 않게 하고 끝나면 되돌린다.
 - 링크 하나 만들어 보기: 원장으로 공지를 올리고 `outbox-send` 를 `X-Outbox-Key` 헤더로 호출하면 `debug[].url` 이 나온다. 그 주소를 새 시크릿 창에서 열면 공지가 바로 열린다.
+
+## 처리량
+`outbox-send` 는 한 번에 20건을 잡는다 → 분당 약 20건. 학원 하나면 충분하다. 공지 하나가 학부모 100명에게 가는 규모가 되면 `outbox_claim` 의 `n` 을 올리거나 `outbox-send` 안에서 줄이 빌 때까지 반복하게 바꾼다(대행사 초당 한도도 같이 본다).

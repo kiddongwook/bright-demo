@@ -23,7 +23,7 @@ function Shell() {
   const [target, setTarget] = useState<LinkTarget | null>(null);
   useEffect(() => { if (active) setPhone(null); }, [active]); // 들어오면 번호 단계를 지운다 — 로그아웃 뒤 남의 인증 화면이 남지 않게
   if (loading) return null;
-  if (link) return <div className="shell"><div className="app"><LinkEntry token={link} onDone={t => { setLink(null); setTarget(t); }} /></div></div>;
+  if (link) return <div className="shell"><div className="app"><LinkEntry token={link} currentUserId={session && memberships.length ? session.user.id : null} onDone={t => { setLink(null); setTarget(t); }} /></div></div>;
   if (!session || !memberships.length) return <div className="shell"><div className="app">{phone ? <Otp phone={phone} onBack={() => setPhone(null)} /> : <Gate onSent={setPhone} />}</div></div>;
   if (!active) return <div className="shell"><div className="app"><PickRole /></div></div>;
   setContext(active.academy_id, session.user.id);

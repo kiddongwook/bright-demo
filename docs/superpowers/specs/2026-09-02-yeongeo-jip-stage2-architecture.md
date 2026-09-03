@@ -96,7 +96,7 @@
 
 ### 5.3 알림 파이프라인
 1. 공지·답변·보강 확정·출결 저장·다시 알리기가 `notifications`(앱 내)와 `outbox`(카톡)에 넣는다. `idempotency_key`로 중복 방지.
-2. DB 웹훅이 Edge Function 호출 → 대행사 알림톡 API → `sent`, provider_msg_id.
+2. DB 웹훅이 Edge Function 호출 → 대행사 알림톡 API → `sent`, provider_msg_id. *(3주차 구현: 웹훅 대신 `pg_cron` 1분 틱이 보낼 게 있을 때만 `pg_net` 으로 함수를 깨운다 — 즉시 발송과 재시도가 한 장치, 지연 ≤1분.)*
 3. **5분 주기 재시도**(pg_cron): `queued`/`failed` 중 attempts < 5 재발송, 넘으면 `dead`.
 4. 대행사 **수신 결과 콜백**으로 `delivered`/`failed` 갱신. **문자 대체는 콜백의 실패에서 트리거** — API 수락 ≠ 도착.
 

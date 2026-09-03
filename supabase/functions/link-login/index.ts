@@ -4,7 +4,8 @@ import { sha256, json, cors } from '../_shared/sms.ts';
 // 세션은 매직링크 검증으로 만든다 — 비밀번호를 갈지 않으므로 설치된 앱의 기존 세션이 끊기지 않는다.
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return cors();
-  const { token } = await req.json().catch(() => ({}));
+  // resolve: true — 이미 들어와 있는 기기에서 누른 경우. 세션은 만들지 않고 어느 화면인지만 알려준다.
+  const { token, resolve } = await req.json().catch(() => ({}));
   if (!/^[0-9a-f]{32}$/.test(token ?? '')) return json(401, { error: 'bad_token' });
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   const { data: lt } = await admin.from('link_tokens').select('*').eq('token_hash', await sha256(token)).maybeSingle();
@@ -22,11 +23,12 @@ Deno.serve(async (req) => {
     await admin.from('users').update({ active_membership_id: pick.id }).eq('id', u.id);
   }
   if (!lt.used_at) await admin.from('link_tokens').update({ used_at: new Date().toISOString() }).eq('id', lt.id);
+  if (resolve === true) return json(200, { user_id: u.id, memberships, academy_id: lt.academy_id, view: lt.view, ref_id: lt.ref_id });
   const email = `${u.phone}@auth.yeongeo.local`;
   const { data: gl, error: ge } = await admin.auth.admin.generateLink({ type: 'magiclink', email });
   if (ge || !gl?.properties?.hashed_token) return json(500, { error: ge?.message ?? 'no_link' });
   const anon = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { auth: { persistSession: false } });
   const { data: s, error: e } = await anon.auth.verifyOtp({ token_hash: gl.properties.hashed_token, type: 'magiclink' });
   if (e || !s.session) return json(500, { error: e?.message ?? 'no_session' });
-  return json(200, { session: { access_token: s.session.access_token, refresh_token: s.session.refresh_token }, memberships, academy_id: lt.academy_id, view: lt.view, ref_id: lt.ref_id });
+  return json(200, { user_id: u.id, session: { access_token: s.session.access_token, refresh_token: s.session.refresh_token }, memberships, academy_id: lt.academy_id, view: lt.view, ref_id: lt.ref_id });
 });

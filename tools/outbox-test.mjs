@@ -111,6 +111,9 @@ try {
   const { data: used } = await admin.from('link_tokens').select('used_at').eq('token_hash', (await import('node:crypto')).createHash('sha256').update(TOKEN).digest('hex')).single();
   ok(!!used?.used_at, 'used_at 기록');
   const e2 = await ll(TOKEN); ok(e2.status === 200, '만료 전엔 다시 써도 열린다');
+  // 이미 들어와 있는 기기: resolve 만 — 세션을 만들지 않고 누구의 링크인지·어느 화면인지만
+  const rv = await fetch(`${URL}/functions/v1/link-login`, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: ANON }, body: JSON.stringify({ token: TOKEN, resolve: true }) }).then(r => r.json());
+  ok(rv.user_id === parent && rv.view === 'ask-mine' && !rv.session, `resolve 모드는 세션 없이 화면만 (got ${JSON.stringify(rv).slice(0, 100)})`);
   const e3 = await ll('0'.repeat(32)); ok(e3.status === 401, `없는 토큰 401 (got ${e3.status})`);
   await admin.from('link_tokens').update({ expires_at: new Date(Date.now() - 1000).toISOString() }).eq('user_id', parent);
   const e4 = await ll(TOKEN); ok(e4.status === 401 && (await e4.json()).error === 'expired', `만료 401 expired (got ${e4.status})`);
