@@ -52,6 +52,29 @@ async function wipe(label, table, apply) {
 }
 
 console.log('삭제 중…');
+
+// Storage 는 DB cascade 를 안 탄다 — 공지 사진(notices/<A>/…)·로고(logos/<A>/…)를 먼저 손으로 비운다.
+// list 는 한 겹만 본다(폴더 = id null) → 폴더를 돌며 파일을 모은다. 버킷이 없어도 리셋 전체가 멈추지 않게 try 로 감싼다.
+async function emptyPrefix(bucket, prefix) {
+  const s = admin.storage.from(bucket);
+  const paths = [];
+  const { data: top, error } = await s.list(prefix, { limit: 1000 });
+  if (error) throw new Error(error.message);
+  for (const e of top ?? []) {
+    if (e.id) { paths.push(`${prefix}/${e.name}`); continue; }
+    const { data: inner, error: e2 } = await s.list(`${prefix}/${e.name}`, { limit: 1000 });
+    if (e2) throw new Error(e2.message);
+    for (const f of inner ?? []) if (f.id) paths.push(`${prefix}/${e.name}/${f.name}`);
+  }
+  if (paths.length) { const { error: e3 } = await s.remove(paths); if (e3) throw new Error(e3.message); }
+  return paths.length;
+}
+for (const bucket of ['notices', 'logos']) {
+  try { console.log(`- storage ${bucket}/${A}: ${await emptyPrefix(bucket, A)}`); }
+  catch (e) { console.log(`- storage ${bucket}/${A}: 건너뜀 (${e.message})`); }
+}
+try { await admin.from('academies').update({ logo_path: null }).eq('id', A); } catch { /* ignore */ }
+
 await wipe('notifications', 'notifications', q => q.eq('academy_id', A));
 await wipe('outbox', 'outbox', q => q.eq('academy_id', A));
 await wipe('link_tokens', 'link_tokens', q => q.eq('academy_id', A));

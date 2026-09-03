@@ -130,4 +130,37 @@ ok(((await d.from('todo_done').select('todo_id').eq('todo_id', todo.id)).data ??
 r = await d.from('todos').delete().eq('id', todo.id); ok(!r.error, '할 것 삭제: ' + r.error?.message);
 ok(((await p.from('todos').select('id').eq('id', todo.id)).data ?? []).length === 0, '지우면 학부모 화면에서도 사라진다');
 
-if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; } else console.log('PASS: manage A~J');
+// ---- K. 아직 안 들어온 사람(roster_entry_status) · 숙제 검사(원장이 학생 대신 체크)
+// 여기까지의 명부 상태: G(퇴원)가 SID 의 명부를 통째로 비웠고 H(재입학)가 엄마 하나만 되살렸다(학생 번호는 '').
+// 그래서 아빠·학생 행을 여기서 다시 얹고, 아무도 안 쓰는 번호 하나를 더해 "아직 안 들어온" 행을 만든다.
+// 아빠·학생은 이미 사용자라 roster_save_student 가 소속을 이어 주므로 entered=true 다(계획서의 false 예상과 다른 이유).
+const P_NEW = '0109' + num() + '8';
+r = await d.rpc('roster_save_student', { sid: SID, p_name: '박지훈', p_class_ids: [c1.id], p_student_phone: P_ST3, p_parent_phones: [P_MOM, P_DAD, P_NEW] });
+ok(!r.error, 'K 명부 재저장: ' + r.error?.message);
+r = await d.rpc('roster_entry_status'); ok(!r.error, 'roster_entry_status: ' + r.error?.message);
+const es = r.data ?? []; const byPhone = ph => es.find(x => x.phone === ph);
+ok(es.length === 4, `명부 현황 4행 (got ${JSON.stringify(es.map(x => [x.role, x.entered]))})`);
+ok(!es.some(x => x.role === 'director' || x.role === 'teacher'), '원장·강사 행은 없다');
+ok(es.every(x => x.student_name === '박지훈'), '학생 이름이 붙는다');
+ok(byPhone(P_MOM)?.role === 'parent' && byPhone(P_MOM)?.entered === true, '엄마 entered true');
+ok(byPhone(P_DAD)?.entered === true, '아빠 entered true');
+ok(byPhone(P_ST3)?.role === 'student' && byPhone(P_ST3)?.entered === true, '학생 entered true');
+ok(byPhone(P_NEW)?.entered === false, '아직 안 들어온 번호 entered false');
+ok((await p.rpc('roster_entry_status')).error, '학부모는 명부 현황 거절');
+const P_T2 = '0109' + num() + '9'; const t2Id = await mkUser('이강사', P_T2);
+const { data: tm } = await admin.from('memberships').insert({ user_id: t2Id, academy_id: A, role: 'teacher' }).select().single();
+await admin.from('users').update({ active_membership_id: tm.id }).eq('id', t2Id);
+const t = createClient(URL, ANON, { auth: { persistSession: false } });
+ok(!(await t.auth.signInWithPassword({ email: email(P_T2), password: PW })).error, '강사 로그인');
+ok((await t.rpc('roster_entry_status')).error, '강사도 명부 현황 거절(번호가 나가므로 원장만)');
+
+r = await d.from('todos').insert({ academy_id: A, class_id: c1.id, kind: 'homework', title: '숙제 검사용', due_date: kst(3) }).select().single();
+ok(!r.error, 'K 할 것 insert: ' + r.error?.message); const todo2 = r.data;
+r = await d.from('todo_done').upsert({ todo_id: todo2.id, student_id: SID }, { onConflict: 'todo_id,student_id' });
+ok(!r.error, '원장이 학생 대신 체크: ' + r.error?.message);
+ok(((await d.from('todo_done').select('todo_id').eq('todo_id', todo2.id)).data ?? []).length === 1, '대신 체크 한 행');
+r = await d.from('todo_done').delete().eq('todo_id', todo2.id).eq('student_id', SID);
+ok(!r.error, '원장이 체크 해제: ' + r.error?.message);
+ok(((await d.from('todo_done').select('todo_id').eq('todo_id', todo2.id)).data ?? []).length === 0, '체크 해제됨');
+
+if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; } else console.log('PASS: manage A~K');
