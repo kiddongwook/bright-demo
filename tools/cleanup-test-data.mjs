@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, { auth: { persistSession: false } });
-const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%,slug.like.manage-%,slug.like.export-%');
+const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%,slug.like.manage-%,slug.like.export-%,slug.like.hk-%,slug.like.onb-%');
 let users = 0;
 for (const a of acs ?? []) {
   const { data: ms } = await admin.from('memberships').select('user_id').eq('academy_id', a.id);
@@ -10,9 +10,14 @@ for (const a of acs ?? []) {
   const { error } = await admin.from('academies').delete().eq('id', a.id);
   if (error) console.log('academy delete failed', a.slug, error.message);
 }
-// 학원 없이 남은 테스트 사용자 (전화 0101*/0109*)
-const { data: orphans } = await admin.from('users').select('id, phone').or('phone.like.0101%,phone.like.0109%');
-for (const u of orphans ?? []) {
+// 학원 없이 남은 테스트 사용자 (전화 0101*/0109*). 씨앗 학원 사용자(소속·명부가 있는 사람)는 절대 건드리지 않는다.
+const { data: cand } = await admin.from('users').select('id, phone').or('phone.like.0101%,phone.like.0109%');
+const keep = new Set([
+  ...((await admin.from('memberships').select('user_id')).data ?? []).map(m => m.user_id),
+  ...((await admin.from('roster_phones').select('phone')).data ?? []).map(r => r.phone),
+]);
+const orphans = (cand ?? []).filter(u => !keep.has(u.id) && !keep.has(u.phone));
+for (const u of orphans) {
   const { error } = await admin.auth.admin.deleteUser(u.id);
   if (error) console.log('auth delete', u.phone.slice(0, 3) + '****', error.message);
   // auth 쪽이 이미 없거나 cascade 가 안 왔으면 public.users 를 직접 지운다
