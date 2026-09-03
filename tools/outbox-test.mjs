@@ -51,9 +51,51 @@ try {
   ok(ob.every(o => o.status === 'queued' && o.channel === 'alimtalk' && o.idempotency_key.startsWith('n:')), '모두 queued/alimtalk/idem');
   ok(ob.length === 5, `원장 대상 알림(문의 접수·결석 신청)은 줄에 서지 않는다 (got ${ob.length})`);
 
+  // ---- B. 발송 (console 어댑터): 5건 sent, 토큰 5개, debug 에 URL
+  const send = () => fetch(`${URL}/functions/v1/outbox-send`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Outbox-Key': KEY }, body: '{}' }).then(r => r.json());
+  const noKey = await fetch(`${URL}/functions/v1/outbox-send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  ok(noKey.status === 401, `키 없이 401 (got ${noKey.status})`);
+  const b = await send();
+  ok(b.sent === 5 && b.failed === 0, `5건 발송 (got ${JSON.stringify(b)})`);
+  ok(Array.isArray(b.debug) && b.debug.length === 5 && b.debug.every(d => /\?l=[0-9a-f]{32}$/.test(d.url)), 'debug 에 토큰 URL');
+  const { data: ob2 } = await admin.from('outbox').select('*').eq('academy_id', A);
+  ok(ob2.every(o => o.status === 'sent' && o.provider_msg_id && o.sent_at && o.link_token_id && o.attempts === 1), '모두 sent + provider_msg_id + 토큰');
+  const { count: tk } = await admin.from('link_tokens').select('id', { count: 'exact', head: true }).eq('academy_id', A);
+  ok(tk === 5, `토큰 5개 (got ${tk})`);
+  const again = await send();
+  ok(again.claimed === 0, '보낸 건 다시 잡지 않는다');
+  const TOKEN = b.debug?.find(d => d.template_code === 'INQUIRY_ANSWERED')?.url.split('?l=')[1];
+
+  // ---- C. 콜백 실패 → 문자 줄 → 발송
+  const failedId = ob2.find(o => o.template_code === 'ATTENDANCE').provider_msg_id;
+  const cb = await fetch(`${URL}/functions/v1/outbox-callback`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Outbox-Key': KEY }, body: JSON.stringify({ provider_msg_id: failedId, status: 'failed', reason: 'not_kakao_user' }) }).then(r => r.json());
+  ok(cb.ok && cb.fallback, `콜백이 문자 행을 만든다 (got ${JSON.stringify(cb)})`);
+  const { data: smsRow } = await admin.from('outbox').select('*').eq('id', cb.fallback).single();
+  ok(smsRow.channel === 'sms' && smsRow.status === 'queued' && smsRow.template_code === 'ATTENDANCE' && smsRow.idempotency_key.endsWith(':sms'), '문자 행 모양');
+  const { data: origRow } = await admin.from('outbox').select('status,last_error').eq('provider_msg_id', failedId).single();
+  ok(origRow.status === 'failed' && origRow.last_error === 'not_kakao_user', '원래 행은 failed + 사유');
+  const cbOk = await fetch(`${URL}/functions/v1/outbox-callback`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Outbox-Key': KEY }, body: JSON.stringify({ provider_msg_id: ob2.find(o => o.template_code === 'INQUIRY_ANSWERED').provider_msg_id, status: 'delivered' }) }).then(r => r.json());
+  ok(cbOk.ok && !cbOk.fallback, 'delivered 콜백은 문자 행을 만들지 않는다');
+  const c = await send();
+  ok(c.sent === 1 && c.debug?.[0]?.channel === 'sms' && /\?l=[0-9a-f]{32}$/.test(c.debug[0].url), `문자 1건 발송 + 새 토큰 (got ${JSON.stringify(c)})`);
+  // 콜백으로 failed 가 된 알림톡 행은 재시도하지 않는다 (attempts 를 5로 올려 둔다)
+  const { data: origAfter } = await admin.from('outbox').select('status,attempts').eq('provider_msg_id', failedId).single();
+  ok(origAfter.status === 'failed' && origAfter.attempts === 5, '콜백 실패 행은 dead 취급(attempts 5)');
+
+  // ---- D. 발송 실패 5회 → dead → 문자 줄 (콘솔 어댑터는 9999 로 끝나는 번호에 일부러 실패한다)
+  const P_BAD = '0109' + num().slice(0, 2) + '9999';
+  const bad = await person('parent', '실패 어머님', P_BAD, st.id);
+  await admin.from('notices').insert({ academy_id: A, author_id: dir, title: '실패 테스트', body: '', target_class_id: null });
+  for (let i = 0; i < 5; i++) { await admin.from('outbox').update({ next_attempt_at: null }).eq('to_user_id', bad).eq('channel', 'alimtalk'); await send(); }
+  const { data: deadRow } = await admin.from('outbox').select('*').eq('to_user_id', bad).eq('channel', 'alimtalk').single();
+  ok(deadRow.status === 'dead' && deadRow.attempts === 5 && deadRow.last_error, `5회 실패 → dead (got ${deadRow.status}/${deadRow.attempts})`);
+  await send(); // dead 가 만든 문자 행은 다음 틱에 나간다
+  const { data: deadSms } = await admin.from('outbox').select('*').eq('to_user_id', bad).eq('channel', 'sms').maybeSingle();
+  ok(deadSms && deadSms.status === 'sent', `dead 면 문자 줄에 넣고 다음 틱에 보낸다 (got ${deadSms?.status})`);
+
   // ---- 결과
   if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; }
-  else console.log('PASS: outbox A(트리거 매핑)');
+  else console.log('PASS: outbox A~D');
 } finally {
   if (tickUrl) await admin.from('app_settings').upsert({ key: 'outbox_url', value: tickUrl.value });
 }
