@@ -111,4 +111,23 @@ r = await d.from('calendar').insert({ academy_id: A, date: kst(3), kind: 'closed
 r = await d.from('calendar').insert({ academy_id: A, date: kst(3), kind: 'closed', class_id: null, note: '전체' }); ok(!r.error, '전체 휴원 insert: ' + r.error?.message);
 r = await d.from('calendar').insert({ academy_id: A, date: kst(3), kind: 'closed', class_id: null, note: '전체 또' }); ok(!!r.error, '전체 휴원 중복은 unique 가 막는다');
 
-if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; } else console.log('PASS: manage A~I');
+// ---- J. 할 것: 원장이 넣고 → 학부모가 보고 → 학생이 체크하고 → 원장이 세고 → 원장이 지우면 사라진다
+// H 에서 재입학하며 학생은 c1 으로 돌아왔다. 재입학은 membership 만 만들고 active_membership_id 는 안 건드리므로 여기서 다시 가리킨다.
+const mm2 = (await admin.from('memberships').select('id').eq('user_id', momId).eq('student_id', SID).maybeSingle()).data;
+ok(!!mm2, '재입학 뒤 엄마 membership');
+await admin.from('users').update({ active_membership_id: mm2?.id ?? null }).eq('id', momId);
+r = await d.from('todos').insert({ academy_id: A, class_id: c1.id, kind: 'homework', title: '워크북 p.1', due_date: kst(2) }).select().single();
+ok(!r.error, '할 것 insert: ' + r.error?.message); const todo = r.data;
+ok(((await p.from('todos').select('id').eq('id', todo.id)).data ?? []).length === 1, '학부모가 할 것을 본다');
+// 학생 세션 (B 의 학부모와 같은 방식으로 만든다)
+const P_ST3 = '0109' + num() + '7'; const st3Id = await mkUser('박지훈', P_ST3);
+const { data: sm } = await admin.from('memberships').insert({ user_id: st3Id, academy_id: A, role: 'student', student_id: SID }).select().single();
+await admin.from('users').update({ active_membership_id: sm.id }).eq('id', st3Id);
+await admin.from('students').update({ user_id: st3Id }).eq('id', SID);
+const s3 = createClient(URL, ANON, { auth: { persistSession: false } }); ok(!(await s3.auth.signInWithPassword({ email: email(P_ST3), password: PW })).error, '학생 로그인');
+r = await s3.from('todo_done').upsert({ todo_id: todo.id, student_id: SID }, { onConflict: 'todo_id,student_id' }); ok(!r.error, '학생이 했어요 체크: ' + r.error?.message);
+ok(((await d.from('todo_done').select('todo_id').eq('todo_id', todo.id)).data ?? []).length === 1, '원장이 한 사람 수를 본다');
+r = await d.from('todos').delete().eq('id', todo.id); ok(!r.error, '할 것 삭제: ' + r.error?.message);
+ok(((await p.from('todos').select('id').eq('id', todo.id)).data ?? []).length === 0, '지우면 학부모 화면에서도 사라진다');
+
+if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; } else console.log('PASS: manage A~J');

@@ -243,6 +243,16 @@ export async function setTodoDone(todoId: string, studentId: string, done: boole
   if (done) must(await supabase.from('todo_done').upsert({ todo_id: todoId, student_id: studentId }, { onConflict: 'todo_id,student_id', ignoreDuplicates: true }));
   else must(await supabase.from('todo_done').delete().eq('todo_id', todoId).eq('student_id', studentId));
 }
+/* 원장·강사용: 반 하나의 다가오는 할 것 + 몇 명이 했는지 (staff 범위 밖 학생은 RLS 가 세지 않는다) */
+export type TodoFull = Todo & { done_count: number };
+export async function listClassTodos(classId: string, fromDate: string): Promise<TodoFull[]> {
+  const rows = must(await supabase.from('todos').select('id, class_id, kind, title, due_date, notice_id, todo_done(student_id)').eq('class_id', classId).gte('due_date', fromDate).order('due_date')) as any[];
+  return rows.map(r => ({ id: r.id, class_id: r.class_id, kind: r.kind, title: r.title, due_date: r.due_date, notice_id: r.notice_id, done: false, done_count: (r.todo_done ?? []).length }));
+}
+export async function createTodo(classId: string, kind: 'homework' | 'exam', title: string, dueDate: string): Promise<string> {
+  return (must(await supabase.from('todos').insert({ academy_id: ctx.academyId, class_id: classId, kind, title, due_date: dueDate }).select('id').single()) as { id: string }).id;
+}
+export async function deleteTodo(id: string): Promise<void> { must(await supabase.from('todos').delete().eq('id', id)); }
 
 /* ── 달력 도우미 ── */
 export function nextClassDays(schedule: Sched[], count: number, closed?: Set<string>): string[] {
