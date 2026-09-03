@@ -93,9 +93,31 @@ try {
   const { data: deadSms } = await admin.from('outbox').select('*').eq('to_user_id', bad).eq('channel', 'sms').maybeSingle();
   ok(deadSms && deadSms.status === 'sent', `dead 면 문자 줄에 넣고 다음 틱에 보낸다 (got ${deadSms?.status})`);
 
+  // ---- E. 링크 로그인: 토큰 → 그 사람 세션 + 열 화면. 만료·엉뚱한 토큰은 401. 기존 세션(설치된 앱)은 끊기지 않는다.
+  const ll = (token) => fetch(`${URL}/functions/v1/link-login`, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: ANON }, body: JSON.stringify({ token }) });
+  const installed = createClient(URL, ANON, { auth: { persistSession: false } });
+  const { error: pwErr } = await installed.auth.signInWithPassword({ email: `${P_PARENT}@auth.yeongeo.local`, password: 'outbox-' + rnd });
+  ok(!pwErr, '학부모가 미리 로그인(설치된 앱 흉내)');
+  const e1 = await ll(TOKEN); const j1 = await e1.json();
+  ok(e1.status === 200 && j1.session?.access_token && j1.view === 'ask-mine' && j1.ref_id === q.id && j1.academy_id === A, `링크 로그인 200 + 화면 (got ${e1.status} ${JSON.stringify(j1).slice(0, 120)})`);
+  const asParent = createClient(URL, ANON, { auth: { persistSession: false } });
+  await asParent.auth.setSession(j1.session);
+  const { data: me } = await asParent.auth.getUser();
+  ok(me.user?.id === parent, '세션 주인은 질문한 학부모');
+  const { data: myInq } = await asParent.from('inquiries').select('id').eq('id', q.id);
+  ok(myInq?.length === 1, '그 세션으로 자기 문의를 읽는다(RLS)');
+  const { data: still, error: stillErr } = await installed.auth.refreshSession();
+  ok(!stillErr && still.session?.user?.id === parent, `링크 로그인 뒤에도 기존 세션의 리프레시가 산다 (${stillErr?.message ?? 'ok'})`);
+  const { data: used } = await admin.from('link_tokens').select('used_at').eq('token_hash', (await import('node:crypto')).createHash('sha256').update(TOKEN).digest('hex')).single();
+  ok(!!used?.used_at, 'used_at 기록');
+  const e2 = await ll(TOKEN); ok(e2.status === 200, '만료 전엔 다시 써도 열린다');
+  const e3 = await ll('0'.repeat(32)); ok(e3.status === 401, `없는 토큰 401 (got ${e3.status})`);
+  await admin.from('link_tokens').update({ expires_at: new Date(Date.now() - 1000).toISOString() }).eq('user_id', parent);
+  const e4 = await ll(TOKEN); ok(e4.status === 401 && (await e4.json()).error === 'expired', `만료 401 expired (got ${e4.status})`);
+
   // ---- 결과
   if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; }
-  else console.log('PASS: outbox A~D');
+  else console.log('PASS: outbox A~E');
 } finally {
   if (tickUrl) await admin.from('app_settings').upsert({ key: 'outbox_url', value: tickUrl.value });
 }

@@ -19,22 +19,27 @@ export const TITLE: Record<string, [string, string]> = {
 };
 
 type Entry = { view: string; params: Record<string, string> };
-type Nav = { view: string; params: Record<string, string>; isTab: boolean; tabBase: string; tab: (n: string) => void; push: (n: string, p?: Record<string, string>) => void; back: () => void; replace: (n: string, p?: Record<string, string>) => void };
+type Nav = { view: string; params: Record<string, string>; isTab: boolean; tabBase: string; limited: boolean; tab: (n: string) => void; push: (n: string, p?: Record<string, string>) => void; back: () => void; replace: (n: string, p?: Record<string, string>) => void };
 const C = createContext<Nav>(null!);
 
-export function NavProvider({ role, children }: { role: Role; children: ReactNode }) {
+/* 진입 화면이 속한 탭 — 링크로 바로 열었을 때 뒤로가기·탭 표시에 쓴다 */
+const PARENT_TAB: Record<string, string> = { 'notice-view': 'notice', 'notice-new': 'notice', readers: 'notice', answer: 'inbox', faq: 'inbox', 'ask-new': 'ask', 'ask-mine': 'ask', absence: 'child', makeup: 'today', roster: 'more', academy: 'more', install: 'more', noti: 'more' };
+
+export function NavProvider({ role, initial: init, limited = false, children }: { role: Role; initial?: { view: string; params?: Record<string, string> }; limited?: boolean; children: ReactNode }) {
   const first = TABS[role][0];
   const h = typeof location !== 'undefined' ? location.hash.replace('#', '') : '';
-  const initial = h && (TABS[role].includes(h) || TITLE[h]) ? h : first;
-  const [cur, setCur] = useState<Entry>({ view: initial, params: {} });
-  const [hist, setHist] = useState<Entry[]>(TABS[role].includes(initial) ? [] : [{ view: first, params: {} }]);
+  const initial = init?.view ?? (h && (TABS[role].includes(h) || TITLE[h]) ? h : first);
+  const home = TABS[role].includes(initial) ? initial : (PARENT_TAB[initial] && TABS[role].includes(PARENT_TAB[initial]) ? PARENT_TAB[initial] : first);
+  const [cur, setCur] = useState<Entry>({ view: initial, params: init?.params ?? {} });
+  const [hist, setHist] = useState<Entry[]>(TABS[role].includes(initial) ? [] : [{ view: home, params: {} }]);
   const isTab = TABS[role].includes(cur.view);
   const tabBase = hist.length ? hist[0].view : cur.view;
-  const tab = (n: string) => { setHist([]); setCur({ view: n, params: {} }); };
+  // 제한 세션(링크로 열림)은 들어온 탭 밖으로 나가지 않는다 — 전체 기능은 번호로 들어와서
+  const tab = (n: string) => { if (limited && n !== home) return; setHist([]); setCur({ view: n, params: {} }); };
   const push = (n: string, p: Record<string, string> = {}) => { setHist(x => [...x, cur]); setCur({ view: n, params: p }); };
   const replace = (n: string, p: Record<string, string> = {}) => setCur({ view: n, params: p });
-  const back = () => { const prev = hist[hist.length - 1]; setHist(x => x.slice(0, -1)); setCur(prev ?? { view: first, params: {} }); };
-  return <C.Provider value={{ view: cur.view, params: cur.params, isTab, tabBase, tab, push, back, replace }}>{children}</C.Provider>;
+  const back = () => { const prev = hist[hist.length - 1]; setHist(x => x.slice(0, -1)); setCur(prev ?? { view: home, params: {} }); };
+  return <C.Provider value={{ view: cur.view, params: cur.params, isTab, tabBase, limited, tab, push, back, replace }}>{children}</C.Provider>;
 }
 export const useNav = () => useContext(C);
 

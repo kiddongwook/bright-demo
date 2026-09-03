@@ -1,0 +1,32 @@
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { sha256, json, cors } from '../_shared/sms.ts';
+// 알림톡 버튼의 토큰 하나로 그 사용자 세션을 만든다. 토큰은 해시만 저장돼 있다. 만료 전엔 다시 눌러도 열린다(카톡에서 여러 번 누른다).
+// 세션은 매직링크 검증으로 만든다 — 비밀번호를 갈지 않으므로 설치된 앱의 기존 세션이 끊기지 않는다.
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return cors();
+  const { token } = await req.json().catch(() => ({}));
+  if (!/^[0-9a-f]{32}$/.test(token ?? '')) return json(401, { error: 'bad_token' });
+  const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const { data: lt } = await admin.from('link_tokens').select('*').eq('token_hash', await sha256(token)).maybeSingle();
+  if (!lt) return json(401, { error: 'bad_token' });
+  if (new Date(lt.expires_at) < new Date()) return json(401, { error: 'expired' });
+  const { data: u } = await admin.from('users').select('id, phone, active_membership_id').eq('id', lt.user_id).single();
+  if (!u) return json(401, { error: 'bad_token' });
+  const { data: ms } = await admin.from('memberships').select('id, academy_id, role, student_id, academies(name), students(name)').eq('user_id', u.id);
+  const memberships = (ms ?? []).map((m: any) => ({ id: m.id, academy_id: m.academy_id, role: m.role, student_id: m.student_id, academy_name: m.academies?.name, student_name: m.students?.name }));
+  // 활성 역할이 이 학원 것이 아니면 이 학원의 첫 소속으로 (학부모·학생 우선)
+  const inAcademy = memberships.filter(m => m.academy_id === lt.academy_id);
+  if (!inAcademy.length) return json(401, { error: 'bad_token' });
+  if (!inAcademy.some(m => m.id === u.active_membership_id)) {
+    const pick = inAcademy.find(m => m.role === 'parent' || m.role === 'student') ?? inAcademy[0];
+    await admin.from('users').update({ active_membership_id: pick.id }).eq('id', u.id);
+  }
+  if (!lt.used_at) await admin.from('link_tokens').update({ used_at: new Date().toISOString() }).eq('id', lt.id);
+  const email = `${u.phone}@auth.yeongeo.local`;
+  const { data: gl, error: ge } = await admin.auth.admin.generateLink({ type: 'magiclink', email });
+  if (ge || !gl?.properties?.hashed_token) return json(500, { error: ge?.message ?? 'no_link' });
+  const anon = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { auth: { persistSession: false } });
+  const { data: s, error: e } = await anon.auth.verifyOtp({ token_hash: gl.properties.hashed_token, type: 'magiclink' });
+  if (e || !s.session) return json(500, { error: e?.message ?? 'no_session' });
+  return json(200, { session: { access_token: s.session.access_token, refresh_token: s.session.refresh_token }, memberships, academy_id: lt.academy_id, view: lt.view, ref_id: lt.ref_id });
+});
