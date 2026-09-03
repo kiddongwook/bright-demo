@@ -244,3 +244,6 @@ due_day 지나면    status overdue → outbox BILL_REMIND (원장 톤 문구) �
 
 ### 6.1 운영 추가 (2026-09-03, 6주차)
 살림: `housekeeping()` 매일 04:00 KST(만료 OTP·토큰, 90일 지난 읽은 알림·보낸 outbox, 30일 지난 클라 오류). 오류 보고: 앱이 `client_errors` 에 남긴다(본인 insert 만, 번호 가림) — 대시보드 SQL 로 본다. 파일럿 절차는 `docs/ops/pilot.md`, 배포는 `docs/ops/deploy.md`.
+
+### 11.3 구현 상태 (2026-09-03, 7주차 끝)
+할 것 관리(원장·강사) ✓ · 학부모 알림 설정(카톡만 끔) ✓ · 학원 이름 분리(`?a=slug`, 알림톡 `[#{학원}]`) ✓(로고·매니페스트는 3단계) · 요일별 시간 ✓. §4 권한 보강: `users` 는 열 단위(`name`·`prefs`)만 본인 update — 활성 소속을 직접 바꿔 권한을 얻던 구멍을 막음.
