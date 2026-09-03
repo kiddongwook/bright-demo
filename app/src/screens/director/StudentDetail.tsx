@@ -25,7 +25,7 @@ export function StudentDetail() {
         <button className={tab === 'att' ? 'on' : ''} onClick={() => setTab('att')}>출결</button>
         <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>기록</button>
         <button className={tab === 'note' ? 'on' : ''} onClick={() => setTab('note')}>메모</button>
-        <button className="btn sm line" style={{ flex: '0 0 auto' }} onClick={() => nav.push('student-edit', { id })}>편집</button>
+        {s.status === 'active' && <button className="btn sm line" style={{ flex: '0 0 auto' }} onClick={() => nav.push('student-edit', { id })}>편집</button>}
       </div>
       {tab === 'att' && <MonthCal sid={id} />}
       {tab === 'log' && <Timeline sid={id} />}

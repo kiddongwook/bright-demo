@@ -3,11 +3,12 @@ import { listClasses, listStudents, studentDetail, saveStudent, leaveStudent, li
 import { formatPhone, isValidMobile, normalizePhone } from '../../lib/phone';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
+import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 
-/* 명부: 반별 활성 학생 + 접힌 퇴원생. 행을 누르면 학생 상세, 편집은 작은 단추. */
+/* 명부: 반별 활성 학생 + 접힌 퇴원생. 행을 누르면 학생 상세, 편집은 작은 단추. 강사 관리는 원장만. */
 export function Roster() {
-  const nav = useNav();
+  const nav = useNav(); const { active: me } = useSession();
   const { data: classes } = useLoad(listClasses);
   const { data: students } = useLoad(() => listStudents(undefined, true));
   const { data: teachers } = useLoad(listTeachers);
@@ -23,7 +24,7 @@ export function Roster() {
   return (
     <section className="view on">
       <div className="head"><p className="lede">명부에 있는 전화번호로만 앱에 들어올 수 있어요.<br />학생과 학부모는 <b>각자 번호로</b> 들어옵니다.</p></div>
-      <div className="box"><button className="rw" onClick={() => nav.push('teachers')}><span className="bd"><span className="t">강사</span><span className="s">{teachers ? `${teachers.length}명` : ''} · 원장님과 같은 권한으로 봅니다</span></span><span className="go">›</span></button></div>
+      {me?.role === 'director' && <div className="box"><button className="rw" onClick={() => nav.push('teachers')}><span className="bd"><span className="t">강사</span><span className="s">{teachers ? `${teachers.length}명` : ''} · 원장님과 같은 권한으로 봅니다</span></span><span className="go">›</span></button></div>}
       {classes?.map(c => {
         const list = active.filter(s => s.classes.some(x => x.id === c.id));
         return <div key={c.id}><div className="lab">{c.name}<span className="r">{list.length}명</span></div>
