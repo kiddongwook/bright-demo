@@ -1,0 +1,66 @@
+import { useEffect, useState } from 'react';
+import { listClasses, todayAttendance, saveAttendance, listAbsences, kstToday, dowOf, fmtMDW, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
+import { useNav } from '../../lib/nav';
+import { toast, errToast } from '../../lib/toast';
+
+const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
+const CLS: Record<AttStatus, string> = { present: 'p', late: 'l', absent: 'a', makeup: 'p' };
+
+export function Today() {
+  const nav = useNav();
+  const today = kstToday();
+  const [classes, setClasses] = useState<Cls[]>([]);
+  const [cid, setCid] = useState<string>('');
+  const [rows, setRows] = useState<AttRow[]>([]);
+  const [absences, setAbsences] = useState<Absence[]>([]);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { (async () => {
+    const cs = await listClasses(); setClasses(cs);
+    const todayDow = dowOf(today);
+    const pick = cs.find(c => (c.schedule ?? []).some(s => s.dow === todayDow)) ?? cs[0];
+    if (pick) setCid(pick.id);
+    setAbsences(await listAbsences());
+  })().catch(errToast); }, []);
+  useEffect(() => { if (cid) todayAttendance(cid, today).then(setRows).catch(errToast); }, [cid]);
+  const cls = classes.find(c => c.id === cid);
+  const hasClassToday = !!cls && (cls.schedule ?? []).some(s => s.dow === dowOf(today));
+  const mark = (sid: string, st: AttStatus) => setRows(r => r.map(x => x.student_id === sid ? { ...x, status: x.status === st ? null : st } : x));
+  async function save() {
+    const marked = rows.filter(r => r.status).map(r => ({ student_id: r.student_id, status: r.status! }));
+    if (!marked.length) { toast('아직 아무도 표시하지 않았어요'); return; }
+    setBusy(true);
+    try { await saveAttendance(cid, today, marked); const n = marked.filter(m => m.status !== 'present').length; toast(n ? `출결을 저장하고, 결석·지각 ${n}명의 학부모에게 알림을 보냈어요` : '출결을 저장했어요. 모두 출석이라 알림은 없어요'); }
+    catch (e) { errToast(e); } finally { setBusy(false); }
+  }
+  const pending = absences.filter(a => a.status === 'requested'), done = absences.filter(a => a.status !== 'requested');
+  const absRow = (a: Absence) => (
+    <button key={a.id} className="rw" onClick={() => nav.push('makeup', { id: a.id })}>
+      <span className="nm">{a.student_name.charAt(0)}</span>
+      <span className="bd"><span className="t">{a.student_name} · {fmtMDW(a.date)}</span><span className="s">{a.reason}</span></span>
+      {a.status === 'requested' ? <span className="tag danger">요청</span> : <span className="tag ok">{a.makeup_kind === 'material' ? '자료 대체' : '보강 ' + (a.makeup_at ? new Date(a.makeup_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric' }) : '')}</span>}
+    </button>);
+  return (
+    <section className="view on">
+      <div className="head">
+        <h1 className="hello">오늘{cls ? ` · ${cls.name}` : ''}</h1>
+        <p className="lede">{hasClassToday ? '이름 옆을 누르면 바로 표시돼요. 저장하면 ' : '오늘은 이 반 수업이 없는 날이에요. 그래도 기록할 수 있어요. 저장하면 '}<b>결석·지각 학부모 알림까지 한 번에</b> 나갑니다.</p>
+      </div>
+      {classes.length > 1 && <div className="seg">{classes.map(c => <button key={c.id} className={c.id === cid ? 'on' : ''} onClick={() => setCid(c.id)}>{c.name}</button>)}</div>}
+      <div className="lab">출석부<span className="r">{fmtMDW(today)}</span></div>
+      <div className="box">
+        {rows.length === 0 && <p className="muted" style={{ padding: '14px 16px' }}>이 반에 학생이 없어요.</p>}
+        {rows.map(r => (
+          <div key={r.student_id} className="rw" style={{ padding: '12px 16px' }}>
+            <span className="nm">{r.name.charAt(0)}</span><span className="bd"><span className="t">{r.name}</span></span>
+            <span className="marks">{(['present', 'late', 'absent'] as AttStatus[]).map(st => <button key={st} className={r.status === st ? 'on ' + CLS[st] : ''} onClick={() => mark(r.student_id, st)} aria-label={st}>{MARK[st]}</button>)}</span>
+          </div>))}
+      </div>
+      <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
+      <div className="btnrow"><button className="btn" disabled={busy} onClick={save}>{busy ? '저장 중…' : '저장하고 알리기'}</button></div>
+
+      <div className="lab">결석 신청<span className="r">학부모가 미리 알린 것</span></div>
+      {pending.length ? <div className="box">{pending.map(absRow)}</div> : <p className="muted" style={{ padding: '0 20px' }}>새 결석 신청이 없어요.</p>}
+      {done.length > 0 && <><div className="lab">처리됨</div><div className="box soft">{done.slice(0, 5).map(absRow)}</div></>}
+    </section>
+  );
+}

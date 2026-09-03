@@ -1,0 +1,21 @@
+import { useSession } from '../../auth/session';
+import { toast } from '../../lib/toast';
+
+const ROLE: Record<string, string> = { director: '원장', teacher: '강사', parent: '학부모', student: '학생' };
+/* 학부모·학생 공용 더보기 */
+export function MoreSimple() {
+  const { active, memberships, pick, logout } = useSession();
+  const others = memberships.filter(m => m.id !== active?.id);
+  return (
+    <section className="view on">
+      <div className="head"><h1 className="hello">더보기</h1></div>
+      <div className="box">
+        <div className="rw" style={{ cursor: 'default' }}><span className="nm">{(active?.student_name ?? ROLE[active?.role ?? ''] ?? '').charAt(0)}</span><span className="bd"><span className="t">{ROLE[active?.role ?? '']}{active?.student_name ? ` · ${active.student_name}` : ''}</span><span className="s">{active?.academy_name}</span></span></div>
+        {others.map(m => <button key={m.id} className="rw" onClick={() => pick(m.id)}><span className="bd"><span className="t">{ROLE[m.role]}{m.student_name ? ` · ${m.student_name}` : ''}로 보기</span><span className="s">{m.academy_name}</span></span><span className="go">›</span></button>)}
+        <button className="rw" onClick={() => toast('알림 설정은 다음 주에 열려요')}><span className="bd"><span className="t">알림 설정</span><span className="s">공지 · 답변 · 출결</span></span><span className="go">›</span></button>
+      </div>
+      <div className="btnrow"><button className="btn line" onClick={logout}>로그아웃</button></div>
+      <div className="madeby">{active?.academy_name} 앱 · BRIGHT로 만들어졌습니다</div>
+    </section>
+  );
+}
