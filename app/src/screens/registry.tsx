@@ -15,6 +15,7 @@ import { Ask, AskNew, AskMine } from './parent/Ask';
 import { NoticeFeed, NoticeView } from './shared/NoticeRead';
 import { MoreSimple } from './shared/More';
 import { Install } from './shared/Install';
+import { About } from './shared/About';
 import { Me } from './student/Me';
 
 const ParentNotices = () => <NoticeFeed who="우리 아이 반" />;
@@ -33,6 +34,6 @@ export const SCREENS: Record<string, ComponentType<any>> = {
   'teacher:inbox': Inbox, 'teacher:answer': Answer, 'teacher:faq': FaqManage, 'teacher:more': More, 'teacher:roster': Roster, 'teacher:student-edit': StudentEdit, 'teacher:teachers': Teachers,
   'parent:child': Child, 'parent:absence': Absence, 'parent:notice': ParentNotices, 'parent:notice-view': NoticeView,
   'parent:ask': Ask, 'parent:ask-new': AskNew, 'parent:ask-mine': AskMine, 'parent:more': MoreSimple,
-  '*:install': Install,
+  '*:install': Install, '*:about': About,
   'student:me': Me, 'student:notice': StudentNotices, 'student:notice-view': NoticeView, 'student:more': MoreSimple,
 };

@@ -23,6 +23,8 @@ export type ClsFull = Cls & { teacher_id: string | null };
 
 let ctx = { academyId: '', userId: '' };
 export const setContext = (academyId: string, userId: string) => { ctx = { academyId, userId }; };
+/** 지금 누가 어느 학원으로 보고 있나 — 오류 보고가 읽어 간다 (읽기 전용 사본) */
+export const getContext = () => ({ ...ctx });
 
 export function kstToday(): string {
   const d = new Date(Date.now() + 9 * 3600e3);

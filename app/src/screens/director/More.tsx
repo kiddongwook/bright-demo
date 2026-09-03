@@ -11,6 +11,18 @@ export function More() {
   const isDirector = active?.role === 'director';
   const { data: myClasses } = useLoad(() => isDirector ? Promise.resolve([]) : listClassesFull().then(l => l.filter(c => c.teacher_id === session?.user.id)));
   const [busy, setBusy] = useState(false);
+  const [invite, setInvite] = useState<string | null>(null);   // 클립보드가 안 되면 직접 눌러 복사하게 펼친다
+  const inviteText = `[${active?.academy_name ?? '우리 학원'}] 학부모님, 학원 앱을 열었어요.
+아래 주소를 누르고 등록된 휴대폰 번호로 들어오시면 출결·공지·문의를 바로 보실 수 있어요.
+${location.origin + import.meta.env.BASE_URL}
+홈 화면에 추가하면 앱처럼 쓸 수 있어요 (앱 안 더보기 → 홈 화면에 추가).`;
+  async function copyInvite() {
+    try {
+      if (!navigator.clipboard) throw new Error('클립보드를 쓸 수 없어요');
+      await navigator.clipboard.writeText(inviteText); setInvite(null);
+      toast('초대 문구를 복사했어요. 카톡에 붙여 보내세요');
+    } catch { setInvite(inviteText); }
+  }
   async function download() {
     setBusy(true);
     try { const blob = await exportAcademy(); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${active?.academy_name ?? 'academy'}-${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); toast('내려받았어요. 카톡 안에서 안 되면 브라우저로 열어 주세요'); }
@@ -22,7 +34,10 @@ export function More() {
       <div className="lab first" style={{ marginTop: 0 }}>담당 반</div>
       <div className="box">{myClasses?.length ? myClasses.map(c => <div key={c.id} className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">{c.name}</span><span className="s">출결·공지·문의·학생 기록을 이 반 안에서 봐요</span></span></div>)
         : <p className="muted" style={{ padding: '14px 16px' }}>원장님이 담당 반을 지정하면 여기 보여요. 그 전엔 화면이 비어 있어요.</p>}</div>
-      <div className="box" style={{ marginTop: 12 }}><button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button></div>
+      <div className="box" style={{ marginTop: 12 }}>
+        <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('about')}><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
+      </div>
       <div className="btnrow"><button className="btn line" onClick={logout}>로그아웃</button></div>
       <div className="madeby">{active?.academy_name} 앱 · BRIGHT로 만들어졌습니다</div>
     </section>
@@ -41,6 +56,9 @@ export function More() {
         <button className="rw" disabled={busy} onClick={download}><span className="bd"><span className="t">학원 데이터 내려받기</span><span className="s">학생·출결·공지·문의 전부 한 파일로 (JSON)</span></span><span className="go">↓</span></button>
         <button className="rw" onClick={() => nav.push('faq')}><span className="bd"><span className="t">자주 묻는 질문 관리</span><span className="s">학부모 문의 화면 맨 위에 보여요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={copyInvite}><span className="bd"><span className="t">학부모 초대 문구 복사</span><span className="s">카톡에 붙여 보내요</span></span><span className="go">⧉</span></button>
+        {invite && <div style={{ padding: '0 16px 14px' }}><textarea className="input" readOnly value={invite} /><p className="muted" style={{ paddingTop: 6 }}>길게 눌러 복사해 주세요</p></div>}
+        <button className="rw" onClick={() => nav.push('about')}><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
       </div>
       <div className="lab">준비 중<span className="r">필요할 때 켭니다</span></div>
       <div className="box soft">
