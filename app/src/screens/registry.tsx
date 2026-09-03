@@ -3,7 +3,10 @@ import { Today } from './director/Today';
 import { Makeup } from './director/Makeup';
 import { NoticeList, NoticeNew, Readers } from './director/Notices';
 import { Inbox, Answer, FaqManage } from './director/Inbox';
-import { More, Roster, Academy } from './director/More';
+import { More, Academy } from './director/More';
+import { Roster, StudentEdit, Teachers } from './director/Roster';
+import { StudentDetail } from './director/StudentDetail';
+import { CalendarScreen, Classes } from './director/Calendar';
 import { Child, Absence } from './parent/Child';
 import { Ask, AskNew, AskMine } from './parent/Ask';
 import { NoticeFeed, NoticeView } from './shared/NoticeRead';
@@ -19,9 +22,11 @@ export const SCREENS: Record<string, ComponentType<any>> = {
   'director:today': Today, 'director:makeup': Makeup,
   'director:notice': NoticeList, 'director:notice-new': NoticeNew, 'director:readers': Readers,
   'director:inbox': Inbox, 'director:answer': Answer, 'director:faq': FaqManage,
-  'director:more': More, 'director:roster': Roster, 'director:academy': Academy,
+  'director:more': More, 'director:roster': Roster, 'director:academy': Academy, 'director:student-edit': StudentEdit, 'director:teachers': Teachers,
+  'director:student': StudentDetail, 'director:calendar': CalendarScreen, 'director:classes': Classes,
+  'teacher:student': StudentDetail, 'teacher:calendar': CalendarScreen, 'teacher:classes': Classes,
   'teacher:today': Today, 'teacher:makeup': Makeup, 'teacher:notice': NoticeList, 'teacher:notice-new': NoticeNew, 'teacher:readers': Readers,
-  'teacher:inbox': Inbox, 'teacher:answer': Answer, 'teacher:faq': FaqManage, 'teacher:more': More, 'teacher:roster': Roster,
+  'teacher:inbox': Inbox, 'teacher:answer': Answer, 'teacher:faq': FaqManage, 'teacher:more': More, 'teacher:roster': Roster, 'teacher:student-edit': StudentEdit, 'teacher:teachers': Teachers,
   'parent:child': Child, 'parent:absence': Absence, 'parent:notice': ParentNotices, 'parent:notice-view': NoticeView,
   'parent:ask': Ask, 'parent:ask-new': AskNew, 'parent:ask-mine': AskMine, 'parent:more': MoreSimple,
   '*:install': Install,

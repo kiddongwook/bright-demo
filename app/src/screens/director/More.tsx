@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { listClasses, listStudents, academy, setBrandColor } from '../../lib/api';
+import { academy, setBrandColor } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
@@ -14,6 +14,8 @@ export function More() {
       <div className="box">
         <button className="rw" onClick={() => nav.push('roster')}><span className="bd"><span className="t">학생·학부모 명부</span><span className="s">여기 있는 번호만 앱에 들어올 수 있어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('academy')}><span className="bd"><span className="t">우리 학원</span><span className="s">이름 · 강조색 · 앱 아이콘</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('calendar')}><span className="bd"><span className="t">휴원일·특강</span><span className="s">정하면 다음 수업·결석 신청에서 빠져요</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('classes')}><span className="bd"><span className="t">반·시간표</span><span className="s">요일 · 시간 · 담당 강사</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('faq')}><span className="bd"><span className="t">자주 묻는 질문 관리</span><span className="s">학부모 문의 화면 맨 위에 보여요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
       </div>
@@ -24,22 +26,6 @@ export function More() {
       </div>
       <div className="btnrow"><button className="btn line" onClick={logout}>로그아웃</button></div>
       <div className="madeby">{active?.academy_name} 앱 · BRIGHT로 만들어졌습니다</div>
-    </section>
-  );
-}
-
-export function Roster() {
-  const { data: classes } = useLoad(listClasses);
-  const { data: students } = useLoad(() => listStudents());
-  return (
-    <section className="view on">
-      <div className="head"><p className="lede">명부에 있는 전화번호로만 앱에 들어올 수 있어요.<br />학생과 학부모는 <b>각자 번호로</b> 들어옵니다.</p></div>
-      {classes?.map(c => {
-        const list = students?.filter(s => s.classes.some(x => x.id === c.id)) ?? [];
-        return <div key={c.id}><div className="lab">{c.name}<span className="r">{list.length}명</span></div>
-          <div className="box">{list.length ? list.map(s => <div key={s.id} className="rw" style={{ cursor: 'default' }}><span className="nm">{s.name.charAt(0)}</span><span className="bd"><span className="t">{s.name}</span><span className="s">{s.classes.map(x => x.name).join(' · ')}</span></span></div>) : <p className="muted" style={{ padding: '14px 16px' }}>학생이 없어요.</p>}</div></div>;
-      })}
-      <div className="btnrow"><button className="btn line" onClick={() => toast('학생 추가·번호 변경은 다음 주 관리 화면에서 열려요')}>학생 추가</button></div>
     </section>
   );
 }

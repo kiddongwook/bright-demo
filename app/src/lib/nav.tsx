@@ -16,6 +16,7 @@ export const TITLE: Record<string, [string, string]> = {
   'notice-new': ['공지 쓰기', ''], readers: ['읽은 사람', ''], answer: ['문의', ''], faq: ['자주 묻는 질문', '관리'],
   roster: ['명부', '반별'], academy: ['우리 학원', ''], makeup: ['결석 신청', '보강'], noti: ['알림', ''],
   'notice-view': ['공지', ''], 'ask-new': ['직접 문의하기', ''], 'ask-mine': ['내 문의', ''], absence: ['결석 미리 알리기', ''], install: ['홈 화면에 추가', ''],
+  student: ['학생', ''], 'student-edit': ['학생', '편집'], teachers: ['강사', ''], calendar: ['휴원일·특강', ''], classes: ['반·시간표', ''],
 };
 
 type Entry = { view: string; params: Record<string, string> };
@@ -23,7 +24,7 @@ type Nav = { view: string; params: Record<string, string>; isTab: boolean; tabBa
 const C = createContext<Nav>(null!);
 
 /* 진입 화면이 속한 탭 — 링크로 바로 열었을 때 뒤로가기·탭 표시에 쓴다 */
-const PARENT_TAB: Record<string, string> = { 'notice-view': 'notice', 'notice-new': 'notice', readers: 'notice', answer: 'inbox', faq: 'inbox', 'ask-new': 'ask', 'ask-mine': 'ask', absence: 'child', makeup: 'today', roster: 'more', academy: 'more', install: 'more', noti: 'more' };
+const PARENT_TAB: Record<string, string> = { 'notice-view': 'notice', 'notice-new': 'notice', readers: 'notice', answer: 'inbox', faq: 'inbox', 'ask-new': 'ask', 'ask-mine': 'ask', absence: 'child', makeup: 'today', roster: 'more', academy: 'more', install: 'more', noti: 'more', student: 'more', 'student-edit': 'more', teachers: 'more', calendar: 'more', classes: 'more' };
 
 export function NavProvider({ role, initial: init, limited = false, children }: { role: Role; initial?: { view: string; params?: Record<string, string> }; limited?: boolean; children: ReactNode }) {
   const first = TABS[role][0];
