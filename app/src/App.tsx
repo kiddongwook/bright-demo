@@ -1,6 +1,6 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import { asset } from './lib/asset';
-import { useDark, applyBrand } from './lib/theme';
+import { useDark, useMedia, applyBrand } from './lib/theme';
 import { SessionProvider, useSession } from './auth/session';
 import { Gate } from './screens/Gate';
 import { Otp } from './screens/Otp';
@@ -16,6 +16,7 @@ import { takeLinkToken } from './lib/link';
 import { setReportScreen } from './lib/report';
 import { UpdateBanner } from './components/UpdateBanner';
 import { ConfirmHost } from './components/Confirm';
+import { SideNav } from './components/SideNav';
 import { IcBack } from './components/icons';
 import './theme.css';
 
@@ -48,6 +49,10 @@ function Frame() {
   useEffect(() => { setReportScreen(nav.view); }, [nav.view]);   // 오류 보고에 "어느 화면에서" 를 싣는다
   // 관리 화면은 넓은 화면에서 대시보드로 펼친다
   useEffect(() => { document.body.classList.toggle('wide', WIDE_VIEWS.has(nav.view)); return () => document.body.classList.remove('wide'); }, [nav.view]);
+  // PC 관리 모드: 폭 1024px 이상 + 원장·강사 → 폰 틀을 벗고 좌측 내비. 학부모·학생은 PC 에서도 폰 틀 그대로.
+  const pc = useMedia('(min-width:1024px)') && (role === 'director' || role === 'teacher') && !nav.limited;
+  useEffect(() => { document.body.classList.toggle('pc', pc); return () => document.body.classList.remove('pc'); }, [pc]);
+  useEffect(() => { window.scrollTo(0, 0); }, [nav.view]);   // 화면이 바뀌면 맨 위부터
   useEffect(() => { academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; }).catch(() => {}); }, [active!.academy_id]);
   const key = `${role}:${nav.view}`;
   const Screen: ComponentType<any> = nav.view === 'noti' ? (() => <Noti onRead={refreshBadge} />) : (SCREENS[key] ?? SCREENS[`*:${nav.view}`] ?? (() => <Placeholder name={nav.view} />));
@@ -58,6 +63,7 @@ function Frame() {
     <div className="shell"><div className="app">
       <UpdateBanner />
       <ConfirmHost />
+      {pc && <SideNav role={role} academyName={active!.academy_name ?? ''} logoSrc={logoSrc} dark={dark} />}
       <header className="appbar">
         {nav.isTab
           ? <>{logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-bold.png')} alt={active!.academy_name} />}</>

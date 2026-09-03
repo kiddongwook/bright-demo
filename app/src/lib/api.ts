@@ -367,3 +367,23 @@ export async function todaySummary(isDirector: boolean): Promise<TodaySummary> {
   await Promise.all(todays.map(async c => { marks[c.id] = (await todayAttendance(c.id, today)).filter(r => r.status !== null).length; }));
   return summarizeToday({ classes, today, marks, studentsByClass, inquiries, absences, studentsTotal: students.length, entry });
 }
+
+/* ── 공지 대상: 알림이 갈 사람 수 ── */
+/** 순수 계산 — 대상 반의 활성 학생과 이어진 번호(학생 본인 + 학부모)를 겹치지 않게 센다.
+ *  명부(roster_phones)는 클라이언트가 직접 못 읽어서 entryStatus() 행을 학생 이름으로 맞춘다. */
+export function countRecipients(studentNames: string[], rows: EntryRow[]): number {
+  const names = new Set(studentNames);
+  const phones = new Set<string>();
+  for (const r of rows) {
+    const sn = r.student_name ?? '';
+    if (!names.has(sn)) continue;
+    if (r.phone) phones.add(r.phone);
+  }
+  return phones.size;
+}
+/** 이 공지로 알림이 갈 사람 수. classId 가 null 이면 전체(활성 학생 모두).
+ *  entryStatus 는 원장만 읽을 수 있어서 강사는 오류가 그대로 올라간다(화면이 문구를 감춘다). */
+export async function recipientCount(classId: string | null): Promise<number> {
+  const [students, rows] = await Promise.all([listStudents(classId ?? undefined), entryStatus()]);
+  return countRecipients(students.map(s => s.name), rows);
+}

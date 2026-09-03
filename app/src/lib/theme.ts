@@ -26,3 +26,24 @@ export function applyBrand(color: string) {
   document.documentElement.style.setProperty('--brand', brandFor(color, getSnapshot()));
 }
 mq()?.addEventListener('change', () => { if (lastBrand) applyBrand(lastBrand); });
+
+/* 미디어 질의 하나를 리액트 상태처럼 읽는다 — useDark 와 같은 방식.
+   질의마다 subscribe·getSnapshot 을 캐시해 useSyncExternalStore 가 매번 새 함수를 받지 않게 한다. */
+type MediaEntry = { subscribe: (cb: () => void) => () => void; get: () => boolean };
+const media = new Map<string, MediaEntry>();
+function entryFor(query: string): MediaEntry {
+  let e = media.get(query);
+  if (!e) {
+    const m = () => (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(query) : null);
+    e = {
+      subscribe: cb => { const q = m(); if (!q) return () => {}; q.addEventListener('change', cb); return () => q.removeEventListener('change', cb); },
+      get: () => m()?.matches ?? false,
+    };
+    media.set(query, e);
+  }
+  return e;
+}
+export const useMedia = (query: string): boolean => {
+  const e = entryFor(query);
+  return useSyncExternalStore(e.subscribe, e.get, () => false);
+};

@@ -10,6 +10,18 @@ import { IcCamera } from '../../components/icons';
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
 
+/* 학부모·학생이 공지를 열었을 때 보이는 본문 — 공지 쓰기의 미리보기가 같은 것을 쓴다 */
+export function NoticeBody({ title, meta, body, photoUrls = [] }: { title: string; meta: string; body: string; photoUrls?: string[] }) {
+  return (
+    <>
+      <div className="head"><h1 className="hello">{title}</h1><p className="lede">{meta}</p></div>
+      {body ? body.split(/\n\n+/).map((p, i) => <p key={i} className="para" style={{ whiteSpace: 'pre-wrap' }}>{p}</p>) : null}
+      {photoUrls.length > 0 && <div className="photos" style={{ marginTop: 14 }}>{photoUrls.filter(Boolean).map(u => (
+        <a key={u} href={u} target="_blank" rel="noreferrer"><img src={u} alt="" /></a>))}</div>}
+    </>
+  );
+}
+
 /* 학부모·학생 공용: 목록 + 상세(열면 읽음) */
 export function NoticeFeed({ who }: { who: string }) {
   const nav = useNav();
@@ -52,10 +64,7 @@ export function NoticeView() {
   const cname = n.target_class_id === null ? '전체' : classes?.find(c => c.id === n.target_class_id)?.name ?? '반';
   return (
     <section className="view on">
-      <div className="head"><h1 className="hello">{n.title}</h1><p className="lede">{cname} · {fmt(n.created_at)}</p></div>
-      {n.body ? n.body.split(/\n\n+/).map((p, i) => <p key={i} className="para" style={{ whiteSpace: 'pre-wrap' }}>{p}</p>) : null}
-      {urls.length > 0 && <div className="photos" style={{ marginTop: 14 }}>{urls.filter(Boolean).map(u => (
-        <a key={u} href={u} target="_blank" rel="noreferrer"><img src={u} alt="" /></a>))}</div>}
+      <NoticeBody title={n.title} meta={`${cname} · ${fmt(n.created_at)}`} body={n.body} photoUrls={urls} />
       <p className="muted" style={{ padding: '20px 20px 0' }}>이 공지를 읽은 것으로 표시됐어요.</p>
     </section>
   );

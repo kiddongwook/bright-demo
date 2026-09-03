@@ -70,3 +70,16 @@
 .sheet .sa{display:flex;gap:9px;margin-top:20px}
 .sheet .sa .btn{flex:1}
 .sheet .sa .btn.danger{background:var(--danger);color:#fff}
+
+/* ── Task C — 공지 쓰기: 템플릿 칩 · 미리보기 ── */
+/* .chip 은 더보기의 색 동그라미라서 이름을 따로 쓴다 */
+.chips-row{display:flex;flex-wrap:wrap;gap:6px;padding:0 20px}
+.chips-row button{min-height:40px;padding:9px 14px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);
+  color:var(--ink2);font-size:13px;font-weight:600;letter-spacing:-.01em;transition:transform .1s ease,opacity .15s}
+.chips-row button:active{transform:scale(.98)}
+.chips-row button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+/* 미리보기: 학부모가 여는 화면 그대로를 카드 안에 담는다 */
+.notice-preview{margin-top:6px;border:1px solid var(--rule);border-radius:12px;background:var(--paper);
+  padding:0 0 18px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.notice-preview .head{padding-top:var(--s2)}
+.notice-preview .hello{font-size:var(--t-title)}

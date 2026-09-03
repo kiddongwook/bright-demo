@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { listNotices, listClasses, createNotice, updateNoticePhotos, noticeReaders, remindNotice, getContext, type Notice } from '../../lib/api';
+import { listNotices, listClasses, createNotice, updateNoticePhotos, noticeReaders, remindNotice, recipientCount, getContext, type Notice } from '../../lib/api';
 import { uploadNoticePhotos, MAX_PHOTOS } from '../../lib/files';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
@@ -8,6 +8,9 @@ import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { IcCamera } from '../../components/icons';
+import { confirmSheet } from '../../components/Confirm';
+import { NoticeBody } from '../shared/NoticeRead';
+import { TEMPLATES } from '../../lib/noticeTemplates';
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
 
@@ -38,9 +41,19 @@ export function NoticeNew() {
   const nav = useNav();
   const { data: classes } = useLoad(listClasses);
   const [target, setTarget] = useState<string | null>(null);
+  const cname = target === null ? '전체' : classes?.find(c => c.id === target)?.name ?? '반';
   const [title, setTitle] = useState(''); const [body, setBody] = useState(''); const [busy, setBusy] = useState(false);
   const [photos, setPhotos] = useState<Photo[]>([]); const [uploading, setUploading] = useState(false);
+  const [tpl, setTpl] = useState<string | null>(null);
   const picks = useRef<Photo[]>([]); picks.current = photos;
+  /* 알림이 갈 사람 수 — 대상 반의 학생 번호 + 학부모 번호(겹치면 한 번). 원장만 읽을 수 있어서 실패하면 문구를 감춘다 */
+  const { data: recipients, err: recipientsErr, loading: recipientsLoading } = useLoad(() => recipientCount(target), [target]);
+  async function applyTemplate(key: string) {
+    const t = TEMPLATES.find(x => x.key === key); if (!t) return;
+    const dirty = title.trim() !== '' || body.trim() !== '';
+    if (dirty && !(await confirmSheet({ title: '쓰던 내용을 바꿀까요?', body: '제목과 내용이 고른 틀로 바뀌어요.', okLabel: '바꾸기' }))) return;
+    setTpl(key); setTitle(t.title); setBody(t.body);
+  }
   useEffect(() => () => { picks.current.forEach(p => URL.revokeObjectURL(p.url)); }, []);
   function addFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const chosen = Array.from(e.target.files ?? []);
@@ -73,12 +86,20 @@ export function NoticeNew() {
   return (
     <section className="view on">
       <div className="head"><p className="lede">대상을 고르고 올리면 그 반의 학부모와 학생에게 <b>알림이 갑니다.</b></p></div>
-      <div className="lab first">대상</div>
+      <div className="lab first">틀 고르기<span className="r">중괄호 자리는 고쳐 쓰세요</span></div>
+      <div className="chips-row">{TEMPLATES.map(t => (
+        <button key={t.key} className={tpl === t.key ? 'on' : ''} onClick={() => applyTemplate(t.key)}>{t.label}</button>))}</div>
+      <div className="lab">대상</div>
       <div className="seg"><button className={target === null ? 'on' : ''} onClick={() => setTarget(null)}>전체</button>{classes?.map(c => <button key={c.id} className={target === c.id ? 'on' : ''} onClick={() => setTarget(c.id)}>{c.name}</button>)}</div>
       <div className="lab">제목</div>
       <div style={{ padding: '0 20px' }}><input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="예) 7월 수업 시간 변경 안내" /></div>
       <div className="lab">내용</div>
       <div style={{ padding: '0 20px' }}><textarea className="input" value={body} onChange={e => setBody(e.target.value)} placeholder="본문은 앱 안에서만 보여요. 카톡에는 제목만 갑니다." /></div>
+      <details className="fold"><summary>미리보기 — 학부모 화면</summary>
+        <div className="notice-preview">
+          <NoticeBody title={title.trim() || '(제목 없음)'} meta={`${cname} · ${fmt(new Date().toISOString())}`} body={body} photoUrls={photos.map(p => p.url)} />
+        </div>
+      </details>
       <div className="lab">사진</div>
       <div style={{ padding: '0 20px' }}>
         <label className="btn line" style={{ cursor: 'pointer' }}>사진 붙이기 (최대 {MAX_PHOTOS}장)
@@ -88,6 +109,7 @@ export function NoticeNew() {
       {photos.length > 0 && <div className="photo-pick">{photos.map((p, i) => (
         <div key={p.url} className="ph"><img src={p.url} alt="" /><button type="button" onClick={() => dropPhoto(i)} aria-label="사진 빼기">✕</button></div>))}</div>}
       <p className="muted" style={{ padding: '8px 20px 0' }}>아이폰은 사진을 고르면 자동으로 JPEG 로 바뀌어요.</p>
+      {!recipientsErr && <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}><b style={{ color: 'var(--ink)', fontWeight: 600 }}>{recipients === null || recipientsLoading ? '…' : recipients}명</b>에게 알림이 가요</p>}
       <div className="btnrow"><button className="btn line" onClick={nav.back}>취소</button><button className="btn" disabled={busy} onClick={post}>{uploading ? '사진 올리는 중…' : '올리고 알리기'}</button></div>
     </section>
   );

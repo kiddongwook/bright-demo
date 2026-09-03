@@ -28,3 +28,7 @@ export const IcHouse = (p: IconProps) => <Ic {...p}><path d="M3.8 11.2 12 4.5l8.
 export const IcList = (p: IconProps) => <Ic {...p}><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01" /></Ic>;
 export const IcPeople = (p: IconProps) => <Ic {...p}><path d="M8 11a3.2 3.2 0 1 0 0-6.4A3.2 3.2 0 0 0 8 11M3 20c0-2.8 2.2-5 5-5s5 2.2 5 5M16 11.5a2.6 2.6 0 1 0 0-5.2M16.5 15.2c2.5.3 4.5 2.4 4.5 4.8" /></Ic>;
 export const IcClose = (p: IconProps) => <Ic {...p}><path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5" /></Ic>;
+/* PC 좌측 내비용 — 반·시간표 / 출결표 / 강사 */
+export const IcClock = (p: IconProps) => <Ic {...p}><path d="M12 20.2a8.2 8.2 0 1 0 0-16.4 8.2 8.2 0 0 0 0 16.4" /><path d="M12 7.6V12l3 1.8" /></Ic>;
+export const IcTable = (p: IconProps) => <Ic {...p}><path d="M4 5.5h16v13H4z" /><path d="M4 10h16M4 14.2h16M10 10v8.5" /></Ic>;
+export const IcPerson = (p: IconProps) => <Ic {...p}><path d="M12 11.5a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8" /><path d="M5 20c0-3.2 3.1-5.4 7-5.4s7 2.2 7 5.4" /></Ic>;
