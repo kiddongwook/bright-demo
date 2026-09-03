@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { listClassesFull, listClassTodos, listStudents, createTodo, deleteTodo, nextClassDays, kstToday, fmtMDW, type Cls, type TodoFull } from '../../lib/api';
+import { listClassesFull, listClassTodos, listStudents, createTodo, deleteTodo, todoDoneList, setTodoDoneBy, nextClassDays, kstToday, fmtMDW, type Cls, type TodoFull } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
@@ -17,6 +17,8 @@ export function Todos() {
   const [title, setTitle] = useState('');
   const [due, setDue] = useState('');
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState<string | null>(null);
+  const [doneList, setDoneList] = useState<{ student_id: string; name: string; done: boolean }[]>([]);
   useEffect(() => { (async () => {
     // 강사는 담당 반만 (오늘 화면과 같은 필터 — 넣기는 RLS 가 다시 막는다)
     const all = await listClassesFull();
@@ -31,7 +33,16 @@ export function Todos() {
     listClassTodos(id, kstToday()).then(setTodos).catch(errToast);
     listStudents(id).then(l => setTotal(l.length)).catch(errToast);
   }
-  useEffect(() => { setTodos([]); setTotal(0); setDue(''); load(cid); }, [cid]);
+  useEffect(() => { setTodos([]); setTotal(0); setDue(''); setOpen(null); setDoneList([]); load(cid); }, [cid]);
+  function loadDone(todoId: string) { todoDoneList(todoId, cid).then(setDoneList).catch(errToast); }
+  function toggleOpen(t: TodoFull) {
+    if (open === t.id) { setOpen(null); setDoneList([]); return; }
+    setOpen(t.id); loadDone(t.id);
+  }
+  async function toggleDone(sid: string, done: boolean) {
+    if (!open) return;
+    try { await setTodoDoneBy(open, sid, !done); loadDone(open); load(); } catch (e) { errToast(e); }
+  }
   const pick = due || nextClassDays(cls?.schedule ?? [], 1)[0] || kstToday();
   async function add() {
     if (!cid) { toast('반을 먼저 골라주세요'); return; }
@@ -46,14 +57,25 @@ export function Todos() {
   }
   return (
     <section className="view on">
-      <div className="head"><p className="lede">숙제·시험을 넣으면 <b>학생·학부모 화면에 바로</b> 보여요. 학생이 했다고 누르면 숫자가 올라가요.</p></div>
+      <div className="head"><p className="lede">숙제·시험을 넣으면 <b>학생·학부모 화면에 바로</b> 보여요. 학생이 직접 체크하고, 원장님이 대신 체크할 수도 있어요.</p></div>
       {classes.length > 1 && <div className="seg">{classes.map(c => <button key={c.id} className={c.id === cid ? 'on' : ''} onClick={() => setCid(c.id)}>{c.name}</button>)}</div>}
       <div className="lab first" style={classes.length > 1 ? { marginTop: 22 } : undefined}>다가오는 할 것<span className="r">{cls?.name ?? ''}</span></div>
       {todos.length ? <div className="box">{todos.map(t => (
-        <div key={t.id} className="rw" style={{ cursor: 'default' }}>
-          <span className={'tag ' + (t.kind === 'exam' ? 'warn' : 'ok')}>{KIND_LABEL[t.kind]}</span>
-          <span className="bd"><span className="t">{t.title}</span><span className="s">{fmtMDW(t.due_date)}까지 · {t.done_count}/{total} 했어요</span></span>
-          <button className="btn sm line" onClick={() => del(t)}>지우기</button>
+        <div key={t.id}>
+          <div className="rw" style={{ cursor: 'pointer' }} onClick={() => toggleOpen(t)}>
+            <span className={'tag ' + (t.kind === 'exam' ? 'warn' : 'ok')}>{KIND_LABEL[t.kind]}</span>
+            <span className="bd"><span className="t">{t.title}</span><span className="s">{fmtMDW(t.due_date)}까지 · {t.done_count}/{total} 했어요</span></span>
+            <button className="btn sm line" onClick={e => { e.stopPropagation(); del(t); }}>지우기</button>
+          </div>
+          {open === t.id && <div className="box" style={{ margin: '0 12px 10px', borderTop: '1px solid var(--rule)' }}>
+            {doneList.length ? doneList.map(d => (
+              <div key={d.student_id} className="rw" style={{ cursor: 'default' }}>
+                <span className="nm">{d.name.charAt(0)}</span>
+                <span className="bd"><span className="t">{d.name}</span></span>
+                <button className={'cb' + (d.done ? ' on' : '')} onClick={() => toggleDone(d.student_id, d.done)} aria-label="했어요">{d.done ? '✓' : ''}</button>
+              </div>))
+              : <p className="muted" style={{ padding: '10px 16px' }}>이 반에 학생이 없어요.</p>}
+          </div>}
         </div>))}</div>
         : <p className="muted" style={{ padding: '0 20px' }}>다가오는 할 것이 없어요. 아래에서 넣어 주세요.</p>}
       <div className="lab">넣기<span className="r">{cls?.name ?? ''}</span></div>

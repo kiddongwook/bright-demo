@@ -257,6 +257,18 @@ export async function createTodo(classId: string, kind: 'homework' | 'exam', tit
   return (must(await supabase.from('todos').insert({ academy_id: ctx.academyId, class_id: classId, kind, title, due_date: dueDate }).select('id').single()) as { id: string }).id;
 }
 export async function deleteTodo(id: string): Promise<void> { must(await supabase.from('todos').delete().eq('id', id)); }
+/** 숙제 검사: 반 학생 전체 × 이 할 것을 한 학생이 했는지 (원장·강사가 대신 확인) */
+export async function todoDoneList(todoId: string, classId: string): Promise<{ student_id: string; name: string; done: boolean }[]> {
+  const students = await listStudents(classId);
+  const rows = must(await supabase.from('todo_done').select('student_id').eq('todo_id', todoId)) as { student_id: string }[];
+  const done = new Set(rows.map(r => r.student_id));
+  return students.map(s => ({ student_id: s.id, name: s.name, done: done.has(s.id) }));
+}
+/** 원장·강사가 학생을 대신 체크(해제) — todo_done_staff 정책(담당 반 범위)이 막아 준다 */
+export async function setTodoDoneBy(todoId: string, studentId: string, done: boolean) {
+  if (done) must(await supabase.from('todo_done').upsert({ todo_id: todoId, student_id: studentId }, { onConflict: 'todo_id,student_id', ignoreDuplicates: true }));
+  else must(await supabase.from('todo_done').delete().eq('todo_id', todoId).eq('student_id', studentId));
+}
 
 /** 반 시간표 요약. 요일이 같은 시간이면 "월수금 19:00–21:00", 요일마다 다르면 "월 19:00–21:00 · 토 10:00–12:00" */
 export function scheduleSummary(s: Sched[]): string {
