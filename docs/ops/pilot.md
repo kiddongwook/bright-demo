@@ -119,6 +119,8 @@ select status, channel, count(*) from outbox group by 1,2;
 
 ## 6. 종료·이관
 
+(리셋은 DB 행뿐 아니라 그 학원의 저장소 파일 — 공지 사진·로고 — 도 함께 지우고 `logo_path` 를 비운다.)
+
 1. 더보기 → 학원 데이터 내려받기로 최종 JSON 을 원장님께 전달(또는 직접 내려받아 전달).
 2. 계속 쓰지 않기로 하면:
    - 학원은 남기고 데이터만 비우려면: `SEED_DEMO_WIPE=1 node --env-file=../.env.local pilot-reset.mjs <slug>` (학원·원장 소속은 남는다. 다음 파일럿에 재사용 가능).

@@ -269,3 +269,4 @@ due_day 지나면    status overdue → outbox BILL_REMIND (원장 톤 문구) �
 | 고아 저장소 파일 살림 | 학원 삭제·공지 삭제 때 파일이 남을 수 있음 | `pilot-reset` 이 프리픽스를 비움 |
 | 실기기 확인 결과 반영 | 카톡 내장 브라우저의 파일 선택·`pagehide`·설치 | `docs/ops/pilot.md` 실기기 목록 |
 | 재입학 뒤 학부모 활성 소속 | 한 번 역할 선택 화면이 뜸 | — |
+| 학원별 저장 용량 한도 | 지금은 버킷 한도(사진 5MB·로고 1MB)만 서버가 막고 학원별 총량 제한은 없음(무료 플랜 1GB) | `storage.buckets` 한도 |
