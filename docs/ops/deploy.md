@@ -38,3 +38,6 @@ node --env-file=../.env.local setup-outbox.mjs https://kiddongwook.github.io/bri
 ## 알아둘 것
 - `pwa/` 를 커밋하면 배포마다 해시 붙은 자산이 저장소 이력에 쌓인다(회당 ~1MB). 파일럿 뒤 GitHub Actions 로 옮기면 없어진다.
 - 서비스워커 scope 는 `/bright-demo/pwa/` 라 데모 페이지(루트)와 서로 건드리지 않는다.
+
+## 확인 기록
+- 2026-09-03 첫 배포(`8619e45`): 푸시 직후 Pages 반영. `manifest.webmanifest` 200 `application/manifest+json`, `sw.js` 200. 실제 주소에서 문 → 인증 → 홈, 서비스워커 scope `https://kiddongwook.github.io/bright-demo/pwa/` 활성. `APP_URL` 을 실제 주소로 바꾼 뒤 알림톡 링크가 `https://kiddongwook.github.io/bright-demo/pwa/?l=…` 로 나오고, 새 브라우저에서 누르면 공지가 제한 세션으로 열림.
