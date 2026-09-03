@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { listClasses, listStudents, studentDetail, saveStudent, leaveStudent, listTeachers, saveTeacher, removeTeacher, type Cls } from '../../lib/api';
+import { listClasses, listStudents, studentDetail, saveStudent, leaveStudent, listTeachers, saveTeacher, removeTeacher, academy, entryStatus, type Cls } from '../../lib/api';
 import { formatPhone, isValidMobile, normalizePhone } from '../../lib/phone';
+import { inviteText, copyInvite } from '../../lib/invite';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
@@ -9,12 +10,21 @@ import { toast, errToast } from '../../lib/toast';
 /* 명부: 반별 활성 학생 + 접힌 퇴원생. 행을 누르면 학생 상세, 편집은 작은 단추. 강사 관리는 원장만. */
 export function Roster() {
   const nav = useNav(); const { active: me } = useSession();
+  const isDirector = me?.role === 'director';
   const { data: classes } = useLoad(listClasses);
   const { data: students } = useLoad(() => listStudents(undefined, true));
   const { data: teachers } = useLoad(listTeachers);
+  const { data: myAcademy } = useLoad(academy);
+  const { data: entryRows, err: entryErr } = useLoad(() => isDirector ? entryStatus() : Promise.resolve(null));
+  useEffect(() => { if (entryErr) errToast(new Error(entryErr)); }, [entryErr]);
+  async function copyInviteFor() {
+    if (await copyInvite(inviteText(myAcademy?.name ?? '우리 학원', myAcademy?.slug ?? null))) toast('초대 문구를 복사했어요. 카톡으로 보내세요');
+    else toast('복사가 막혔어요. 더보기 → 학부모 초대 문구 복사에서 길게 눌러 복사해 주세요');
+  }
   const active = students?.filter(s => s.status === 'active') ?? [];
   const left = students?.filter(s => s.status === 'left') ?? [];
   const noClass = active.filter(s => !s.classes.length);
+  const notEntered = entryRows?.filter(r => !r.entered) ?? [];
   const row = (s: { id: string; name: string; classes: Cls[] }) => (
     <div key={s.id} className="rw" style={{ cursor: 'pointer' }} onClick={() => nav.push('student', { id: s.id })}>
       <span className="nm">{s.name.charAt(0)}</span>
@@ -24,7 +34,21 @@ export function Roster() {
   return (
     <section className="view on">
       <div className="head"><p className="lede">명부에 있는 전화번호로만 앱에 들어올 수 있어요.<br />학생과 학부모는 <b>각자 번호로</b> 들어옵니다.</p></div>
-      {me?.role === 'director' && <div className="box"><button className="rw" onClick={() => nav.push('teachers')}><span className="bd"><span className="t">강사</span><span className="s">{teachers ? `${teachers.length}명` : ''} · 원장님과 같은 권한으로 봅니다</span></span><span className="go">›</span></button></div>}
+      {isDirector && <div className="box"><button className="rw" onClick={() => nav.push('teachers')}><span className="bd"><span className="t">강사</span><span className="s">{teachers ? `${teachers.length}명` : ''} · 원장님과 같은 권한으로 봅니다</span></span><span className="go">›</span></button></div>}
+      {isDirector && entryRows && (notEntered.length > 0 ? (
+        <details className="fold">
+          <summary>아직 앱에 안 들어온 {notEntered.length}명</summary>
+          <div className="box">
+            {notEntered.map((r, i) => (
+              <div key={`${r.role}-${r.phone}-${i}`} className="rw" style={{ cursor: 'default' }}>
+                <span className="nm">{(r.student_name ?? r.name).charAt(0)}</span>
+                <span className="bd"><span className="t">{r.student_name} {r.role === 'parent' ? '학부모' : '학생'}</span><span className="s">{formatPhone(r.phone)}</span></span>
+                <button className="btn sm line" onClick={copyInviteFor}>초대 문구 복사</button>
+              </div>
+            ))}
+          </div>
+        </details>
+      ) : <p className="muted" style={{ padding: '0 20px' }}>명부의 학부모·학생이 모두 들어왔어요 🎉</p>)}
       {classes?.map(c => {
         const list = active.filter(s => s.classes.some(x => x.id === c.id));
         return <div key={c.id}><div className="lab">{c.name}<span className="r">{list.length}명</span></div>

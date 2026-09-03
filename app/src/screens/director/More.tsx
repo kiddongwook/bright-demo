@@ -5,6 +5,7 @@ import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
+import { inviteText, copyInvite } from '../../lib/invite';
 
 export function More() {
   const nav = useNav(); const { logout, active, session } = useSession();
@@ -13,17 +14,10 @@ export function More() {
   const { data: myAcademy } = useLoad(academy);
   const [busy, setBusy] = useState(false);
   const [invite, setInvite] = useState<string | null>(null);   // 클립보드가 안 되면 직접 눌러 복사하게 펼친다
-  const inviteUrl = `${location.origin}${import.meta.env.BASE_URL}${myAcademy?.slug ? `?a=${myAcademy.slug}` : ''}`;
-  const inviteText = `[${active?.academy_name ?? '우리 학원'}] 학부모님, 학원 앱을 열었어요.
-아래 주소를 누르고 등록된 휴대폰 번호로 들어오시면 출결·공지·문의를 바로 보실 수 있어요.
-${inviteUrl}
-홈 화면에 추가하면 앱처럼 쓸 수 있어요 (앱 안 더보기 → 홈 화면에 추가).`;
-  async function copyInvite() {
-    try {
-      if (!navigator.clipboard) throw new Error('클립보드를 쓸 수 없어요');
-      await navigator.clipboard.writeText(inviteText); setInvite(null);
-      toast('초대 문구를 복사했어요. 카톡에 붙여 보내세요');
-    } catch { setInvite(inviteText); }
+  const text = inviteText(active?.academy_name ?? '우리 학원', myAcademy?.slug ?? null);
+  async function doCopyInvite() {
+    if (await copyInvite(text)) { setInvite(null); toast('초대 문구를 복사했어요. 카톡에 붙여 보내세요'); }
+    else setInvite(text);
   }
   async function download() {
     setBusy(true);
@@ -58,7 +52,7 @@ ${inviteUrl}
         <button className="rw" disabled={busy} onClick={download}><span className="bd"><span className="t">학원 데이터 내려받기</span><span className="s">학생·출결·공지·문의 전부 한 파일로 (JSON)</span></span><span className="go">↓</span></button>
         <button className="rw" onClick={() => nav.push('faq')}><span className="bd"><span className="t">자주 묻는 질문 관리</span><span className="s">학부모 문의 화면 맨 위에 보여요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
-        <button className="rw" onClick={copyInvite}><span className="bd"><span className="t">학부모 초대 문구 복사</span><span className="s">카톡에 붙여 보내요</span></span><span className="go">⧉</span></button>
+        <button className="rw" onClick={doCopyInvite}><span className="bd"><span className="t">학부모 초대 문구 복사</span><span className="s">카톡에 붙여 보내요</span></span><span className="go">⧉</span></button>
         {invite && <div style={{ padding: '0 16px 14px' }}><textarea className="input" readOnly value={invite} /><p className="muted" style={{ paddingTop: 6 }}>길게 눌러 복사해 주세요</p></div>}
         <button className="rw" onClick={() => nav.push('about')}><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
       </div>
