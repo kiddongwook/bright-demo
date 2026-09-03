@@ -207,3 +207,8 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 /* 링크(알림톡 버튼)로 들어온 제한 세션: 탭바 대신 이 줄 */
 .limited-bar{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--paper);border-top:1px solid var(--rule);font-size:13px;color:var(--ink2)}
 .limited-bar button{background:none;border:0;color:var(--brand);font-weight:700;font-size:13px;cursor:pointer}
+
+/* 새 버전 배너 · 설치 안내 단계 */
+.update-bar{position:absolute;top:64px;left:12px;right:12px;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:12px;background:var(--ink);color:#fff;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.update-bar button{background:#fff;color:var(--ink);border:0;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer}
+.steps{padding:0 20px 0 40px;font-size:15px}.steps li{margin:8px 0;line-height:1.5}

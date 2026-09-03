@@ -15,7 +15,7 @@ export const TABMETA: Record<string, [string, 'list' | 'notice' | 'chat' | 'hous
 export const TITLE: Record<string, [string, string]> = {
   'notice-new': ['공지 쓰기', ''], readers: ['읽은 사람', ''], answer: ['문의', ''], faq: ['자주 묻는 질문', '관리'],
   roster: ['명부', '반별'], academy: ['우리 학원', ''], makeup: ['결석 신청', '보강'], noti: ['알림', ''],
-  'notice-view': ['공지', ''], 'ask-new': ['직접 문의하기', ''], 'ask-mine': ['내 문의', ''], absence: ['결석 미리 알리기', ''],
+  'notice-view': ['공지', ''], 'ask-new': ['직접 문의하기', ''], 'ask-mine': ['내 문의', ''], absence: ['결석 미리 알리기', ''], install: ['홈 화면에 추가', ''],
 };
 
 type Entry = { view: string; params: Record<string, string> };

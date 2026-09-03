@@ -10,6 +10,7 @@ import { setContext, unreadCount, kstToday, fmtMDW, academy } from './lib/api';
 import { SCREENS } from './screens/registry';
 import { LinkEntry, type LinkTarget } from './screens/LinkEntry';
 import { takeLinkToken } from './lib/link';
+import { UpdateBanner } from './components/UpdateBanner';
 import './theme.css';
 
 // 알림톡 버튼(?l=토큰)으로 들어왔는지 — 모듈 로드 때 한 번 읽고 주소에서 지운다 (렌더 중에 history 를 만지지 않게)
@@ -42,6 +43,7 @@ function Frame() {
   const title = TITLE[nav.view];
   return (
     <div className="shell"><div className="app">
+      <UpdateBanner />
       <header className="appbar">
         {nav.isTab
           ? <><img className="logo" src="/logo/yeongeo-jip-bold-white.png" alt={active!.academy_name} /><span className="ad">{fmtMDW(kstToday())}</span></>
