@@ -10,15 +10,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [active, setActive] = useState<Membership|null>(null);
   const [loading, setLoading] = useState(true);
+  // 세션·소속·활성 역할을 한 렌더에 넣는다 — 세션만 먼저 넣으면 소속이 오기 전 한순간 문(Gate)이 비친다.
   async function load(s: Session|null) {
-    setSession(s);
-    if (!s) { setMemberships([]); setActive(null); setLoading(false); return; }
+    if (!s) { setSession(null); setMemberships([]); setActive(null); setLoading(false); return; }
     const { data: ms } = await supabase.from('memberships').select('id, academy_id, role, student_id, academies(name), students(name)');
     const list: Membership[] = (ms ?? []).map((m: any) => ({ id: m.id, academy_id: m.academy_id, role: m.role, student_id: m.student_id, academy_name: m.academies?.name, student_name: m.students?.name }));
     const { data: u } = await supabase.from('users').select('active_membership_id').eq('id', s.user.id).maybeSingle();
     // 사용자 행이 없거나 소속이 하나도 없으면(명부에서 빠짐·개발 정리) 묵은 세션을 버리고 문으로 돌아간다.
     if (!u || !list.length) { await supabase.auth.signOut(); setSession(null); setMemberships([]); setActive(null); setLoading(false); return; }
-    setMemberships(list); setActive(list.find(m => m.id === u?.active_membership_id) ?? null); setLoading(false);
+    setSession(s); setMemberships(list); setActive(list.find(m => m.id === u?.active_membership_id) ?? null); setLoading(false);
   }
   useEffect(() => { supabase.auth.getSession().then(({ data }) => load(data.session)); const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (_e !== 'INITIAL_SESSION') load(s); }); return () => sub.subscription.unsubscribe(); }, []);
   // 서버(otp-verify)가 역할이 하나면 active 를 이미 정해 둔다. 여기선 세션을 넣고 다시 읽기만 한다 — 상태 경합 없음.

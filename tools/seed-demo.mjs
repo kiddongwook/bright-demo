@@ -54,7 +54,8 @@ await sb.from('notice_reads').upsert({ notice_id: n2.id, user_id: pJ }, { ignore
 const faqs = [['결석하면 보강이 되나요?', '사전에 알려주신 결석은 같은 주 토요일에 보강해 드려요. 당일 결석은 자료로 대체합니다.'], ['수강료 납부일은 언제인가요?', '매월 1일이에요. 5일까지는 괜찮습니다. 계좌이체 또는 카드 결제 모두 가능해요.'], ['교재는 어디서 사나요?', '학원에서 일괄 구매해 드려요. 교재비는 학기 시작 때 한 번 안내드립니다.'], ['상담은 어떻게 신청하나요?', '이 앱의 문의로 "상담 신청"이라고 보내주시면 원장님이 시간을 잡아 답해드려요.'], ['등하원 시간은요?', '고1 A는 월수금 7시~9시, 고2 B는 화목 8시~10시예요. 10분 전 도착을 권해요.']];
 for (let i = 0; i < faqs.length; i++) await once('faqs', { q: faqs[i][0] }, { q: faqs[i][0], a: faqs[i][1], sort: i });
 // 할 것 5
-await sb.from('todos').delete().eq('academy_id', A); await sb.from('absence_requests').delete().eq('academy_id', A);
+// 지우고 다시 심는 건 개발 프로젝트에서만. 실제 학원 데이터가 있는 프로젝트에선 SEED_DEMO_WIPE=1 없이 절대 지우지 않는다.
+if (process.env.SEED_DEMO_WIPE === '1') { await sb.from('todos').delete().eq('academy_id', A); await sb.from('absence_requests').delete().eq('academy_id', A); } else console.log('결석·할 것은 지우지 않고 없는 것만 심음 (지우려면 SEED_DEMO_WIPE=1)');
 await once('todos', { title: '독해 워크북 p.42–45' }, { class_id: cls['고2 B'], kind: 'homework', title: '독해 워크북 p.42–45', due_date: onDow(B_DAYS, 1) });
 await once('todos', { title: '단어시험 51~75' }, { class_id: cls['고2 B'], kind: 'exam', title: '단어시험 51~75', due_date: onDow(B_DAYS, 1), notice_id: n3 });
 const tDone = await once('todos', { title: '영작 1편 — My Summer Plan' }, { class_id: cls['고2 B'], kind: 'homework', title: '영작 1편 — My Summer Plan', due_date: onDow(B_DAYS, 0) });
