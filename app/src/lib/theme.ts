@@ -8,7 +8,10 @@ const subscribe = (cb: () => void) => {
   m.addEventListener('change', cb);
   return () => m.removeEventListener('change', cb);
 };
-const getSnapshot = () => mq()?.matches ?? false;
+/* 수동 지정: localStorage.theme = 'dark' | 'light' 이면 기기 설정보다 우선(html[data-theme]) */
+const manual = (): 'dark' | 'light' | null => { try { const v = localStorage.getItem('theme'); return v === 'dark' || v === 'light' ? v : null; } catch { return null; } };
+if (typeof document !== 'undefined') { const m = manual(); if (m) document.documentElement.dataset.theme = m; }
+const getSnapshot = () => { const m = manual(); return m ? m === 'dark' : (mq()?.matches ?? false); };
 export const useDark = (): boolean => useSyncExternalStore(subscribe, getSnapshot, () => false);
 
 /* 학원 강조색 적용 — 어두운 화면에서 거의 검은 강조색(#1C1C1C 등)은 바탕에 묻히므로 밝게 섞어서 쓴다 */
