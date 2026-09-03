@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { asset } from '../../lib/asset';
-import { academy, setBrandColor, listClassesFull, exportAcademy } from '../../lib/api';
+import { academy, setBrandColor, setLogo, listClassesFull, exportAcademy } from '../../lib/api';
+import { uploadLogo, removeLogo, logoUrl } from '../../lib/logo';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
@@ -71,15 +72,32 @@ const COLORS = ['#2B5BD9', '#1C1C1C', '#E8912D', '#5B7A5B', '#9C8B74'];
 export function Academy() {
   const { data, setData } = useLoad(academy);
   const [busy, setBusy] = useState(false);
+  const [busyLogo, setBusyLogo] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   async function pick(c: string) {
     setBusy(true);
     try { await setBrandColor(c); document.documentElement.style.setProperty('--brand', c); setData(data ? { ...data, brand_color: c } : data); toast('강조색이 바뀌었어요. 앱바·버튼·아이콘에 적용됩니다.'); }
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
+  async function pickLogo(f: File | undefined) {
+    if (!f || !data) return;
+    setBusyLogo(true);
+    try { const path = await uploadLogo(data.id, f); await setLogo(path); setData({ ...data, logo_path: path }); toast('로고를 올렸어요. 문 화면에 바로 보여요'); }
+    catch (e) { errToast(e); }
+    finally { setBusyLogo(false); if (fileRef.current) fileRef.current.value = ''; }
+  }
+  async function clearLogo() {
+    if (!data?.logo_path) return;
+    if (!confirm('로고를 지울까요? 문·인증 화면은 다시 기본 이미지로 보여요.')) return;
+    setBusyLogo(true);
+    try { await removeLogo(data.logo_path).catch(() => {}); await setLogo(null); setData({ ...data, logo_path: null }); toast('로고를 지웠어요'); }
+    catch (e) { errToast(e); } finally { setBusyLogo(false); }
+  }
+  const logoSrc = data?.logo_path ? logoUrl(data.logo_path, Date.now()) : null;
   return (
     <section className="view on">
       <div className="homescr">
-        <div className="appicon"><img src={asset('logo/yeongeo-jip-bold-white.png')} alt="" /></div>
+        <div className="appicon"><img src={logoSrc ?? asset('logo/yeongeo-jip-bold-white.png')} alt="" /></div>
         <div className="hl">{data?.name ?? ''}</div>
         <p className="hc">원장님과 학부모, 학생 폰 홈 화면에<br />이렇게 놓입니다.</p>
       </div>
@@ -88,6 +106,15 @@ export function Academy() {
         <div className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">학원 이름</span><span className="s">{data?.name ?? ''}</span></span></div>
         <div className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">강조색</span><span className="s">로고 컬러웨이 중 고르세요</span></span>
           <span className="chips">{COLORS.map(c => <button key={c} className={'chip' + (data?.brand_color === c ? ' on' : '')} style={{ background: c }} disabled={busy} onClick={() => pick(c)} aria-label={c} />)}</span></div>
+        <div className="rw" style={{ cursor: 'default' }}>
+          {logoSrc && <img src={logoSrc} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flex: '0 0 auto' }} />}
+          <span className="bd"><span className="t">로고</span><span className="s">{logoSrc ? '문·인증 화면에 바로 보여요' : '정사각으로 잘라 올려요'}</span></span>
+          {logoSrc
+            ? <><button className="btn sm line" disabled={busyLogo} onClick={() => fileRef.current?.click()}>바꾸기</button>
+                <button className="btn sm line" style={{ marginLeft: 8 }} disabled={busyLogo} onClick={clearLogo}>지우기</button></>
+            : <button className="btn sm line" disabled={busyLogo} onClick={() => fileRef.current?.click()}>올리기</button>}
+          <input ref={fileRef} type="file" accept="image/png,image/jpeg" style={{ display: 'none' }} onChange={e => pickLogo(e.target.files?.[0])} />
+        </div>
       </div>
       <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}>로고는 단색으로 두고, 강조색은 앱바·버튼·표시에 씁니다.</p>
     </section>

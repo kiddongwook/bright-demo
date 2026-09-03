@@ -16,7 +16,8 @@ export function currentSlug(): string {
   return DEFAULT_SLUG;
 }
 
-export async function publicAcademy(slug: string): Promise<{ name: string; brand_color: string } | null> {
+export type PublicAcademy = { name: string; brand_color: string; logo_path: string | null };
+export async function publicAcademy(slug: string): Promise<PublicAcademy | null> {
   const { data, error } = await supabase.rpc('public_academy', { p_slug: slug });
   if (error) return null;
   // 서버가 모르는 slug 는 기기에 남기지 않는다 — 다음 방문이 계속 "찾을 수 없어요" 에 갇히지 않게 (네트워크 오류일 땐 남긴다)
@@ -24,13 +25,19 @@ export async function publicAcademy(slug: string): Promise<{ name: string; brand
   return data[0];
 }
 
-/** 로그인 전 화면(Otp·LinkEntry) 의 로고 alt 용 — 이름이 오기 전엔 '학원'. */
-export function useAcademyName(): string {
-  const [name, setName] = useState('학원');
+/** 로그인 전 화면(Gate·Otp·LinkEntry) 이 "어느 학원이냐" 를 아는 유일한 곳 — undefined = 아직 안 옴, null = 모르는 학원. */
+export function useAcademyPublic(): PublicAcademy | null | undefined {
+  const [a, setA] = useState<PublicAcademy | null | undefined>(undefined);
   useEffect(() => {
     let alive = true;
-    publicAcademy(currentSlug()).then(a => { if (alive && a) setName(a.name); });
+    publicAcademy(currentSlug()).then(r => { if (alive) setA(r); });
     return () => { alive = false; };
   }, []);
-  return name;
+  return a;
+}
+
+/** 로그인 전 화면의 로고 alt 용 — 이름이 오기 전엔 '학원'. */
+export function useAcademyName(): string {
+  const a = useAcademyPublic();
+  return a?.name ?? '학원';
 }

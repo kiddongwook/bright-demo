@@ -12,7 +12,7 @@ export type Faq = { id: string; q: string; a: string; sort: number };
 export type Absence = { id: string; student_id: string; student_name: string; date: string; reason: string; status: 'requested' | 'confirmed' | 'declined'; makeup_kind: 'saturday' | 'material' | null; makeup_at: string | null; attended_at: string | null; created_at: string };
 export type Todo = { id: string; class_id: string; kind: 'homework' | 'exam'; title: string; due_date: string; notice_id: string | null; done: boolean };
 export type Noti = { id: string; kind: string; title: string; body: string; link: string | null; read_at: string | null; created_at: string };
-export type Academy = { id: string; name: string; slug: string; brand_color: string };
+export type Academy = { id: string; name: string; slug: string; brand_color: string; logo_path: string | null };
 /* 4주차 관리 */
 export type StudentFull = Student & { status: 'active' | 'left'; left_at: string | null; student_phone: string; parent_phones: string[] };
 export type Note = { id: string; kind: 'consult' | 'memo'; body: string; created_at: string; author_name: string };
@@ -52,9 +52,10 @@ function must<T>(r: { data: T | null; error: { message: string } | null }): T {
 
 /* ── 공통 ── */
 export async function academy(): Promise<Academy> {
-  return must(await supabase.from('academies').select('id, name, slug, brand_color').eq('id', ctx.academyId).single());
+  return must(await supabase.from('academies').select('id, name, slug, brand_color, logo_path').eq('id', ctx.academyId).single());
 }
 export async function setBrandColor(color: string) { must(await supabase.from('academies').update({ brand_color: color }).eq('id', ctx.academyId)); }
+export async function setLogo(path: string | null) { must(await supabase.from('academies').update({ logo_path: path }).eq('id', ctx.academyId)); }
 export async function listClasses(): Promise<Cls[]> {
   return must(await supabase.from('classes').select('id, name, schedule').order('name')) as Cls[];
 }
