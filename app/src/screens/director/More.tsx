@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { asset } from '../../lib/asset';
 import { academy, setBrandColor } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
@@ -42,7 +43,7 @@ export function Academy() {
   return (
     <section className="view on">
       <div className="homescr">
-        <div className="appicon"><img src="/logo/yeongeo-jip-bold-white.png" alt="" /></div>
+        <div className="appicon"><img src={asset('logo/yeongeo-jip-bold-white.png')} alt="" /></div>
         <div className="hl">{data?.name ?? ''}</div>
         <p className="hc">원장님과 학부모, 학생 폰 홈 화면에<br />이렇게 놓입니다.</p>
       </div>

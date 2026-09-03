@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { asset } from '../lib/asset';
 import { fn } from '../lib/supabase';
 import { useSession, type Membership } from '../auth/session';
 import { formatPhone } from '../lib/phone';
@@ -19,7 +20,7 @@ export function Otp({ phone, onBack }: { phone: string; onBack: () => void }) {
   return (
     <section className="view on" style={{ background: 'var(--paper)' }}>
       <div className="gate">
-        <img className="gate-logo" src="/logo/yeongeo-jip-medium.png" alt="" />
+        <img className="gate-logo" src={asset('logo/yeongeo-jip-medium.png')} alt="" />
         <h1>인증번호를 보냈어요</h1>
         <p>{formatPhone(phone)} 으로 6자리를 보냈습니다.</p>
         <div className="field"><label>인증번호</label>

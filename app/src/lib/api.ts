@@ -100,10 +100,44 @@ export async function addCalendar(date: string, kind: CalItem['kind'], note: str
   else must(await supabase.from('calendar').insert({ academy_id: ctx.academyId, date, kind, note: note || null, class_id: classId }));
 }
 export async function removeCalendar(id: string) { must(await supabase.from('calendar').delete().eq('id', id)); }
-/** 전체 휴원일(반 구분 없음) — 오늘부터 60일. 다음 수업·결석 신청 후보에서 뺀다. */
-export async function closedDays(): Promise<Set<string>> {
-  const rows = must(await supabase.from('calendar').select('date').eq('kind', 'closed').is('class_id', null).gte('date', kstToday()).lte('date', kstDate(60))) as { date: string }[];
-  return new Set(rows.map(r => r.date));
+/** 휴원일 — 오늘부터 60일. all = 전체 휴원, byClass = 반별 휴원. 다음 수업·결석 신청 후보에서 뺀다. */
+export type Closed = { all: Set<string>; byClass: Map<string, Set<string>> };
+export async function closedByClass(): Promise<Closed> {
+  const rows = must(await supabase.from('calendar').select('date, class_id').eq('kind', 'closed').gte('date', kstToday()).lte('date', kstDate(60))) as { date: string; class_id: string | null }[];
+  const all = new Set<string>(); const byClass = new Map<string, Set<string>>();
+  for (const r of rows) { if (!r.class_id) all.add(r.date); else { if (!byClass.has(r.class_id)) byClass.set(r.class_id, new Set()); byClass.get(r.class_id)!.add(r.date); } }
+  return { all, byClass };
+}
+/** 전체 휴원일만 (예전 호출부용) */
+export async function closedDays(): Promise<Set<string>> { return (await closedByClass()).all; }
+/** 한 반이 쉬는 날 = 전체 휴원 ∪ 그 반 휴원 */
+export const closedFor = (c: Closed | undefined, classId: string): Set<string> => { const s = new Set(c?.all ?? []); for (const d of c?.byClass.get(classId) ?? []) s.add(d); return s; };
+/** 반마다 자기 휴원을 빼고 다음 수업일을 모아 정렬 (학부모·학생 화면) */
+export function nextClassDaysFor(classes: Cls[], count: number, closed?: Closed): string[] {
+  const all = new Set<string>();
+  for (const c of classes) for (const d of nextClassDays(c.schedule ?? [], count, closedFor(closed, c.id))) all.add(d);
+  return [...all].sort().slice(0, count);
+}
+/** 반별 월 출결표: 학생 × 수업일 (시간표 기준, 휴원 제외) */
+export async function classMonthTable(classId: string, ym: string): Promise<{ students: { id: string; name: string }[]; days: string[]; cells: Record<string, Record<string, AttStatus>> }> {
+  const cls = must(await supabase.from('classes').select('id, schedule').eq('id', classId).single()) as Cls;
+  const students = await listStudents(classId);
+  const rows = must(await supabase.from('attendance').select('student_id, date, status').eq('class_id', classId).gte('date', ym + '-01').lte('date', ym + '-31')) as { student_id: string; date: string; status: AttStatus }[];
+  const cal = must(await supabase.from('calendar').select('date, class_id').eq('kind', 'closed').gte('date', ym + '-01').lte('date', ym + '-31')) as { date: string; class_id: string | null }[];
+  const closed = new Set(cal.filter(c => !c.class_id || c.class_id === classId).map(c => c.date));
+  const dows = new Set((cls.schedule ?? []).map(s => s.dow));
+  const days = monthGrid(ym).days.filter((d): d is string => !!d && dows.has(dowOf(d)) && !closed.has(d));
+  const cells: Record<string, Record<string, AttStatus>> = {};
+  for (const r of rows) { (cells[r.student_id] ??= {})[r.date] = r.status; if (!days.includes(r.date)) days.push(r.date); }
+  days.sort();
+  return { students: students.map(s => ({ id: s.id, name: s.name })), days, cells };
+}
+/** 학원 데이터 통째로 (원장만) — Edge Function 이 JWT 를 검사한다 */
+export async function exportAcademy(): Promise<Blob> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-academy`, { method: 'POST', headers: { apikey: import.meta.env.VITE_SUPABASE_ANON_KEY, Authorization: 'Bearer ' + (session?.access_token ?? '') } });
+  if (!r.ok) throw new Error(r.status === 403 ? '원장님만 내려받을 수 있어요' : '내려받지 못했어요 (' + r.status + ')');
+  return await r.blob();
 }
 export async function listClassesFull(): Promise<ClsFull[]> {
   return must(await supabase.from('classes').select('id, name, schedule, teacher_id').order('name')) as ClsFull[];

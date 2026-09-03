@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { asset } from '../lib/asset';
 import { formatPhone, isValidMobile, normalizePhone } from '../lib/phone';
 import { fn } from '../lib/supabase';
 export function Gate({ onSent }: { onSent: (phone: string) => void }) {
@@ -18,7 +19,7 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   return (
     <section className="view on" style={{ background: 'var(--paper)' }}>
       <div className="gate">
-        <img className="gate-logo" src="/logo/yeongeo-jip-medium.png" alt="영어의 집" />
+        <img className="gate-logo" src={asset('logo/yeongeo-jip-medium.png')} alt="영어의 집" />
         <h1>문을 열어드릴게요</h1>
         <p>영어의 집 학생·학부모로 등록된<br />전화번호를 알려주세요.</p>
         <div className="field"><label>전화번호</label>

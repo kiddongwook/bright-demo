@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { asset } from '../lib/asset';
 import { fn } from '../lib/supabase';
 import { useSession, type Membership } from '../auth/session';
 export type LinkTarget = { academy_id: string; view: string; ref_id: string | null };
@@ -27,7 +28,7 @@ export function LinkEntry({ token, currentUserId, onDone }: { token: string; cur
   return (
     <section className="view on" style={{ background: 'var(--paper)' }}>
       <div className="gate">
-        <img className="gate-logo" src="/logo/yeongeo-jip-medium.png" alt="영어의 집" />
+        <img className="gate-logo" src={asset('logo/yeongeo-jip-medium.png')} alt="영어의 집" />
         {err ? <><h1>열지 못했어요</h1><p>{err}</p><div className="btnrow" style={{ padding: '20px 0 0', width: '100%' }}><button className="btn" onClick={() => onDone(null)}>번호로 들어가기</button></div></>
           : other ? <><h1>다른 사람 앞으로 온 링크예요</h1><p>이 기기에는 다른 계정으로 들어와 있어요.<br />그 사람 번호로 들어가면 볼 수 있어요.</p><div className="btnrow" style={{ padding: '20px 0 0', width: '100%' }}><button className="btn" onClick={() => onDone(null)}>지금 계정으로 계속</button></div></>
           : <><h1>문을 여는 중이에요</h1><p>잠시만요.</p></>}

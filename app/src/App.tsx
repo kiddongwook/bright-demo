@@ -1,4 +1,5 @@
 import { useEffect, useState, type ComponentType } from 'react';
+import { asset } from './lib/asset';
 import { SessionProvider, useSession } from './auth/session';
 import { Gate } from './screens/Gate';
 import { Otp } from './screens/Otp';
@@ -46,7 +47,7 @@ function Frame() {
       <UpdateBanner />
       <header className="appbar">
         {nav.isTab
-          ? <><img className="logo" src="/logo/yeongeo-jip-bold-white.png" alt={active!.academy_name} /><span className="ad">{fmtMDW(kstToday())}</span></>
+          ? <><img className="logo" src={asset('logo/yeongeo-jip-bold-white.png')} alt={active!.academy_name} /><span className="ad">{fmtMDW(kstToday())}</span></>
           : <><button className="bk" onClick={nav.back} aria-label="뒤로">&lsaquo;</button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}
         {nav.view !== 'noti' && !nav.limited && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
