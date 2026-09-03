@@ -18,7 +18,9 @@ export function currentSlug(): string {
 
 export async function publicAcademy(slug: string): Promise<{ name: string; brand_color: string } | null> {
   const { data, error } = await supabase.rpc('public_academy', { p_slug: slug });
-  if (error || !data || !data.length) return null;
+  if (error) return null;
+  // 서버가 모르는 slug 는 기기에 남기지 않는다 — 다음 방문이 계속 "찾을 수 없어요" 에 갇히지 않게 (네트워크 오류일 땐 남긴다)
+  if (!data || !data.length) { try { if (localStorage.getItem(SLUG_KEY) === slug) localStorage.removeItem(SLUG_KEY); } catch { /* 무시 */ } return null; }
   return data[0];
 }
 
