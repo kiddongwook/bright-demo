@@ -31,12 +31,12 @@ export function CalendarScreen() {
       <div className="seg" style={{ marginTop: 8 }}><button className={cls === null ? 'on' : ''} onClick={() => setCls(null)}>전체</button>{classes?.map(c => <button key={c.id} className={cls === c.id ? 'on' : ''} onClick={() => setCls(c.id)}>{c.name}</button>)}</div>
       <div style={{ padding: '8px 20px 0' }}><input className="input" value={note} onChange={e => setNote(e.target.value)} placeholder="메모 (예: 추석 연휴)" /></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>저장</button></div>
-      <p className="muted" style={{ padding: '0 20px' }}>반별 휴원은 저장만 되고, 다음 수업에서 빼는 건 다음 단계예요. 지금은 전체 휴원만 반영돼요.</p>
+      <p className="muted" style={{ padding: '0 20px' }}>반을 고르면 그 반만 쉬는 날이 돼요. 전체는 모든 반의 다음 수업에서 빠져요.</p>
     </section>
   );
 }
 
-/* 반·시간표: 이름 · 요일 · 시작·끝 · 담당 강사. 요일별 다른 시간은 다음 단계. */
+/* 반·시간표: 이름 · 요일 · 시작·끝(요일마다 다르게도) · 담당 강사. */
 export function Classes() {
   const { data, reload } = useLoad(listClassesFull);
   const { data: teachers } = useLoad(listTeachers);
