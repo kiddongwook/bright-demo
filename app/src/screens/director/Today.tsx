@@ -69,6 +69,7 @@ export function Today() {
       </div>
       <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={save}>{busy ? '저장 중…' : '저장하고 알리기'}</button></div>
+      <div className="btnrow" style={{ paddingTop: 0 }}><button className="btn line" onClick={() => nav.push('todos', { cid })}>이번 주 할 것 관리</button></div>
 
       <div className="lab">결석 신청<span className="r">학부모가 미리 알린 것</span></div>
       {pending.length ? <div className="box">{pending.map(absRow)}</div> : <p className="muted" style={{ padding: '0 20px' }}>새 결석 신청이 없어요.</p>}
