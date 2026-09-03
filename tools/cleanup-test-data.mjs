@@ -1,0 +1,16 @@
+// 테스트가 남긴 학원(slug a-*, b-*, otp-*)과 그 auth 사용자를 지운다. 씨앗 학원(yeongeo)은 건드리지 않는다.
+import 'dotenv/config';
+import { createClient } from '@supabase/supabase-js';
+const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, { auth: { persistSession: false } });
+const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%');
+let users = 0;
+for (const a of acs ?? []) {
+  const { data: ms } = await admin.from('memberships').select('user_id').eq('academy_id', a.id);
+  for (const m of ms ?? []) { const { error } = await admin.auth.admin.deleteUser(m.user_id); if (!error) users++; }
+  const { error } = await admin.from('academies').delete().eq('id', a.id);
+  if (error) console.log('academy delete failed', a.slug, error.message);
+}
+// 학원 없이 남은 테스트 사용자 (전화 0101*/0109*)
+const { data: orphans } = await admin.from('users').select('id, phone').or('phone.like.0101%,phone.like.0109%');
+for (const u of orphans ?? []) { const { error } = await admin.auth.admin.deleteUser(u.id); if (!error) users++; }
+console.log(`cleaned academies=${(acs ?? []).length} users=${users}`);

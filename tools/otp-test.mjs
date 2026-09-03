@@ -8,7 +8,7 @@ const call = (fn, body) => fetch(`${URL}/functions/v1/${fn}`, { method: 'POST', 
 const tag = Date.now().toString(36);
 const { data: A } = await admin.from('academies').insert({ name: 'OTP테스트', slug: 'otp-' + tag }).select().single();
 const { data: st } = await admin.from('students').insert({ academy_id: A.id, name: '테스트학생' }).select().single();
-const phone = '0109' + tag.slice(-7);
+const phone = '0109' + Date.now().toString().slice(-7);   // 숫자만 — 함수가 정규화하므로 글자가 섞이면 안 된다
 await admin.from('roster_phones').insert([
   { academy_id: A.id, phone, role: 'parent', name: '테스트 어머님', student_id: st.id },
   { academy_id: A.id, phone, role: 'student', name: '테스트학생', student_id: st.id }]);   // 번호 하나에 역할 둘
