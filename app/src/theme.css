@@ -239,3 +239,10 @@ textarea.input{min-height:120px;resize:none;font-size:15px;line-height:1.6;font-
 .tbl td.present{color:var(--brand)}.tbl td.late{color:#9A6B10}.tbl td.absent{color:var(--danger)}.tbl td.makeup{color:#2F6B45}.tbl td.rate{font-weight:700}
 @media(min-width:900px){body.wide .app{width:min(96vw,920px)}}
 .legend .more{margin-left:auto;background:none;border:0;color:var(--brand);font-weight:700;font-size:12px;cursor:pointer}
+/* 8주차: 공지 사진 */
+.photos{display:grid;gap:8px;padding:0 20px}
+.photos img{width:100%;border-radius:12px;display:block}
+.photo-pick{display:flex;gap:8px;padding:8px 20px 0}
+.photo-pick .ph{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden}
+.photo-pick img{width:100%;height:100%;object-fit:cover}
+.photo-pick button{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:50%;width:22px;height:22px;font-size:13px}
