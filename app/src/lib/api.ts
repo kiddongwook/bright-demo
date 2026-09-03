@@ -160,6 +160,8 @@ export async function deleteFaq(id: string) { must(await supabase.from('faqs').d
 export async function listTeachers(): Promise<Teacher[]> { return must(await supabase.rpc('list_teachers')) as Teacher[]; }
 export async function saveTeacher(name: string, phone: string) { must(await supabase.rpc('roster_save_teacher', { p_name: name, p_phone: phone })); }
 export async function removeTeacher(phone: string) { must(await supabase.rpc('roster_remove_teacher', { p_phone: phone })); }
+export type EntryRow = { role: 'parent' | 'student'; name: string; phone: string; student_name: string | null; entered: boolean };
+export async function entryStatus(): Promise<EntryRow[]> { return must(await supabase.rpc('roster_entry_status')) as EntryRow[]; }
 
 /* ── 알림 설정 — 카톡만 끈다. 앱 안 알림·종 배지는 그대로. 키가 없으면 켠 것. ── */
 export async function getPrefs(): Promise<Record<string, boolean>> {
