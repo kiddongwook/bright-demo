@@ -1,1 +1,9 @@
 KakaoTalk_*.jpg
+
+# 2단계
+.env*
+!.env.example
+app/node_modules/
+app/dist/
+tools/node_modules/
+supabase/.temp/
