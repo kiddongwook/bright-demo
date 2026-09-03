@@ -5,8 +5,10 @@ import { useSession, type Membership } from '../auth/session';
 import { formatPhone } from '../lib/phone';
 import { useAcademyPublic } from '../lib/academy';
 import { logoUrl } from '../lib/logo';
+import { useDark } from '../lib/theme';
 export function Otp({ phone, onBack }: { phone: string; onBack: () => void }) {
   const { setFromVerify } = useSession();
+  const dark = useDark();
   const academy = useAcademyPublic();
   const name = academy?.name ?? '학원';
   const [code, setCode] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
@@ -24,7 +26,7 @@ export function Otp({ phone, onBack }: { phone: string; onBack: () => void }) {
   return (
     <section className="view on" style={{ background: 'var(--paper)' }}>
       <div className="gate">
-        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset('logo/yeongeo-jip-medium.png')} alt={name} />
+        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-medium.png')} alt={name} />
         <h1>인증번호를 보냈어요</h1>
         <p>{formatPhone(phone)} 으로 6자리를 보냈습니다.</p>
         <div className="field"><label>인증번호</label>

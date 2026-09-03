@@ -7,6 +7,7 @@ import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 import { inviteText, copyInvite } from '../../lib/invite';
+import { applyBrand } from '../../lib/theme';
 
 export function More() {
   const nav = useNav(); const { logout, active, session } = useSession();
@@ -77,7 +78,7 @@ export function Academy() {
   const fileRef = useRef<HTMLInputElement>(null);
   async function pick(c: string) {
     setBusy(true);
-    try { await setBrandColor(c); document.documentElement.style.setProperty('--brand', c); setData(data ? { ...data, brand_color: c } : data); toast('강조색이 바뀌었어요. 앱바·버튼·아이콘에 적용됩니다.'); }
+    try { await setBrandColor(c); applyBrand(c); setData(data ? { ...data, brand_color: c } : data); toast('강조색이 바뀌었어요. 앱바·버튼·아이콘에 적용됩니다.'); }
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
   async function pickLogo(f: File | undefined) {

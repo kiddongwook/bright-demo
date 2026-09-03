@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import { asset } from './lib/asset';
+import { useDark, applyBrand } from './lib/theme';
 import { SessionProvider, useSession } from './auth/session';
 import { Gate } from './screens/Gate';
 import { Otp } from './screens/Otp';
@@ -36,6 +37,7 @@ function Shell() {
 
 function Frame() {
   const { active, endLimited } = useSession(); const nav = useNav();
+  const dark = useDark();   // 어두운 화면에서는 흰 로고로 — 브라우저 자동 반전에 맡기지 않는다
   const role = active!.role as Role;
   const [badge, setBadge] = useState(0);
   const [acad, setAcad] = useState<Academy | null>(null);
@@ -44,7 +46,7 @@ function Frame() {
   useEffect(() => { setReportScreen(nav.view); }, [nav.view]);   // 오류 보고에 "어느 화면에서" 를 싣는다
   // 관리 화면은 넓은 화면에서 대시보드로 펼친다
   useEffect(() => { document.body.classList.toggle('wide', WIDE_VIEWS.has(nav.view)); return () => document.body.classList.remove('wide'); }, [nav.view]);
-  useEffect(() => { academy().then(a => { setAcad(a); document.documentElement.style.setProperty('--brand', a.brand_color); document.title = active!.academy_name ?? a.name; }).catch(() => {}); }, [active!.academy_id]);
+  useEffect(() => { academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; }).catch(() => {}); }, [active!.academy_id]);
   const key = `${role}:${nav.view}`;
   const Screen: ComponentType<any> = nav.view === 'noti' ? (() => <Noti onRead={refreshBadge} />) : (SCREENS[key] ?? SCREENS[`*:${nav.view}`] ?? (() => <Placeholder name={nav.view} />));
   const title = TITLE[nav.view];
@@ -55,7 +57,7 @@ function Frame() {
       <UpdateBanner />
       <header className="appbar">
         {nav.isTab
-          ? <>{logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset('logo/yeongeo-jip-bold.png')} alt={active!.academy_name} />}</>
+          ? <>{logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-bold.png')} alt={active!.academy_name} />}</>
           : <><button className="bk" onClick={nav.back} aria-label="뒤로">&lsaquo;</button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}
         {nav.view !== 'noti' && !nav.limited && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>

@@ -4,11 +4,13 @@ import { formatPhone, isValidMobile, normalizePhone } from '../lib/phone';
 import { fn } from '../lib/supabase';
 import { useAcademyPublic } from '../lib/academy';
 import { logoUrl } from '../lib/logo';
+import { useDark, applyBrand } from '../lib/theme';
 export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   const [phone, setPhone] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
+  const dark = useDark();   // 훅은 academy === null 조기 반환보다 위에서 부른다
   const academy = useAcademyPublic(); // undefined = 아직 안 옴, null = 모르는 학원
   useEffect(() => {
-    if (academy) { document.documentElement.style.setProperty('--brand', academy.brand_color); document.title = academy.name; }
+    if (academy) { applyBrand(academy.brand_color); document.title = academy.name; }
   }, [academy]);
   const name = academy?.name ?? '학원';
   async function send() {
@@ -36,7 +38,7 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   return (
     <section className="view on" style={{ background: 'var(--paper)' }}>
       <div className="gate">
-        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset('logo/yeongeo-jip-medium.png')} alt={name} />
+        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-medium.png')} alt={name} />
         <h1>문을 열어드릴게요</h1>
         <p>{name} 학생·학부모로 등록된<br />전화번호를 알려주세요.</p>
         <div className="field"><label>전화번호</label>
