@@ -50,7 +50,7 @@
 | enrollments | student_id, class_id, PK(student_id,class_id) | 학생이 반 여럿(문법반+독해반) |
 | guardians | student_id, user_id, relation, PK(student_id,user_id) | 자녀 여럿·보호자 여럿 |
 | roster_phones | academy_id, phone, role, student_id, UNIQUE(academy_id,phone,role,student_id) | 입장 허용 명단 (가입 전 대조) |
-| attendance | id, academy_id, student_id, class_id, date(KST), status `present\|late\|absent\|makeup`, note, marked_by, UNIQUE(student_id,date) | att |
+| attendance | id, academy_id, student_id, class_id, date(KST), status `present\|late\|absent\|makeup`, **arrived_at**(도착 시각), note, marked_by, UNIQUE(student_id,class_id,date) | att |
 | absence_requests | id, academy_id, student_id, requested_by, date(KST), reason, status `requested\|confirmed\|declined`, makeup_kind `saturday\|material`, makeup_at, decided_by, created_at | absences |
 | notices | id, academy_id, author_id, title, body, target_class_id(null=전체), created_at, reminded_at | notices |
 | notice_reads | notice_id, user_id, read_at, PK(notice_id,user_id) | readers |

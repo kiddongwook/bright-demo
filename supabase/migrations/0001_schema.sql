@@ -76,6 +76,7 @@ create table attendance (
   academy_id uuid not null references academies(id),
   student_id uuid not null references students(id), class_id uuid not null references classes(id),
   date date not null, status att_status not null, note text,
+  arrived_at timestamptz,                          -- 도착 시각 (학부모가 원함 — 시장 리서치)
   marked_by uuid references users(id), created_at timestamptz not null default now(),
   unique (student_id, class_id, date));
 
