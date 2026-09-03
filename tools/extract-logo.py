@@ -36,3 +36,15 @@ def build(g, suffix):
 print("regular", build(g0, ""))
 print("bold   ", build(g0.filter(ImageFilter.MinFilter(BOLD)), "-bold"))
 print("medium ", build(g0.filter(ImageFilter.MinFilter(MEDIUM)), "-medium"))
+
+# PWA 아이콘: 남색 바탕에 흰 굵은 로고 (정사각)
+def icon(size, out):
+    bg = Image.new("RGBA", (size, size), "#2B5BD9")
+    logo = Image.open(f"{OUT}/yeongeo-jip-bold-white.png").convert("RGBA")
+    w = int(size * 0.72); h = int(logo.height * w / logo.width)
+    logo = logo.resize((w, h), Image.LANCZOS)
+    bg.alpha_composite(logo, ((size - w) // 2, (size - h) // 2))
+    bg.save(out, optimize=True)
+os.makedirs("app/public/logo", exist_ok=True)
+icon(512, "app/public/logo/icon-512.png"); icon(192, "app/public/logo/icon-192.png")
+print("icons  ok")
