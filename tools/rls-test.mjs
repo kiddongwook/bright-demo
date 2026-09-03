@@ -79,8 +79,33 @@ const b = await login('0101' + num + '4', mDirB.id);
 r = await b.from('notices').select('id'); ok(r.data?.length === 1, 'B원장 notices=' + r.data?.length + ' (1)');
 r = await b.from('attendance').select('id'); ok(r.data?.length === 1, 'B원장 attendance=' + r.data?.length + ' (1)');
 
+// ── 강사: 담당 반만 (읽기·쓰기) ──
+const { data: cA2 } = await admin.from('classes').insert({ academy_id: A.id, name: 'A반2' }).select().single();
+const { data: sA3 } = await admin.from('students').insert({ academy_id: A.id, name: 'A학생3' }).select().single();
+await admin.from('enrollments').insert({ student_id: sA3.id, class_id: cA2.id });
+await admin.from('notices').insert({ academy_id: A.id, author_id: dirA, title: 'A반2 공지', body: '', target_class_id: cA2.id });
+const tchA = await mkUser('0101' + num + '5', 'A강사');
+const { data: mTch } = await admin.from('memberships').insert({ user_id: tchA, academy_id: A.id, role: 'teacher' }).select().single();
+const t = await login('0101' + num + '5', mTch.id);
+ok(((await t.from('students').select('id')).data ?? []).length === 0, '담당 반 없는 강사는 학생을 못 본다');
+await admin.from('classes').update({ teacher_id: tchA }).eq('id', cA.id);
+const tst = (await t.from('students').select('id')).data ?? [];
+ok(tst.length === 2 && !tst.some(x => x.id === sA3.id), `강사 담당 반 학생만 (got ${tst.length})`);
+const tn = (await t.from('notices').select('title')).data ?? [];
+ok(tn.some(x => x.title !== 'A반2 공지') && !tn.some(x => x.title === 'A반2 공지'), `강사 공지 읽기는 전체+담당 반만 (got ${tn.map(x => x.title).join('/')})`);
+ok(!(await t.from('attendance').insert({ academy_id: A.id, student_id: sA1.id, class_id: cA.id, date: '2026-06-01', status: 'present', marked_by: tchA })).error, '강사 담당 반 출결 쓰기');
+ok(!!(await t.from('attendance').insert({ academy_id: A.id, student_id: sA3.id, class_id: cA2.id, date: '2026-06-01', status: 'present', marked_by: tchA })).error, '강사 다른 반 출결은 거절');
+ok(!(await t.from('notices').insert({ academy_id: A.id, author_id: tchA, title: '반 공지', body: '', target_class_id: cA.id })).error, '강사 담당 반 공지 쓰기');
+ok(!!(await t.from('notices').insert({ academy_id: A.id, author_id: tchA, title: '전체 공지', body: '', target_class_id: null })).error, '전체 공지는 원장만');
+ok(!!(await t.rpc('roster_save_student', { sid: null, p_name: 'x', p_class_ids: [cA.id], p_student_phone: '', p_parent_phones: [] })).error, '강사는 명부 편집 못 함');
+ok(!!(await t.from('calendar').insert({ academy_id: A.id, date: '2026-06-02', kind: 'closed' })).error, '강사는 휴원일 못 넣음');
+ok(!(await t.rpc('student_timeline', { sid: sA1.id, lim: 5 })).error, '강사 담당 학생 타임라인 OK');
+ok(!!(await t.rpc('student_timeline', { sid: sA3.id, lim: 5 })).error, '강사 다른 반 학생 타임라인 거절');
+ok(((await t.from('users').select('id').eq('id', dirA)).data ?? []).length === 1, '강사가 원장 이름을 본다(메모·문의 작성자 표시)');
+ok(((await d.from('students').select('id')).data ?? []).length === 3, '원장은 여전히 학생 전부');
+
 // ── 정리 ──
-for (const id of [dirA, parA, stuA, dirB]) await admin.auth.admin.deleteUser(id);
+for (const id of [dirA, parA, stuA, dirB, tchA]) await admin.auth.admin.deleteUser(id);
 await admin.from('academies').delete().in('id', [A.id, B.id]);
 
 console.log(fails.length ? 'FAIL:\n - ' + fails.join('\n - ') : 'PASS: RLS isolation (A/B academies, director/parent/student)');

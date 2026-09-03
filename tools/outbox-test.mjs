@@ -56,8 +56,10 @@ try {
   const noKey = await fetch(`${URL}/functions/v1/outbox-send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
   ok(noKey.status === 401, `키 없이 401 (got ${noKey.status})`);
   const b = await send();
-  ok(b.sent === 5 && b.failed === 0, `5건 발송 (got ${JSON.stringify(b)})`);
-  ok(Array.isArray(b.debug) && b.debug.length === 5 && b.debug.every(d => /\?l=[0-9a-f]{32}$/.test(d.url)), 'debug 에 토큰 URL');
+  // 다른 테스트가 남긴 queued 행이 같이 잡힐 수 있어 이 학원 번호만 센다
+  const mine = x => [P_PARENT, P_STUDENT].includes(x.to);
+  ok(b.sent >= 5 && b.failed === 0 && (b.debug ?? []).filter(mine).length === 5, `이 학원 5건 발송 (got sent=${b.sent}, mine=${(b.debug ?? []).filter(mine).length})`);
+  ok(Array.isArray(b.debug) && b.debug.filter(mine).every(d => /\?l=[0-9a-f]{32}$/.test(d.url)), 'debug 에 토큰 URL');
   const { data: ob2 } = await admin.from('outbox').select('*').eq('academy_id', A);
   ok(ob2.every(o => o.status === 'sent' && o.provider_msg_id && o.sent_at && o.link_token_id && o.attempts === 1), '모두 sent + provider_msg_id + 토큰');
   const { count: tk } = await admin.from('link_tokens').select('id', { count: 'exact', head: true }).eq('academy_id', A);

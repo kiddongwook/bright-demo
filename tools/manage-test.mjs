@@ -100,4 +100,15 @@ const p2 = createClient(URL, ANON, { auth: { persistSession: false } }); await p
 ok(!((await p2.from('students').select('id').eq('id', SID)).data ?? []).length, '남은 세션으로도 자녀를 못 본다');
 ok(((await d.from('students').select('id,status').eq('id', SID)).data ?? []).length === 1, '원장은 퇴원생을 본다');
 
-if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; } else console.log('PASS: manage A~G');
+// ---- H. 재입학: 퇴원생을 다시 저장하면 active + 명부 복구
+r = await d.rpc('roster_save_student', { sid: SID, p_name: '박지훈', p_class_ids: [c1.id], p_student_phone: '', p_parent_phones: [P_MOM] });
+ok(!r.error, 'reenroll: ' + r.error?.message);
+const re = (await admin.from('students').select('status,left_at').eq('id', SID).single()).data; ok(re?.status === 'active' && !re.left_at, '재입학 → active');
+ok((await otpSend(P_MOM)).status === 200, '재입학 뒤 엄마 otp-send 200');
+
+// ---- I. 반별 휴원: 같은 날 전체 1 + 반 1 은 되고, 전체 중복은 unique 가 막는다
+r = await d.from('calendar').insert({ academy_id: A, date: kst(3), kind: 'closed', class_id: c1.id, note: '고1만' }); ok(!r.error, '반별 휴원 insert: ' + r.error?.message);
+r = await d.from('calendar').insert({ academy_id: A, date: kst(3), kind: 'closed', class_id: null, note: '전체' }); ok(!r.error, '전체 휴원 insert: ' + r.error?.message);
+r = await d.from('calendar').insert({ academy_id: A, date: kst(3), kind: 'closed', class_id: null, note: '전체 또' }); ok(!!r.error, '전체 휴원 중복은 unique 가 막는다');
+
+if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; } else console.log('PASS: manage A~I');
