@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import { listTodos, listAbsences, setTodoDone, closedDays, nextClassDays, fmtMDW, fmtDayOrToday, dowOf, weekRange, type Todo, type Absence } from '../../lib/api';
+import { listTodos, listAbsences, setTodoDone, closedByClass, nextClassDaysFor, type Closed, fmtMDW, fmtDayOrToday, dowOf, weekRange, type Todo, type Absence } from '../../lib/api';
 import { useChild, TodoList, WeekStrip } from '../parent/Child';
 import { toast, errToast } from '../../lib/toast';
 
 export function Me() {
   const me = useChild();
-  const [todos, setTodos] = useState<Todo[]>([]); const [absences, setAbsences] = useState<Absence[]>([]); const [closed, setClosed] = useState<Set<string>>(new Set());
-  const load = () => { if (!me) return; listTodos(me.classes.map(c => c.id), me.id).then(setTodos).catch(errToast); listAbsences().then(setAbsences).catch(errToast); closedDays().then(setClosed).catch(() => {}); };
+  const [todos, setTodos] = useState<Todo[]>([]); const [absences, setAbsences] = useState<Absence[]>([]); const [closed, setClosed] = useState<Closed | undefined>();
+  const load = () => { if (!me) return; listTodos(me.classes.map(c => c.id), me.id).then(setTodos).catch(errToast); listAbsences().then(setAbsences).catch(errToast); closedByClass().then(setClosed).catch(() => {}); };
   useEffect(load, [me?.id]);
   if (!me) return <section className="view on" />;
   const left = todos.filter(t => !t.done).length;
-  const next = nextClassDays(me.classes.flatMap(c => c.schedule ?? []), 1, closed)[0];
+  const next = nextClassDaysFor(me.classes, 1, closed)[0];
   const nextCls = next ? me.classes.find(c => (c.schedule ?? []).some(s => s.dow === dowOf(next))) : undefined;
   async function toggle(t: Todo) {
     try { await setTodoDone(t.id, me!.id, !t.done); setTodos(l => l.map(x => x.id === t.id ? { ...x, done: !t.done } : x)); toast(!t.done ? `「${t.title}」 했어요로 표시했어요` : `「${t.title}」 다시 할 것으로 돌렸어요`); } catch (e) { errToast(e); }

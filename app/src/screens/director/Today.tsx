@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { listClasses, todayAttendance, saveAttendance, listAbsences, closedDays, markMakeupAttended, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
+import { listClasses, todayAttendance, saveAttendance, listAbsences, closedByClass, closedFor, markMakeupAttended, type Closed, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { toast, errToast } from '../../lib/toast';
 
@@ -14,10 +14,10 @@ export function Today() {
   const [rows, setRows] = useState<AttRow[]>([]);
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [busy, setBusy] = useState(false);
-  const [closed, setClosed] = useState<Set<string>>(new Set());
+  const [closed, setClosed] = useState<Closed | undefined>();
   useEffect(() => { (async () => {
     const cs = await listClasses(); setClasses(cs);
-    closedDays().then(setClosed).catch(() => {});
+    closedByClass().then(setClosed).catch(() => {});
     const todayDow = dowOf(today);
     const pick = cs.find(c => (c.schedule ?? []).some(s => s.dow === todayDow)) ?? cs[0];
     if (pick) setCid(pick.id);
@@ -35,7 +35,7 @@ export function Today() {
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
   const pending = absences.filter(a => a.status === 'requested'), done = absences.filter(a => a.status !== 'requested');
-  const isClosed = closed.has(today);
+  const isClosed = !!cid && closedFor(closed, cid).has(today);
   async function attended(a: Absence) {
     try { await markMakeupAttended(a.id); toast(`${a.student_name} 보강 출석으로 기록했어요`); setAbsences(await listAbsences()); } catch (e) { errToast(e); }
   }

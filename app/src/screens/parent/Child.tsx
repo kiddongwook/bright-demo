@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { myChildren, weekAttendance, listTodos, listAbsences, requestAbsence, closedDays, weekRange, nextClassDays, fmtMDW, fmtDT, fmtDayOrToday, kstDay, DOW, dowOf, type Student, type Todo, type Absence, type AttStatus } from '../../lib/api';
+import { myChildren, weekAttendance, listTodos, listAbsences, requestAbsence, closedByClass, nextClassDaysFor, weekRange, type Closed, fmtMDW, fmtDT, fmtDayOrToday, kstDay, DOW, dowOf, type Student, type Todo, type Absence, type AttStatus } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
@@ -34,11 +34,10 @@ export function WeekStrip({ studentId, absences }: { studentId: string; absences
 
 export function Child() {
   const nav = useNav(); const child = useChild();
-  const [todos, setTodos] = useState<Todo[]>([]); const [absences, setAbsences] = useState<Absence[]>([]); const [closed, setClosed] = useState<Set<string>>(new Set());
-  useEffect(() => { if (!child) return; listTodos(child.classes.map(c => c.id), child.id).then(setTodos).catch(errToast); listAbsences().then(setAbsences).catch(errToast); closedDays().then(setClosed).catch(() => {}); }, [child?.id]);
+  const [todos, setTodos] = useState<Todo[]>([]); const [absences, setAbsences] = useState<Absence[]>([]); const [closed, setClosed] = useState<Closed | undefined>();
+  useEffect(() => { if (!child) return; listTodos(child.classes.map(c => c.id), child.id).then(setTodos).catch(errToast); listAbsences().then(setAbsences).catch(errToast); closedByClass().then(setClosed).catch(() => {}); }, [child?.id]);
   if (!child) return <section className="view on" />;
-  const sched = child.classes.flatMap(c => c.schedule ?? []);
-  const next = nextClassDays(sched, 1, closed)[0];
+  const next = nextClassDaysFor(child.classes, 1, closed)[0];
   const nextCls = next ? child.classes.find(c => (c.schedule ?? []).some(s => s.dow === dowOf(next))) : undefined;
   const mine = absences.filter(a => a.student_id === child.id);
   const short = child.name.replace(/^[가-힣]/, '');
@@ -47,7 +46,7 @@ export function Child() {
       <div className="head"><h1 className="hello">{short}이</h1><p className="lede">{child.classes.map(c => c.name).join(' · ')}{nextCls ? ` · 다음 수업 ${fmtDayOrToday(next)} ${nextCls.schedule.find(s => s.dow === dowOf(next))?.start ?? ''}` : ''}</p></div>
       <div className="lab first">이번 주<span className="r">{fmtMDW(weekRange().from)} – {fmtMDW(weekRange().to)}</span></div>
       <div className="box"><WeekStrip studentId={child.id} absences={absences} /></div>
-      <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span><span><b>◌</b>보강</span></div>
+      <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span><span><b>◌</b>보강</span><button className="more" onClick={() => nav.push('child-month')}>이번 달 달력 ›</button></div>
       <div className="lab">이번 주 할 것<span className="r">{short}이가 체크해요</span></div>
       <div className="box soft"><TodoList todos={todos} editable={false} /></div>
       <div className="lab">미리 알린 결석<span className="r">보강은 원장님이 잡아요</span></div>
@@ -62,10 +61,10 @@ export function Child() {
 export function Absence() {
   const nav = useNav(); const child = useChild();
   const [date, setDate] = useState(''); const [reason, setReason] = useState(''); const [busy, setBusy] = useState(false);
-  const [closed, setClosed] = useState<Set<string>>(new Set());
-  useEffect(() => { closedDays().then(setClosed).catch(() => {}); }, []);
+  const [closed, setClosed] = useState<Closed | undefined>();
+  useEffect(() => { closedByClass().then(setClosed).catch(() => {}); }, []);
   if (!child) return <section className="view on" />;
-  const opts = nextClassDays(child.classes.flatMap(c => c.schedule ?? []), 3, closed);
+  const opts = nextClassDaysFor(child.classes, 3, closed);
   const pick = date || opts[0];
   async function send() {
     if (!reason.trim()) { toast('사유를 적어주세요'); return; }

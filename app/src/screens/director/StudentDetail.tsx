@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { studentDetail, monthAttendance, timeline, listNotes, addNote, deleteNote, listCalendar, monthGrid, kstToday, type AttStatus, type TimelineItem, type Note } from '../../lib/api';
+import { studentDetail, monthAttendance, timeline, listNotes, addNote, deleteNote, listCalendar, monthGrid, kstToday, saveStudent, type AttStatus, type TimelineItem, type Note } from '../../lib/api';
 import { formatPhone } from '../../lib/phone';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
@@ -13,7 +13,12 @@ const when = (ts: string) => new Date(ts).toLocaleString('ko-KR', { month: 'nume
 export function StudentDetail() {
   const nav = useNav(); const id = nav.params.id;
   const { data: s } = useLoad(() => studentDetail(id), [id]);
-  const [tab, setTab] = useState<'att' | 'log' | 'note'>('att');
+  const [tab, setTab] = useState<'att' | 'log' | 'note'>('att'); const [busy, setBusy] = useState(false);
+  async function reenroll() {
+    if (!s || !confirm(`${s.name} 학생을 다시 다니는 것으로 할까요? 반과 번호를 다시 넣게 돼요.`)) return;
+    setBusy(true);
+    try { await saveStudent(s.id, s.name, [], '', []); toast('다시 다녀요. 반과 번호를 넣어주세요'); nav.replace('student-edit', { id: s.id }); } catch (e) { errToast(e); setBusy(false); }
+  }
   if (!s) return <section className="view on" />;
   return (
     <section className="view on">
@@ -25,7 +30,8 @@ export function StudentDetail() {
         <button className={tab === 'att' ? 'on' : ''} onClick={() => setTab('att')}>출결</button>
         <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>기록</button>
         <button className={tab === 'note' ? 'on' : ''} onClick={() => setTab('note')}>메모</button>
-        {s.status === 'active' && <button className="btn sm line" style={{ flex: '0 0 auto' }} onClick={() => nav.push('student-edit', { id })}>편집</button>}
+        {s.status === 'active' ? <button className="btn sm line" style={{ flex: '0 0 auto' }} onClick={() => nav.push('student-edit', { id })}>편집</button>
+          : <button className="btn sm" style={{ flex: '0 0 auto' }} disabled={busy} onClick={reenroll}>다시 다니기</button>}
       </div>
       {tab === 'att' && <MonthCal sid={id} />}
       {tab === 'log' && <Timeline sid={id} />}
@@ -34,7 +40,7 @@ export function StudentDetail() {
   );
 }
 
-function MonthCal({ sid }: { sid: string }) {
+export function MonthCal({ sid }: { sid: string }) {
   const [ym, setYm] = useState(kstToday().slice(0, 7));
   const g = monthGrid(ym);
   const { data: att } = useLoad(() => monthAttendance(sid, ym), [sid, ym]);

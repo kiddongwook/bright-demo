@@ -1,13 +1,32 @@
 import { useState } from 'react';
 import { asset } from '../../lib/asset';
-import { academy, setBrandColor } from '../../lib/api';
+import { academy, setBrandColor, listClassesFull, exportAcademy } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 
 export function More() {
-  const nav = useNav(); const { logout, active } = useSession();
+  const nav = useNav(); const { logout, active, session } = useSession();
+  const isDirector = active?.role === 'director';
+  const { data: myClasses } = useLoad(() => isDirector ? Promise.resolve([]) : listClassesFull().then(l => l.filter(c => c.teacher_id === session?.user.id)));
+  const [busy, setBusy] = useState(false);
+  async function download() {
+    setBusy(true);
+    try { const blob = await exportAcademy(); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${active?.academy_name ?? 'academy'}-${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); toast('내려받았어요. 카톡 안에서 안 되면 브라우저로 열어 주세요'); }
+    catch (e) { errToast(e); } finally { setBusy(false); }
+  }
+  if (!isDirector) return (
+    <section className="view on">
+      <div className="head"><h1 className="hello">더보기</h1><p className="lede">{active?.academy_name} · 강사</p></div>
+      <div className="lab first" style={{ marginTop: 0 }}>담당 반</div>
+      <div className="box">{myClasses?.length ? myClasses.map(c => <div key={c.id} className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">{c.name}</span><span className="s">출결·공지·문의·학생 기록을 이 반 안에서 봐요</span></span></div>)
+        : <p className="muted" style={{ padding: '14px 16px' }}>원장님이 담당 반을 지정하면 여기 보여요. 그 전엔 화면이 비어 있어요.</p>}</div>
+      <div className="box" style={{ marginTop: 12 }}><button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button></div>
+      <div className="btnrow"><button className="btn line" onClick={logout}>로그아웃</button></div>
+      <div className="madeby">{active?.academy_name} 앱 · BRIGHT로 만들어졌습니다</div>
+    </section>
+  );
   return (
     <section className="view on">
       <div className="head"><h1 className="hello">더보기</h1><p className="lede">{active?.academy_name} · 원장</p></div>
@@ -17,6 +36,9 @@ export function More() {
         <button className="rw" onClick={() => nav.push('academy')}><span className="bd"><span className="t">우리 학원</span><span className="s">이름 · 강조색 · 앱 아이콘</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('calendar')}><span className="bd"><span className="t">휴원일·특강</span><span className="s">정하면 다음 수업·결석 신청에서 빠져요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('classes')}><span className="bd"><span className="t">반·시간표</span><span className="s">요일 · 시간 · 담당 강사</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('stats')}><span className="bd"><span className="t">반별 출결표</span><span className="s">학생 × 수업일 · 출석률</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('import')}><span className="bd"><span className="t">명부 CSV 올리기</span><span className="s">엑셀에서 저장한 표로 한 번에</span></span><span className="go">›</span></button>
+        <button className="rw" disabled={busy} onClick={download}><span className="bd"><span className="t">학원 데이터 내려받기</span><span className="s">학생·출결·공지·문의 전부 한 파일로 (JSON)</span></span><span className="go">↓</span></button>
         <button className="rw" onClick={() => nav.push('faq')}><span className="bd"><span className="t">자주 묻는 질문 관리</span><span className="s">학부모 문의 화면 맨 위에 보여요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
       </div>
