@@ -13,9 +13,10 @@ import './theme.css';
 function Shell() {
   const { session, active, memberships, loading } = useSession();
   const [phone, setPhone] = useState<string | null>(null);
+  useEffect(() => { if (session) setPhone(null); }, [session]); // 들어오면 번호 단계를 지운다 — 로그아웃 뒤 남의 인증 화면이 남지 않게
   if (loading) return null;
-  if (!session) return <div className="shell"><div className="app">{phone ? <Otp phone={phone} onBack={() => setPhone(null)} /> : <Gate onSent={setPhone} />}</div></div>;
-  if (!active) return <div className="shell"><div className="app">{memberships.length ? <PickRole /> : <Gate onSent={setPhone} />}</div></div>;
+  if (!session || !memberships.length) return <div className="shell"><div className="app">{phone ? <Otp phone={phone} onBack={() => setPhone(null)} /> : <Gate onSent={setPhone} />}</div></div>;
+  if (!active) return <div className="shell"><div className="app"><PickRole /></div></div>;
   setContext(active.academy_id, session.user.id);
   return <NavProvider key={active.id} role={active.role as Role}><Frame /></NavProvider>;
 }

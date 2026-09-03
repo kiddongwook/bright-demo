@@ -15,7 +15,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (!s) { setMemberships([]); setActive(null); setLoading(false); return; }
     const { data: ms } = await supabase.from('memberships').select('id, academy_id, role, student_id, academies(name), students(name)');
     const list: Membership[] = (ms ?? []).map((m: any) => ({ id: m.id, academy_id: m.academy_id, role: m.role, student_id: m.student_id, academy_name: m.academies?.name, student_name: m.students?.name }));
-    const { data: u } = await supabase.from('users').select('active_membership_id').eq('id', s.user.id).single();
+    const { data: u } = await supabase.from('users').select('active_membership_id').eq('id', s.user.id).maybeSingle();
+    // 사용자 행이 없거나 소속이 하나도 없으면(명부에서 빠짐·개발 정리) 묵은 세션을 버리고 문으로 돌아간다.
+    if (!u || !list.length) { await supabase.auth.signOut(); setSession(null); setMemberships([]); setActive(null); setLoading(false); return; }
     setMemberships(list); setActive(list.find(m => m.id === u?.active_membership_id) ?? null); setLoading(false);
   }
   useEffect(() => { supabase.auth.getSession().then(({ data }) => load(data.session)); const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (_e !== 'INITIAL_SESSION') load(s); }); return () => sub.subscription.unsubscribe(); }, []);

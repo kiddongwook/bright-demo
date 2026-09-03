@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { listTodos, listAbsences, setTodoDone, nextClassDays, fmtMDW, dowOf, weekRange, type Todo, type Absence } from '../../lib/api';
+import { listTodos, listAbsences, setTodoDone, nextClassDays, fmtMDW, fmtDayOrToday, dowOf, weekRange, type Todo, type Absence } from '../../lib/api';
 import { useChild, TodoList, WeekStrip } from '../parent/Child';
 import { toast, errToast } from '../../lib/toast';
 
@@ -17,7 +17,7 @@ export function Me() {
   }
   return (
     <section className="view on">
-      <div className="head"><h1 className="hello">{me.name.replace(/^[가-힣]/, '')}</h1><p className="lede">{me.classes.map(c => c.name).join(' · ')}{nextCls ? ` · 다음 수업 ${fmtMDW(next)} ${nextCls.schedule.find(s => s.dow === dowOf(next))?.start ?? ''}` : ''}</p></div>
+      <div className="head"><h1 className="hello">{me.name.replace(/^[가-힣]/, '')}</h1><p className="lede">{me.classes.map(c => c.name).join(' · ')}{nextCls ? ` · 다음 수업 ${fmtDayOrToday(next)} ${nextCls.schedule.find(s => s.dow === dowOf(next))?.start ?? ''}` : ''}</p></div>
       <div className="lab first">이번 주 할 것<span className="r">{left ? `${left}개 남음` : '다 했어요'}</span></div>
       <div className="box"><TodoList todos={todos} editable onToggle={toggle} /></div>
       <p className="muted" style={{ padding: '10px 20px 0' }}>했으면 동그라미를 눌러요.</p>

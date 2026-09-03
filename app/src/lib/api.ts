@@ -29,6 +29,12 @@ export const fmtMD = (iso: string) => { const [, m, d] = iso.split('-'); return 
 export const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 export const dowOf = (iso: string) => new Date(iso + 'T09:00:00Z').getUTCDay();   // 09:00Z = 18:00 KST, 같은 날짜
 export const fmtMDW = (iso: string) => `${fmtMD(iso)} ${DOW[dowOf(iso)]}`;
+/** timestamptz → 한국 날짜(YYYY-MM-DD). UTC 로 slice 하면 밤 시간대가 하루 밀린다. */
+export const kstDay = (ts: string) => new Date(ts).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+/** timestamptz → "8월 31일 월 12:00" */
+export const fmtDT = (ts: string) => `${fmtMDW(kstDay(ts))} ${new Date(ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Seoul' })}`;
+/** 오늘이면 "오늘", 아니면 "9월 4일 금" */
+export const fmtDayOrToday = (iso: string) => iso === kstToday() ? '오늘' : fmtMDW(iso);
 
 function must<T>(r: { data: T | null; error: { message: string } | null }): T {
   if (r.error) throw new Error(r.error.message);
@@ -128,11 +134,12 @@ export async function setTodoDone(todoId: string, studentId: string, done: boole
 
 /* ── 달력 도우미 ── */
 export function nextClassDays(schedule: Sched[], count: number): string[] {
-  const dows = new Set(schedule.map(s => s.dow));
+  // 오늘도 수업 시작 전이면 후보에 넣는다 — 낮에 보면 "다음 수업 오늘 20:00"
+  const nowK = new Date(Date.now() + 9 * 3600e3); const hm = `${String(nowK.getUTCHours()).padStart(2, '0')}:${String(nowK.getUTCMinutes()).padStart(2, '0')}`;
   const out: string[] = [];
-  for (let i = 1; out.length < count && i < 30; i++) {
-    const iso = kstDate(i); const dow = new Date(iso + 'T09:00:00Z').getUTCDay();
-    if (dows.has(dow)) out.push(iso);
+  for (let i = 0; out.length < count && i < 30; i++) {
+    const iso = kstDate(i); const dow = dowOf(iso);
+    if (schedule.some(s => s.dow === dow && (i > 0 || s.start > hm))) out.push(iso);
   }
   return out;
 }

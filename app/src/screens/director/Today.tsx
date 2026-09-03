@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { listClasses, todayAttendance, saveAttendance, listAbsences, kstToday, dowOf, fmtMDW, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
+import { listClasses, todayAttendance, saveAttendance, listAbsences, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { toast, errToast } from '../../lib/toast';
 
@@ -36,8 +36,8 @@ export function Today() {
   const absRow = (a: Absence) => (
     <button key={a.id} className="rw" onClick={() => nav.push('makeup', { id: a.id })}>
       <span className="nm">{a.student_name.charAt(0)}</span>
-      <span className="bd"><span className="t">{a.student_name} · {fmtMDW(a.date)}</span><span className="s">{a.reason}</span></span>
-      {a.status === 'requested' ? <span className="tag danger">요청</span> : <span className="tag ok">{a.makeup_kind === 'material' ? '자료 대체' : '보강 ' + (a.makeup_at ? new Date(a.makeup_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric' }) : '')}</span>}
+      <span className="bd"><span className="t">{a.student_name} · {fmtMDW(a.date)}</span><span className="s">{a.reason}{a.makeup_at ? ` · 보강 ${fmtDT(a.makeup_at)}` : ''}</span></span>
+      {a.status === 'requested' ? <span className="tag danger">요청</span> : <span className="tag ok">{a.makeup_kind === 'material' ? '자료 대체' : '보강'}</span>}
     </button>);
   return (
     <section className="view on">

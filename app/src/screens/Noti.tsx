@@ -14,7 +14,7 @@ export function Noti({ onRead }: { onRead: () => void }) {
   }
   return (
     <section className="view on">
-      <div className="lab first" style={{ marginTop: 20 }}>알림</div>
+      <div className="lab first" style={{ marginTop: 20 }}>최근</div>
       {list === null ? null : list.length === 0
         ? <p className="muted" style={{ padding: '0 20px' }}>아직 알림이 없어요.</p>
         : <div className="box">{list.map(n => (

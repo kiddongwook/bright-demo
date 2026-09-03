@@ -7,3 +7,4 @@ app/node_modules/
 app/dist/
 tools/node_modules/
 supabase/.temp/
+.playwright-mcp/
