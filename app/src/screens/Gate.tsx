@@ -6,7 +6,9 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   async function send() {
     if (!isValidMobile(phone)) { setErr('휴대폰 번호를 확인해 주세요'); return; }
     setBusy(true); setErr('');
-    const r = await fetch(fn('otp-send'), { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_ANON_KEY }, body: JSON.stringify({ phone }) });
+    let r: Response;
+    try { r = await fetch(fn('otp-send'), { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_ANON_KEY }, body: JSON.stringify({ phone }) }); }
+    catch { setBusy(false); setErr('연결이 안 돼요. 잠시 뒤 다시 시도해 주세요.'); return; }
     setBusy(false);
     if (r.status === 404) { setErr('아직 등록되지 않은 번호예요. 영어의 집 학생·학부모로 등록되면 문이 열려요.'); return; }
     if (r.status === 429) { setErr('잠시 뒤 다시 시도해 주세요.'); return; }

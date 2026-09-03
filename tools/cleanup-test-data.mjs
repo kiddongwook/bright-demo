@@ -12,5 +12,11 @@ for (const a of acs ?? []) {
 }
 // 학원 없이 남은 테스트 사용자 (전화 0101*/0109*)
 const { data: orphans } = await admin.from('users').select('id, phone').or('phone.like.0101%,phone.like.0109%');
-for (const u of orphans ?? []) { const { error } = await admin.auth.admin.deleteUser(u.id); if (!error) users++; }
+for (const u of orphans ?? []) {
+  const { error } = await admin.auth.admin.deleteUser(u.id);
+  if (error) console.log('auth delete', u.phone.slice(0, 3) + '****', error.message);
+  // auth 쪽이 이미 없거나 cascade 가 안 왔으면 public.users 를 직접 지운다
+  const { error: e2 } = await admin.from('users').delete().eq('id', u.id);
+  if (!e2) users++;
+}
 console.log(`cleaned academies=${(acs ?? []).length} users=${users}`);

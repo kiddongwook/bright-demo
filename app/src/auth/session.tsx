@@ -19,8 +19,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setMemberships(list); setActive(list.find(m => m.id === u?.active_membership_id) ?? null); setLoading(false);
   }
   useEffect(() => { supabase.auth.getSession().then(({ data }) => load(data.session)); const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (_e !== 'INITIAL_SESSION') load(s); }); return () => sub.subscription.unsubscribe(); }, []);
-  const setFromVerify: Ctx['setFromVerify'] = async (s, ms) => { await supabase.auth.setSession(s); setMemberships(ms); if (ms.length === 1) await pick(ms[0].id); };
-  const pick: Ctx['pick'] = async (id) => { await supabase.rpc('set_active_membership', { m: id }); setActive(memberships.find(m => m.id === id) ?? null); const { data } = await supabase.auth.getSession(); await load(data.session); };
+  // 서버(otp-verify)가 역할이 하나면 active 를 이미 정해 둔다. 여기선 세션을 넣고 다시 읽기만 한다 — 상태 경합 없음.
+  const setFromVerify: Ctx['setFromVerify'] = async (s) => { const { data } = await supabase.auth.setSession(s); await load(data.session); };
+  const pick: Ctx['pick'] = async (id) => { await supabase.rpc('set_active_membership', { m: id }); const { data } = await supabase.auth.getSession(); await load(data.session); };
   const logout = async () => { await supabase.auth.signOut(); };
   return <C.Provider value={{ session, memberships, active, loading, setFromVerify, pick, logout }}>{children}</C.Provider>;
 }

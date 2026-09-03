@@ -7,7 +7,9 @@ export function Otp({ phone, onBack }: { phone: string; onBack: () => void }) {
   const [code, setCode] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   async function verify() {
     setBusy(true); setErr('');
-    const r = await fetch(fn('otp-verify'), { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_ANON_KEY }, body: JSON.stringify({ phone, code }) });
+    let r: Response;
+    try { r = await fetch(fn('otp-verify'), { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_ANON_KEY }, body: JSON.stringify({ phone, code }) }); }
+    catch { setBusy(false); setErr('연결이 안 돼요. 잠시 뒤 다시 시도해 주세요.'); return; }
     setBusy(false);
     if (r.status === 401) { setErr('인증번호가 맞지 않아요.'); return; }
     if (!r.ok) { setErr('확인하지 못했어요. 다시 시도해 주세요.'); return; }

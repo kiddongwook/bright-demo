@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { normalizePhone, sha256, json } from '../_shared/sms.ts';
+import { normalizePhone, sha256, json, cors } from '../_shared/sms.ts';
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return json(204, {});
+  if (req.method === 'OPTIONS') return cors();
   const { phone: raw, code } = await req.json().catch(() => ({}));
   const phone = normalizePhone(raw);
   if (!phone || !/^\d{6}$/.test(code ?? '')) return json(400, { error: 'bad_input' });
