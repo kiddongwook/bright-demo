@@ -1,11 +1,12 @@
 // 알림톡 템플릿 — docs/ops/alimtalk.md 표와 글자 하나까지 같아야 한다 (심사받은 문구).
+// 앞머리 [학원] 은 변수다 (params['학원'] — trg_notification_outbox 가 academies.name 을 넣어 준다). 학원 이름 하드코딩 금지.
 type P = Record<string, string>;
 export const TEMPLATES: Record<string, { text: (p: P) => string; button: string }> = {
-  NOTICE_NEW:        { text: p => `[영어의 집] 새 공지가 올라왔어요. ${p['제목'] ?? ''}`, button: '앱에서 보기' },
-  NOTICE_REMIND:     { text: p => `[영어의 집] 아직 확인하지 않은 공지가 있어요. ${p['제목'] ?? ''}`, button: '앱에서 보기' },
-  INQUIRY_ANSWERED:  { text: () => `[영어의 집] 문의에 답변이 도착했어요.`, button: '답변 보기' },
-  MAKEUP_CONFIRMED:  { text: p => `[영어의 집] ${p['날짜'] ?? ''} 결석 보강이 정해졌어요. ${p['보강'] ?? ''}`, button: '확인하기' },
-  ATTENDANCE:        { text: p => `[영어의 집] ${p['학생'] ?? ''} 오늘 출결이 기록됐어요. ${p['상태'] ?? ''}`, button: '확인하기' },
+  NOTICE_NEW:        { text: p => `[${p['학원'] ?? '학원'}] 새 공지가 올라왔어요. ${p['제목'] ?? ''}`, button: '앱에서 보기' },
+  NOTICE_REMIND:     { text: p => `[${p['학원'] ?? '학원'}] 아직 확인하지 않은 공지가 있어요. ${p['제목'] ?? ''}`, button: '앱에서 보기' },
+  INQUIRY_ANSWERED:  { text: p => `[${p['학원'] ?? '학원'}] 문의에 답변이 도착했어요.`, button: '답변 보기' },
+  MAKEUP_CONFIRMED:  { text: p => `[${p['학원'] ?? '학원'}] ${p['날짜'] ?? ''} 결석 보강이 정해졌어요. ${p['보강'] ?? ''}`, button: '확인하기' },
+  ATTENDANCE:        { text: p => `[${p['학원'] ?? '학원'}] ${p['학생'] ?? ''} 오늘 출결이 기록됐어요. ${p['상태'] ?? ''}`, button: '확인하기' },
 };
 export type AlimtalkMsg = { to: string; templateCode: string; params: P; buttonUrl: string };
 /** 대행사 어댑터. console: 로그만(받는 번호가 9999 로 끝나면 일부러 실패 — dead·문자 대체 경로 테스트용). http: 대행사 REST 로 전달. 반환값은 대행사 메시지 id. */
@@ -31,4 +32,4 @@ export async function sendAlimtalk(m: AlimtalkMsg): Promise<string> {
   throw new Error('unknown ALIMTALK_PROVIDER ' + provider);
 }
 /** 문자 대체 문구: 알림톡 문구 + 링크. 90바이트를 넘으면 대행사가 LMS 로 보낸다 — 요율 확인 항목. */
-export const renderSms = (code: string, params: P, url: string) => `${TEMPLATES[code]?.text(params) ?? '[영어의 집] 알림이 있어요.'} ${url}`;
+export const renderSms = (code: string, params: P, url: string) => `${TEMPLATES[code]?.text(params) ?? `[${params['학원'] ?? '학원'}] 알림이 있어요.`} ${url}`;

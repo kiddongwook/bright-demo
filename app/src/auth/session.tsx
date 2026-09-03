@@ -6,6 +6,13 @@ type Ctx = { session: Session|null; memberships: Membership[]; active: Membershi
   setFromVerify: (s: {access_token:string; refresh_token:string}, ms: Membership[]) => Promise<void>; pick: (id: string) => Promise<void>; logout: () => Promise<void>;
   enterLimited: () => void; endLimited: () => Promise<void> };
 const C = createContext<Ctx>(null!);
+// 제한 세션 표식은 localStorage 에도 둔다. 탭이 pagehide 없이 죽으면(카톡 웹뷰 강제 종료 등) 토큰만 남아 다음에 전체 세션이 돼 버린다 —
+// 새 탭에서 표식은 있는데 sessionStorage 깃발이 없으면 그 토큰을 버린다. 렌더 전에 한 번.
+try {
+  if (localStorage.getItem('limited_session') === '1' && sessionStorage.getItem('limited') !== '1') {
+    localStorage.removeItem('limited_session'); void supabase.auth.signOut({ scope: 'local' });
+  }
+} catch { /* 저장소가 막힌 환경이면 그냥 지나간다 */ }
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session|null>(null);
   const [memberships, setMemberships] = useState<Membership[]>([]);
@@ -13,8 +20,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   // 제한 세션: 알림톡 링크로 열린 경우. 새로고침은 견디고(sessionStorage), 페이지를 떠나면 세션을 지운다 — 카톡 내장 브라우저에 남기지 않는다.
   const [limited, setLimited] = useState(() => { try { return sessionStorage.getItem('limited') === '1'; } catch { return false; } });
-  const enterLimited = () => { try { sessionStorage.setItem('limited', '1'); } catch { /* 저장 못 해도 이번 화면은 제한 모드 */ } setLimited(true); };
-  const endLimited = async () => { try { sessionStorage.removeItem('limited'); } catch { /* 없으면 그만 */ } setLimited(false); await supabase.auth.signOut({ scope: 'local' }); };
+  const enterLimited = () => { try { sessionStorage.setItem('limited', '1'); localStorage.setItem('limited_session', '1'); } catch { /* 저장 못 해도 이번 화면은 제한 모드 */ } setLimited(true); };
+  const endLimited = async () => { try { sessionStorage.removeItem('limited'); localStorage.removeItem('limited_session'); } catch { /* 없으면 그만 */ } setLimited(false); await supabase.auth.signOut({ scope: 'local' }); };
   useEffect(() => { if (!limited) return; const h = () => { supabase.auth.signOut({ scope: 'local' }); }; addEventListener('pagehide', h); return () => removeEventListener('pagehide', h); }, [limited]);
   // 세션·소속·활성 역할을 한 렌더에 넣는다 — 세션만 먼저 넣으면 소속이 오기 전 한순간 문(Gate)이 비친다.
   async function load(s: Session|null) {

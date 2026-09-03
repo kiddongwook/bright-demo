@@ -161,6 +161,13 @@ export async function listTeachers(): Promise<Teacher[]> { return must(await sup
 export async function saveTeacher(name: string, phone: string) { must(await supabase.rpc('roster_save_teacher', { p_name: name, p_phone: phone })); }
 export async function removeTeacher(phone: string) { must(await supabase.rpc('roster_remove_teacher', { p_phone: phone })); }
 
+/* ── 알림 설정 — 카톡만 끈다. 앱 안 알림·종 배지는 그대로. 키가 없으면 켠 것. ── */
+export async function getPrefs(): Promise<Record<string, boolean>> {
+  const r = must(await supabase.from('users').select('prefs').eq('id', ctx.userId).single()) as { prefs: Record<string, boolean> | null };
+  return r.prefs ?? {};
+}
+export async function setPrefs(p: Record<string, boolean>) { must(await supabase.from('users').update({ prefs: p }).eq('id', ctx.userId)); }
+
 /* ── 알림 ── */
 export async function listNotifications(): Promise<Noti[]> {
   return must(await supabase.from('notifications').select('id, kind, title, body, link, read_at, created_at').order('created_at', { ascending: false }).limit(50)) as Noti[];

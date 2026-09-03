@@ -120,9 +120,22 @@ try {
   await admin.from('link_tokens').update({ expires_at: new Date(Date.now() - 1000).toISOString() }).eq('user_id', parent);
   const e4 = await ll(TOKEN); ok(e4.status === 401 && (await e4.json()).error === 'expired', `만료 401 expired (got ${e4.status})`);
 
+  // ---- F. 알림 설정: 카톡만 끈다 (앱 안 알림은 그대로). 학원 이름은 params 로 간다.
+  ok(ob.every(o => o.params['학원'] === '아웃박스 테스트'), `outbox params 에 학원 이름 (got ${JSON.stringify(ob.map(o => o.params['학원']))})`);
+  const attCount = async () => (await admin.from('outbox').select('id', { count: 'exact', head: true }).eq('to_user_id', parent).eq('template_code', 'ATTENDANCE')).count ?? 0;
+  const notiCount = async () => (await admin.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', parent).eq('kind', 'attendance')).count ?? 0;
+  const att0 = await attCount(), noti0 = await notiCount();
+  await admin.from('users').update({ prefs: { kakao_attendance: false } }).eq('id', parent);
+  await admin.from('attendance').insert({ academy_id: A, student_id: st.id, class_id: cls.id, date: kst(-1), status: 'absent', marked_by: dir });
+  ok(await notiCount() === noti0 + 1, `껐어도 앱 안 알림은 남는다 (got ${await notiCount()}, 기대 ${noti0 + 1})`);
+  ok(await attCount() === att0, `kakao_attendance=false 면 카톡 줄에 안 선다 (got ${await attCount()}, 기대 ${att0})`);
+  await admin.from('users').update({ prefs: {} }).eq('id', parent);
+  await admin.from('attendance').insert({ academy_id: A, student_id: st.id, class_id: cls.id, date: kst(-2), status: 'late', marked_by: dir });
+  ok(await attCount() === att0 + 1, `되돌리면 다시 줄에 선다 (got ${await attCount()}, 기대 ${att0 + 1})`);
+
   // ---- 결과
   if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; }
-  else console.log('PASS: outbox A~E');
+  else console.log('PASS: outbox A~F');
 } finally {
   if (tickUrl) await admin.from('app_settings').upsert({ key: 'outbox_url', value: tickUrl.value });
 }

@@ -61,6 +61,21 @@ r = await d.from('attendance').insert({ academy_id: B.id, student_id: sB1.id, cl
 ok(!!r.error, 'A원장이 B출결을 씀');
 
 const p = await login('0101' + num + '2', mParA.id);
+
+// ── 보안: 본인 users 행을 직접 update 해서 역할(active_membership_id)을 바꿀 수 없어야 한다 ──
+// (0010 전에는 됐다: update 1행 → 그 뒤 학부모가 학원 학생 전부를 봤다. 0010 이 열 단위 grant 로 막는다.)
+{
+  const upd = await p.from('users').update({ active_membership_id: mDirA.id }).eq('id', parA).select('id');
+  ok(!!upd.error || !upd.data?.length, `학부모가 active_membership_id 를 직접 고침 (error=${upd.error?.code ?? 'none'}, rows=${upd.data?.length ?? 0})`);
+  const seen = await p.from('students').select('id');   // 되돌리기 전에 본다 — 되돌린 뒤 보면 늘 1이라 검사가 헛돈다
+  ok(seen.data?.length === 1, `역할 바꾸기 시도 뒤에도 학부모는 자녀만 (got ${seen.data?.length})`);
+  await admin.from('users').update({ active_membership_id: mParA.id }).eq('id', parA);   // 뚫렸을 때를 대비해 되돌린다
+  const pr = await p.from('users').update({ prefs: { kakao_notice: false } }).eq('id', parA).select('prefs');
+  ok(!pr.error && pr.data?.length === 1, `본인 prefs 는 고칠 수 있어야 한다 (${pr.error?.message ?? 'rows=' + (pr.data?.length ?? 0)})`);
+  const ph = await p.from('users').update({ phone: '01000000000' }).eq('id', parA).select('id');
+  ok(!!ph.error, `학부모가 자기 phone 을 고침 (error=${ph.error?.code ?? 'none'}, rows=${ph.data?.length ?? 0})`);
+  await admin.from('users').update({ prefs: {} }).eq('id', parA);
+}
 r = await p.from('attendance').select('student_id'); ok(r.data?.length === 1 && r.data[0].student_id === sA1.id, 'A학부모 attendance=' + JSON.stringify(r.data) + ' (자녀만)');
 r = await p.from('students').select('id');         ok(r.data?.length === 1, 'A학부모 students=' + r.data?.length + ' (자녀만)');
 r = await p.from('notices').select('title');       ok(r.data?.length === 2, 'A학부모 notices=' + r.data?.length + ' (전체+자기 반)');
