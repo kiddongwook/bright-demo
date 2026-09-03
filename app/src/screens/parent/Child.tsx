@@ -7,6 +7,8 @@ import { toast, errToast } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
+import { BottomCta } from '../../components/BottomCta';
+import { usePop } from '../../lib/pop';
 import '../ui.css';
 
 const WK: Record<AttStatus, string> = { present: 'p', late: 'l', absent: 'a', makeup: 'm' };
@@ -16,11 +18,12 @@ export function useChild() {
   const { data: child, err, reload } = useLoad<Student | null>(() => myChildren().then(l => l.find(s => s.id === active?.student_id) ?? l[0] ?? null), [active?.student_id]);
   return { child, err, reload };
 }
-export function TodoList({ todos, editable, onToggle }: { todos: Todo[]; editable: boolean; onToggle?: (t: Todo) => void }) {
+export function TodoList({ todos, editable, onToggle }: { todos: Todo[]; editable: boolean; onToggle?: (t: Todo) => void | Promise<void> }) {
+  const pop = usePop();                        // 방금 체크한 동그라미만 한 번 튄다
   if (!todos.length) return <Empty icon="check" title="할 것이 아직 없어요" hint="숙제·시험이 나오면 여기에 바로 보여요." />;
   return <>{todos.map(t => (
     <div key={t.id} className={'todo' + (t.done ? ' done' : '')}>
-      {editable ? <button className="cb" onClick={() => onToggle?.(t)} aria-label="했어요">{t.done ? '✓' : ''}</button> : <span className="cb">{t.done ? '✓' : ''}</span>}
+      {editable ? <button className={'cb' + pop.cls(t.id)} onClick={async () => { await onToggle?.(t); if (!t.done) pop.fire(t.id); }} onAnimationEnd={pop.end} aria-label="했어요">{t.done ? '✓' : ''}</button> : <span className="cb">{t.done ? '✓' : ''}</span>}
       <div className="bd"><div className={'k' + (t.kind === 'exam' ? ' exam' : '')}>{t.kind === 'exam' ? '시험' : '숙제'}</div><div className="t">{t.title}</div><div className="s">{fmtMDW(t.due_date)}까지</div></div>
     </div>))}</>;
 }
@@ -106,7 +109,7 @@ export function Absence() {
       <div className="seg col">{opts.map(d => <button key={d} className={d === pick ? 'on' : ''} onClick={() => setDate(d)}>{fmtMDW(d)}</button>)}</div>
       <div className="lab">사유</div>
       <div style={{ padding: '0 20px' }}><textarea className="input" style={{ minHeight: 90 }} value={reason} onChange={e => setReason(e.target.value)} placeholder="예) 병원 진료" /></div>
-      <div className="btnrow"><button className="btn line" onClick={nav.back}>취소</button><button className="btn" disabled={busy} onClick={send}>원장님께 알리기</button></div>
+      <BottomCta primary={{ label: '원장님께 알리기', onClick: send, disabled: busy }} secondary={{ label: '취소', onClick: nav.back }} />
     </section>
   );
 }

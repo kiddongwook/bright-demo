@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { getPrefs, setPrefs } from '../../lib/api';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
+import { usePop } from '../../lib/pop';
 
 /* 알림 설정 — 끄는 건 카톡뿐이다. 키가 없으면 켠 것(기본 전부 켬). 누르면 바로 저장한다. */
 const ROWS: [string, string, string][] = [
@@ -15,6 +16,7 @@ const ROWS: [string, string, string][] = [
 export function Prefs() {
   const { data, setData, err } = useLoad(getPrefs, []);
   const [busy, setBusy] = useState('');
+  const pop = usePop();                        // 방금 켠 체크만 한 번 튄다
   const prefs = data ?? {};
 
   async function toggle(key: string) {
@@ -34,9 +36,9 @@ export function Prefs() {
         {ROWS.map(([key, title, sub]) => {
           const on = prefs[key] !== false;
           return (
-            <button key={key} className="rw" onClick={() => toggle(key)} aria-pressed={on}>
+            <button key={key} className="rw" onClick={() => { if (!on) pop.fire(key); toggle(key); }} aria-pressed={on}>
               <span className="bd"><span className="t">{title}</span><span className="s">{sub}</span></span>
-              <span className={'cb' + (on ? ' on' : '')}>{on ? '✓' : ''}</span>
+              <span className={'cb' + (on ? ' on' : '') + pop.cls(key)} onAnimationEnd={pop.end}>{on ? '✓' : ''}</span>
             </button>
           );
         })}

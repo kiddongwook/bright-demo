@@ -7,6 +7,7 @@ import { toast, errToast } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
+import { BottomCta } from '../../components/BottomCta';
 import { IcCamera } from '../../components/icons';
 import { confirmSheet } from '../../components/Confirm';
 import { NoticeBody } from '../shared/NoticeRead';
@@ -110,7 +111,7 @@ export function NoticeNew() {
         <div key={p.url} className="ph"><img src={p.url} alt="" /><button type="button" onClick={() => dropPhoto(i)} aria-label="사진 빼기">✕</button></div>))}</div>}
       <p className="muted" style={{ padding: '8px 20px 0' }}>아이폰은 사진을 고르면 자동으로 JPEG 로 바뀌어요.</p>
       {!recipientsErr && <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}><b style={{ color: 'var(--ink)', fontWeight: 600 }}>{recipients === null || recipientsLoading ? '…' : recipients}명</b>에게 알림이 가요</p>}
-      <div className="btnrow"><button className="btn line" onClick={nav.back}>취소</button><button className="btn" disabled={busy} onClick={post}>{uploading ? '사진 올리는 중…' : '올리고 알리기'}</button></div>
+      <BottomCta primary={{ label: uploading ? '사진 올리는 중…' : '올리고 알리기', onClick: post, disabled: busy }} secondary={{ label: '취소', onClick: nav.back }} />
     </section>
   );
 }

@@ -17,6 +17,7 @@ import { setReportScreen } from './lib/report';
 import { UpdateBanner } from './components/UpdateBanner';
 import { ConfirmHost } from './components/Confirm';
 import { SideNav } from './components/SideNav';
+import { useScrollTitle } from './lib/useScrollTitle';
 import { IcBack } from './components/icons';
 import './theme.css';
 
@@ -55,18 +56,24 @@ function Frame() {
   useEffect(() => { window.scrollTo(0, 0); }, [nav.view]);   // 화면이 바뀌면 맨 위부터
   useEffect(() => { academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; }).catch(() => {}); }, [active!.academy_id]);
   const key = `${role}:${nav.view}`;
+  // 큰 제목이 위로 지나가면 앱바에 작은 제목을 띄운다 (탭 루트에서만 — 진입 화면 앱바는 이미 제목이다)
+  const { title: scrollTitle, scrolled } = useScrollTitle(key + JSON.stringify(nav.params));
+  const showScrollTitle = nav.isTab && scrolled && !!scrollTitle;
   const Screen: ComponentType<any> = nav.view === 'noti' ? (() => <Noti onRead={refreshBadge} />) : (SCREENS[key] ?? SCREENS[`*:${nav.view}`] ?? (() => <Placeholder name={nav.view} />));
   const title = TITLE[nav.view];
   // 학원이 올린 로고가 있으면 앱바는 학원 이름 텍스트로 대신한다 — 올린 로고의 배경·비율을 앱바가 보장할 수 없어서.
   const logoSrc = acad?.logo_path ? logoUrl(acad.logo_path) : null;
   return (
-    <div className="shell"><div className="app">
+    <div className="shell"><div className="app framed">
       <UpdateBanner />
       <ConfirmHost />
       {pc && <SideNav role={role} academyName={active!.academy_name ?? ''} logoSrc={logoSrc} dark={dark} />}
-      <header className="appbar">
+      <header className={'appbar' + (showScrollTitle ? ' scrolled' : '')}>
         {nav.isTab
-          ? <>{logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-bold.png')} alt={active!.academy_name} />}</>
+          ? <>
+            {logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-bold.png')} alt={active!.academy_name} />}
+            <span className={'sct' + (showScrollTitle ? ' on' : '')} aria-hidden={!showScrollTitle}>{scrollTitle}</span>
+          </>
           : <><button className="bk" onClick={nav.back} aria-label="뒤로"><IcBack /></button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}
         {nav.view !== 'noti' && !nav.limited && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>

@@ -11,18 +11,18 @@
 
 /* 오늘 요약 타일 */
 .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:var(--s1);margin:0 20px}
-.summary .st{background:var(--paper);border:1px solid var(--rule2);border-radius:16px;padding:12px 13px;text-align:left;
+.summary .st{background:var(--paper);border:1px solid var(--rule2);border-radius:var(--r-card);padding:12px 13px;text-align:left;
   display:flex;flex-direction:column;gap:5px;min-height:70px}
 .summary .st .k{font-size:var(--t-label);font-weight:600;color:var(--ink3);letter-spacing:.01em}
-.summary .st .v{font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.summary .st .v em{font-style:normal;font-size:13px;font-weight:600;color:var(--ink3);margin-left:3px}
+.summary .st .v{white-space:nowrap;font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.summary .st .v em{font-style:normal;font-size:12px;font-weight:600;color:var(--ink3);margin-left:3px}
 .summary .st.hot .v{color:var(--brand)}
-.summaryline{margin:0 20px;padding:14px 15px;border:1px solid var(--rule2);border-radius:16px;background:var(--paper);
+.summaryline{margin:0 20px;padding:14px 15px;border:1px solid var(--rule2);border-radius:var(--r-card);background:var(--paper);
   font-size:var(--t-body);color:var(--ink2);line-height:1.6}
 .summaryline b{color:var(--ink);font-weight:600}
 
 /* 첫걸음 카드 */
-.fs{margin:var(--s2) 20px 0;border:1px solid var(--rule2);border-radius:16px;background:var(--paper);overflow:hidden}
+.fs{margin:var(--s2) 20px 0;border:1px solid var(--rule2);border-radius:var(--r-card);background:var(--paper);overflow:hidden}
 .fs .fshead{display:flex;align-items:baseline;gap:8px;padding:14px 16px 10px}
 .fs .fshead .t{font-size:var(--t-title);font-weight:700;color:var(--ink);letter-spacing:-.02em}
 .fs .fshead .hide{margin-left:auto;font-size:var(--t-sub);color:var(--ink3);font-weight:500}
@@ -62,7 +62,7 @@
 .sheet-dim{position:absolute;inset:0;z-index:80;background:rgba(0,0,0,.38);display:flex;align-items:flex-end;justify-content:center;
   animation:dim .16s ease-out}
 @keyframes dim{from{opacity:0}to{opacity:1}}
-.sheet{width:100%;max-width:480px;margin:0 auto;background:var(--paper);border-radius:18px 18px 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
+.sheet{width:100%;max-width:480px;margin:0 auto;background:var(--paper);border-radius:var(--r-sheet) var(--r-sheet) 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
   box-shadow:0 -10px 34px rgba(0,0,0,.22);animation:sheetup .22s cubic-bezier(.2,.7,.3,1)}
 @keyframes sheetup{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}
 .sheet .st{font-size:16px;font-weight:600;color:var(--ink);letter-spacing:-.02em;line-height:1.5}
@@ -74,12 +74,12 @@
 /* ── Task C — 공지 쓰기: 템플릿 칩 · 미리보기 ── */
 /* .chip 은 더보기의 색 동그라미라서 이름을 따로 쓴다 */
 .chips-row{display:flex;flex-wrap:wrap;gap:6px;padding:0 20px}
-.chips-row button{min-height:40px;padding:9px 14px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);
+.chips-row button{min-height:40px;padding:9px 14px;border:1px solid var(--rule);border-radius:var(--r-tag);background:var(--paper);
   color:var(--ink2);font-size:13px;font-weight:600;letter-spacing:-.01em;transition:transform .1s ease,opacity .15s}
 .chips-row button:active{transform:scale(.98)}
 .chips-row button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
 /* 미리보기: 학부모가 여는 화면 그대로를 카드 안에 담는다 */
-.notice-preview{margin-top:6px;border:1px solid var(--rule2);border-radius:16px;background:var(--paper);
+.notice-preview{margin-top:6px;border:1px solid var(--rule2);border-radius:var(--r-card);background:var(--paper);
   padding:0 0 18px;overflow:hidden}
 .notice-preview .head{padding-top:var(--s2)}
 .notice-preview .hello{font-size:var(--t-title)}

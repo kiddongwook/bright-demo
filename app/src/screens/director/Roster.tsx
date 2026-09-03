@@ -9,6 +9,7 @@ import { toast, errToast } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
+import { BottomCta } from '../../components/BottomCta';
 import { confirmSheet } from '../../components/Confirm';
 import { IcCheck } from '../../components/icons';
 
@@ -118,8 +119,8 @@ export function StudentEdit() {
         {pp.map((p, i) => <input key={i} className="input" inputMode="tel" value={p} onChange={e => setPp(l => l.map((x, j) => j === i ? formatPhone(e.target.value) : x))} placeholder="010-0000-0000" />)}
         {pp.length < 3 && <button className="btn sm line" onClick={() => setPp(l => [...l, ''])}>+ 번호 추가</button>}
       </div>
-      <div className="btnrow"><button className="btn line" onClick={nav.back}>취소</button><button className="btn" disabled={busy} onClick={save}>저장</button></div>
       {id && <><div className="lab" style={{ marginTop: 28 }}>위험 구역</div><div className="btnrow" style={{ paddingTop: 0 }}><button className="btn line" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} disabled={busy} onClick={leave}>퇴원 처리</button></div></>}
+      <BottomCta primary={{ label: '저장', onClick: save, busy }} secondary={{ label: '취소', onClick: nav.back }} />
     </section>
   );
 }

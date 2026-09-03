@@ -7,6 +7,8 @@ import { toast, errToast } from '../../lib/toast';
 import { FirstSteps } from '../../components/FirstSteps';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
+import { BottomCta } from '../../components/BottomCta';
+import { usePop } from '../../lib/pop';
 import '../ui.css';
 
 const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
@@ -20,12 +22,16 @@ export function Today() {
   const [rows, setRows] = useState<AttRow[]>([]);
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);   // 저장 직후 0.9초 — 단추 안에 체크가 뜬다
+  const savedT = useRef(0);
+  const pop = usePop();                        // 방금 누른 ○△✕ 만 한 번 튄다
   const [closed, setClosed] = useState<Closed | undefined>();
   const [clsReady, setClsReady] = useState(false);
   const [rowsReady, setRowsReady] = useState(false); const [rowsErr, setRowsErr] = useState(false);
   const isDirector = active?.role === 'director';
   const { data: sum, reload: reloadSum } = useLoad(() => todaySummary(!!isDirector), [isDirector]);
   const absRef = useRef<HTMLDivElement>(null);
+  useEffect(() => () => clearTimeout(savedT.current), []);
   useEffect(() => { (async () => {
     // 강사는 담당 반만 (반 목록은 학원 전체가 보이므로 여기서 거른다 — 학생·출결은 RLS 가 이미 막는다)
     const all = await listClassesFull();
@@ -44,12 +50,17 @@ export function Today() {
   useEffect(loadRows, [cid]);
   const cls = classes.find(c => c.id === cid);
   const hasClassToday = !!cls && (cls.schedule ?? []).some(s => s.dow === dowOf(today));
-  const mark = (sid: string, st: AttStatus) => setRows(r => r.map(x => x.student_id === sid ? { ...x, status: x.status === st ? null : st } : x));
+  function mark(sid: string, st: AttStatus) {
+    const cur = rows.find(x => x.student_id === sid)?.status;
+    if (cur !== st) pop.fire(sid + ':' + st);   // 켜질 때만 튄다 (끌 때는 조용히)
+    setRows(r => r.map(x => x.student_id === sid ? { ...x, status: x.status === st ? null : st } : x));
+  }
   async function save() {
     const marked = rows.filter(r => r.status).map(r => ({ student_id: r.student_id, status: r.status! }));
     if (!marked.length) { toast('아직 아무도 표시하지 않았어요'); return; }
     setBusy(true);
-    try { await saveAttendance(cid, today, marked); const n = marked.filter(m => m.status !== 'present').length; toast(n ? `출결을 저장하고, 결석·지각 ${n}명의 학부모에게 알림을 보냈어요` : '출결을 저장했어요. 모두 출석이라 알림은 없어요'); reloadSum(); }
+    try { await saveAttendance(cid, today, marked); const n = marked.filter(m => m.status !== 'present').length; toast(n ? `출결을 저장하고, 결석·지각 ${n}명의 학부모에게 알림을 보냈어요` : '출결을 저장했어요. 모두 출석이라 알림은 없어요'); reloadSum();
+      setSaved(true); clearTimeout(savedT.current); savedT.current = window.setTimeout(() => setSaved(false), 900); }
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
   const pending = absences.filter(a => a.status === 'requested'), done = absences.filter(a => a.status !== 'requested');
@@ -95,12 +106,12 @@ export function Today() {
         {rows.map(r => (
           <div key={r.student_id} className="rw" style={{ padding: '12px 16px' }}>
             <span className="nm">{r.name.charAt(0)}</span><span className="bd"><span className="t">{r.name}</span></span>
-            <span className="marks">{(['present', 'late', 'absent'] as AttStatus[]).map(st => <button key={st} className={r.status === st ? 'on ' + CLS[st] : ''} onClick={() => mark(r.student_id, st)} aria-label={st}>{MARK[st]}</button>)}</span>
+            <span className="marks">{(['present', 'late', 'absent'] as AttStatus[]).map(st => <button key={st} className={(r.status === st ? 'on ' + CLS[st] : '') + pop.cls(r.student_id + ':' + st)} onClick={() => mark(r.student_id, st)} onAnimationEnd={pop.end} aria-label={st}>{MARK[st]}</button>)}</span>
           </div>))}
       </div>}
       <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
-      <div className="btnrow"><button className="btn" disabled={busy} onClick={save}>{busy ? '저장 중…' : '저장하고 알리기'}</button></div>
-      <div className="btnrow" style={{ paddingTop: 10 }}><button className="btn line" onClick={() => nav.push('todos', { cid })}>이번 주 할 것 관리</button></div>
+      <div className="btnrow"><button className="btn line" onClick={() => nav.push('todos', { cid })}>이번 주 할 것 관리</button></div>
+      <BottomCta primary={{ label: '저장하고 알리기', onClick: save, busy, done: saved, doneLabel: '알렸어요' }} />
 
       <div className="lab" ref={absRef}>결석 신청<span className="r">학부모가 미리 알린 것</span></div>
       {pending.length ? <div className="box">{pending.map(absRow)}</div> : <p className="muted" style={{ padding: '0 20px' }}>새 결석 신청이 없어요.</p>}

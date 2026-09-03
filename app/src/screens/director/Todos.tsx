@@ -6,6 +6,7 @@ import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
+import { usePop } from '../../lib/pop';
 
 const KIND_LABEL: Record<'homework' | 'exam', string> = { homework: '숙제', exam: '시험' };
 
@@ -14,6 +15,7 @@ export function Todos() {
   const nav = useNav(); const { active, session } = useSession();
   const [classes, setClasses] = useState<Cls[]>([]);
   const [cid, setCid] = useState('');
+  const pop = usePop();                        // 방금 체크한 동그라미만 한 번 튄다
   const [todos, setTodos] = useState<TodoFull[]>([]);
   const [total, setTotal] = useState(0);
   const [kind, setKind] = useState<'homework' | 'exam'>('homework');
@@ -52,7 +54,13 @@ export function Todos() {
   }
   async function toggleDone(sid: string, done: boolean) {
     if (!open) return;
-    try { await setTodoDoneBy(open, sid, !done); loadDone(open); load(); } catch (e) { errToast(e); }
+    try {
+      await setTodoDoneBy(open, sid, !done);
+      // 서버를 다시 읽기 전에 눈앞의 동그라미부터 채운다 — 체크와 튐이 같이 보이게
+      setDoneList(l => l.map(d => d.student_id === sid ? { ...d, done: !done } : d));
+      if (!done) pop.fire(sid);
+      loadDone(open); load();
+    } catch (e) { errToast(e); }
   }
   const pick = due || nextClassDays(cls?.schedule ?? [], 1)[0] || kstToday();
   async function add() {
@@ -89,7 +97,7 @@ export function Todos() {
               <div key={d.student_id} className="rw" style={{ cursor: 'default' }}>
                 <span className="nm">{d.name.charAt(0)}</span>
                 <span className="bd"><span className="t">{d.name}</span></span>
-                <button className={'cb' + (d.done ? ' on' : '')} onClick={() => toggleDone(d.student_id, d.done)} aria-label="했어요">{d.done ? '✓' : ''}</button>
+                <button className={'cb' + (d.done ? ' on' : '') + pop.cls(d.student_id)} onClick={() => toggleDone(d.student_id, d.done)} onAnimationEnd={pop.end} aria-label="했어요">{d.done ? '✓' : ''}</button>
               </div>))
               : <p className="muted" style={{ padding: '10px 16px' }}>이 반에 학생이 없어요.</p>}
           </div>}
