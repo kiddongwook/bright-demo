@@ -43,20 +43,23 @@ export function More() {
   return (
     <section className="view on">
       <div className="head"><h1 className="hello">더보기</h1><p className="lede">{active?.academy_name} · 원장</p></div>
-      <div className="lab first" style={{ marginTop: 0 }}>운영</div>
+      <div className="lab first" style={{ marginTop: 0 }}>매일 쓰는 것</div>
       <div className="box">
         <button className="rw" onClick={() => nav.push('roster')}><span className="bd"><span className="t">학생·학부모 명부</span><span className="s">여기 있는 번호만 앱에 들어올 수 있어요</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('stats')}><span className="bd"><span className="t">반별 출결표</span><span className="s">학생 × 수업일 · 출석률</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('classes')}><span className="bd"><span className="t">반·시간표</span><span className="s">요일 · 시간 · 담당 강사</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('calendar')}><span className="bd"><span className="t">휴원일·특강</span><span className="s">정하면 다음 수업·결석 신청에서 빠져요</span></span><span className="go">›</span></button>
+      </div>
+      <div className="lab">설정</div>
+      <div className="box">
         <button className="rw" onClick={() => nav.push('teachers')}><span className="bd"><span className="t">강사</span><span className="s">담당 반을 지정하면 그 반만 봐요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('academy')}><span className="bd"><span className="t">우리 학원</span><span className="s">이름 · 강조색 · 앱 아이콘</span></span><span className="go">›</span></button>
-        <button className="rw" onClick={() => nav.push('calendar')}><span className="bd"><span className="t">휴원일·특강</span><span className="s">정하면 다음 수업·결석 신청에서 빠져요</span></span><span className="go">›</span></button>
-        <button className="rw" onClick={() => nav.push('classes')}><span className="bd"><span className="t">반·시간표</span><span className="s">요일 · 시간 · 담당 강사</span></span><span className="go">›</span></button>
-        <button className="rw" onClick={() => nav.push('stats')}><span className="bd"><span className="t">반별 출결표</span><span className="s">학생 × 수업일 · 출석률</span></span><span className="go">›</span></button>
+        <button className="rw" onClick={() => nav.push('faq')}><span className="bd"><span className="t">자주 묻는 질문 관리</span><span className="s">학부모 문의 화면 맨 위에 보여요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('import')}><span className="bd"><span className="t">명부 CSV 올리기</span><span className="s">엑셀에서 저장한 표로 한 번에</span></span><span className="go">›</span></button>
         <button className="rw" disabled={busy} onClick={download}><span className="bd"><span className="t">학원 데이터 내려받기</span><span className="s">학생·출결·공지·문의 전부 한 파일로 (JSON)</span></span><span className="go">↓</span></button>
-        <button className="rw" onClick={() => nav.push('faq')}><span className="bd"><span className="t">자주 묻는 질문 관리</span><span className="s">학부모 문의 화면 맨 위에 보여요</span></span><span className="go">›</span></button>
-        <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={doCopyInvite}><span className="bd"><span className="t">학부모 초대 문구 복사</span><span className="s">카톡에 붙여 보내요</span></span><span className="go">⧉</span></button>
         {invite && <div style={{ padding: '0 16px 14px' }}><textarea className="input" readOnly value={invite} /><p className="muted" style={{ paddingTop: 6 }}>길게 눌러 복사해 주세요</p></div>}
+        <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('about')}><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
       </div>
       <div className="lab">준비 중<span className="r">필요할 때 켭니다</span></div>

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { listClassesFull, listClassTodos, listStudents, createTodo, deleteTodo, todoDoneList, setTodoDoneBy, nextClassDays, kstToday, fmtMDW, type Cls, type TodoFull } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
+import { Empty } from '../../components/Empty';
 
 const KIND_LABEL: Record<'homework' | 'exam', string> = { homework: '숙제', exam: '시험' };
 
@@ -19,6 +20,8 @@ export function Todos() {
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [doneList, setDoneList] = useState<{ student_id: string; name: string; done: boolean }[]>([]);
+  const addRef = useRef<HTMLDivElement>(null); const titleRef = useRef<HTMLInputElement>(null);
+  const focusAdd = () => { addRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => titleRef.current?.focus(), 350); };
   useEffect(() => { (async () => {
     // 강사는 담당 반만 (오늘 화면과 같은 필터 — 넣기는 RLS 가 다시 막는다)
     const all = await listClassesFull();
@@ -77,10 +80,10 @@ export function Todos() {
               : <p className="muted" style={{ padding: '10px 16px' }}>이 반에 학생이 없어요.</p>}
           </div>}
         </div>))}</div>
-        : <p className="muted" style={{ padding: '0 20px' }}>다가오는 할 것이 없어요. 아래에서 넣어 주세요.</p>}
-      <div className="lab">넣기<span className="r">{cls?.name ?? ''}</span></div>
+        : <div className="box"><Empty icon="check" title="다가오는 할 것이 없어요" hint="숙제·시험을 넣으면 학생·학부모 화면에 바로 보여요." action={{ label: '할 것 넣기', onClick: focusAdd }} /></div>}
+      <div className="lab" ref={addRef}>넣기<span className="r">{cls?.name ?? ''}</span></div>
       <div className="seg">{(['homework', 'exam'] as const).map(k => <button key={k} className={kind === k ? 'on' : ''} onClick={() => setKind(k)}>{KIND_LABEL[k]}</button>)}</div>
-      <div style={{ padding: '8px 20px 0' }}><input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder={kind === 'exam' ? '무엇을 볼까요 (예: 단어 시험 1~3과)' : '무엇을 할까요 (예: 워크북 p.32~35)'} /></div>
+      <div style={{ padding: '8px 20px 0' }}><input className="input" ref={titleRef} value={title} onChange={e => setTitle(e.target.value)} placeholder={kind === 'exam' ? '무엇을 볼까요 (예: 단어 시험 1~3과)' : '무엇을 할까요 (예: 워크북 p.32~35)'} /></div>
       <div style={{ padding: '8px 20px 0' }}><input className="input" type="date" value={pick} min={kstToday()} onChange={e => setDue(e.target.value)} /></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>넣기</button></div>
       <p className="muted" style={{ padding: '0 20px' }}>마감은 이 반 다음 수업일로 잡아 뒀어요. 원장님이 바꾸셔도 돼요.</p>

@@ -318,3 +318,52 @@ export function weekRange(): { from: string; to: string; days: string[] } {
   const days = Array.from({ length: 7 }, (_, i) => kstDate(i - mon));
   return { from: days[0], to: days[6], days };
 }
+
+/* ── 오늘 요약 (원장·강사 홈) ── */
+export type TodaySummary = {
+  classesToday: { id: string; name: string; start: string; end: string; marked: boolean; students: number }[];
+  pendingInquiries: number; pendingAbsences: number;
+  studentsTotal: number; classesTotal: number;
+  parentsEntered: number | null; parentsTotal: number | null;
+};
+/** 순수 계산 — 화면·테스트가 같이 쓴다. marks = 반 id → 오늘 기록된 사람 수 */
+export function summarizeToday(input: {
+  classes: ClsFull[]; today: string; marks: Record<string, number>; studentsByClass: Record<string, number>;
+  inquiries: Inquiry[]; absences: Absence[]; studentsTotal: number; entry: EntryRow[] | null;
+}): TodaySummary {
+  const dow = dowOf(input.today);
+  const classesToday = input.classes
+    .filter(c => (c.schedule ?? []).some(s => s.dow === dow))
+    .map(c => {
+      const s = (c.schedule ?? []).find(x => x.dow === dow)!;
+      return { id: c.id, name: c.name, start: s.start, end: s.end, marked: (input.marks[c.id] ?? 0) > 0, students: input.studentsByClass[c.id] ?? 0 };
+    });
+  const parents = input.entry?.filter(r => r.role === 'parent') ?? null;
+  return {
+    classesToday,
+    pendingInquiries: input.inquiries.filter(i => !i.answer).length,
+    pendingAbsences: input.absences.filter(a => a.status === 'requested').length,
+    studentsTotal: input.studentsTotal,
+    classesTotal: input.classes.length,
+    parentsEntered: parents ? parents.filter(r => r.entered).length : null,
+    parentsTotal: parents ? parents.length : null,
+  };
+}
+/** 요약에 필요한 것들을 모아 읽는다. entryStatus 는 원장만(다른 역할은 RPC 가 막는다) → 실패하면 null */
+export async function todaySummary(isDirector: boolean): Promise<TodaySummary> {
+  const today = kstToday();
+  const [classes, students, inquiries, absences, entry] = await Promise.all([
+    listClassesFull(),
+    listStudents(),
+    listInquiries(),
+    listAbsences(),
+    isDirector ? entryStatus().catch(() => null) : Promise.resolve(null),
+  ]);
+  const studentsByClass: Record<string, number> = {};
+  for (const s of students) for (const c of s.classes) studentsByClass[c.id] = (studentsByClass[c.id] ?? 0) + 1;
+  const dow = dowOf(today);
+  const todays = classes.filter(c => (c.schedule ?? []).some(s => s.dow === dow));
+  const marks: Record<string, number> = {};
+  await Promise.all(todays.map(async c => { marks[c.id] = (await todayAttendance(c.id, today)).filter(r => r.status !== null).length; }));
+  return summarizeToday({ classes, today, marks, studentsByClass, inquiries, absences, studentsTotal: students.length, entry });
+}

@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
-import { listClassesFull, todayAttendance, saveAttendance, listAbsences, closedByClass, closedFor, markMakeupAttended, type Closed, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
+import { useEffect, useRef, useState } from 'react';
+import { listClassesFull, todayAttendance, saveAttendance, listAbsences, closedByClass, closedFor, markMakeupAttended, todaySummary, nextClassDaysFor, type Closed, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
 import { useNav } from '../../lib/nav';
+import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
+import { FirstSteps } from '../../components/FirstSteps';
+import '../ui.css';
 
 const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
 const CLS: Record<AttStatus, string> = { present: 'p', late: 'l', absent: 'a', makeup: 'p' };
@@ -16,10 +19,14 @@ export function Today() {
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [busy, setBusy] = useState(false);
   const [closed, setClosed] = useState<Closed | undefined>();
+  const [clsReady, setClsReady] = useState(false);
+  const isDirector = active?.role === 'director';
+  const { data: sum, reload: reloadSum } = useLoad(() => todaySummary(!!isDirector), [isDirector]);
+  const absRef = useRef<HTMLDivElement>(null);
   useEffect(() => { (async () => {
     // 강사는 담당 반만 (반 목록은 학원 전체가 보이므로 여기서 거른다 — 학생·출결은 RLS 가 이미 막는다)
     const all = await listClassesFull();
-    const cs: Cls[] = active?.role === 'teacher' ? all.filter(c => c.teacher_id === session?.user.id) : all; setClasses(cs);
+    const cs: Cls[] = active?.role === 'teacher' ? all.filter(c => c.teacher_id === session?.user.id) : all; setClasses(cs); setClsReady(true);
     closedByClass().then(setClosed).catch(() => {});
     const todayDow = dowOf(today);
     const pick = cs.find(c => (c.schedule ?? []).some(s => s.dow === todayDow)) ?? cs[0];
@@ -34,7 +41,7 @@ export function Today() {
     const marked = rows.filter(r => r.status).map(r => ({ student_id: r.student_id, status: r.status! }));
     if (!marked.length) { toast('아직 아무도 표시하지 않았어요'); return; }
     setBusy(true);
-    try { await saveAttendance(cid, today, marked); const n = marked.filter(m => m.status !== 'present').length; toast(n ? `출결을 저장하고, 결석·지각 ${n}명의 학부모에게 알림을 보냈어요` : '출결을 저장했어요. 모두 출석이라 알림은 없어요'); }
+    try { await saveAttendance(cid, today, marked); const n = marked.filter(m => m.status !== 'present').length; toast(n ? `출결을 저장하고, 결석·지각 ${n}명의 학부모에게 알림을 보냈어요` : '출결을 저장했어요. 모두 출석이라 알림은 없어요'); reloadSum(); }
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
   const pending = absences.filter(a => a.status === 'requested'), done = absences.filter(a => a.status !== 'requested');
@@ -42,6 +49,10 @@ export function Today() {
   async function attended(a: Absence) {
     try { await markMakeupAttended(a.id); toast(`${a.student_name} 보강 출석으로 기록했어요`); setAbsences(await listAbsences()); } catch (e) { errToast(e); }
   }
+  // 요약 타일: 강사는 담당 반만 센다 (todaySummary 는 학원 전체 반을 본다)
+  const todayClasses = (sum?.classesToday ?? []).filter(c => classes.some(x => x.id === c.id));
+  const markedCount = todayClasses.filter(c => c.marked).length;
+  const nextDay = nextClassDaysFor(classes, 1, closed)[0];
   const absRow = (a: Absence) => (
     <button key={a.id} className="rw" onClick={() => nav.push('makeup', { id: a.id })}>
       <span className="nm">{a.student_name.charAt(0)}</span>
@@ -51,13 +62,23 @@ export function Today() {
         : a.makeup_kind === 'material' ? <span className="tag ok">자료 대체</span>
         : <span className="btn sm line" role="button" onClick={e => { e.stopPropagation(); attended(a); }}>보강 왔어요</span>}
     </button>);
+  const noClasses = clsReady && classes.length === 0;
   return (
     <section className="view on">
       <div className="head">
         <h1 className="hello">오늘 · {fmtMDW(today)}</h1>
-        <p className="lede">{cls ? `${cls.name} · ` : ''}{isClosed ? '오늘은 휴원일이에요. 그래도 기록할 수 있어요. 저장하면 ' : hasClassToday ? '이름 옆을 누르면 바로 표시돼요. 저장하면 ' : '오늘은 이 반 수업이 없는 날이에요. 그래도 기록할 수 있어요. 저장하면 '}<b>결석·지각 학부모 알림까지 한 번에</b> 나갑니다.</p>
+        {noClasses ? <p className="lede">반을 만들면 여기에 <b>출석부</b>가 생겨요. 아래 첫걸음을 따라 해 보세요.</p> : <p className="lede">{cls ? `${cls.name} · ` : ''}{isClosed ? '오늘은 휴원일이에요. 그래도 기록할 수 있어요. 저장하면 ' : hasClassToday ? '이름 옆을 누르면 바로 표시돼요. 저장하면 ' : '오늘은 이 반 수업이 없는 날이에요. 그래도 기록할 수 있어요. 저장하면 '}<b>결석·지각 학부모 알림까지 한 번에</b> 나갑니다.</p>}
       </div>
-      {classes.length > 1 && <div className="seg">{classes.map(c => <button key={c.id} className={c.id === cid ? 'on' : ''} onClick={() => setCid(c.id)}>{c.name}</button>)}</div>}
+      <FirstSteps summary={sum} />
+      {sum && clsReady && !noClasses && (todayClasses.length
+        ? <div className="summary">
+            <div className="st"><span className="k">오늘 수업</span><span className="v">{todayClasses.length}개<em>기록 {markedCount}/{todayClasses.length}</em></span></div>
+            <button className={'st' + (sum.pendingInquiries ? ' hot' : '')} onClick={() => nav.tab('inbox')}><span className="k">답변 대기</span><span className="v">{sum.pendingInquiries}</span></button>
+            <button className={'st' + (sum.pendingAbsences ? ' hot' : '')} onClick={() => absRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><span className="k">결석 신청</span><span className="v">{sum.pendingAbsences}</span></button>
+          </div>
+        : <p className="summaryline">오늘은 수업이 없어요{nextDay ? <> · 다음 수업 <b>{fmtMDW(nextDay)}</b></> : ''}</p>)}
+      {!noClasses && <>
+      {classes.length > 1 && <div className="seg" style={{ marginTop: 22 }}>{classes.map(c => <button key={c.id} className={c.id === cid ? 'on' : ''} onClick={() => setCid(c.id)}>{c.name}</button>)}</div>}
       <div className="lab">출석부</div>
       <div className="box">
         {rows.length === 0 && <p className="muted" style={{ padding: '14px 16px' }}>이 반에 학생이 없어요.</p>}
@@ -71,9 +92,10 @@ export function Today() {
       <div className="btnrow"><button className="btn" disabled={busy} onClick={save}>{busy ? '저장 중…' : '저장하고 알리기'}</button></div>
       <div className="btnrow" style={{ paddingTop: 0 }}><button className="btn line" onClick={() => nav.push('todos', { cid })}>이번 주 할 것 관리</button></div>
 
-      <div className="lab">결석 신청<span className="r">학부모가 미리 알린 것</span></div>
+      <div className="lab" ref={absRef}>결석 신청<span className="r">학부모가 미리 알린 것</span></div>
       {pending.length ? <div className="box">{pending.map(absRow)}</div> : <p className="muted" style={{ padding: '0 20px' }}>새 결석 신청이 없어요.</p>}
       {done.length > 0 && <><div className="lab">처리됨</div><div className="box soft">{done.slice(0, 5).map(absRow)}</div></>}
+      </>}
     </section>
   );
 }

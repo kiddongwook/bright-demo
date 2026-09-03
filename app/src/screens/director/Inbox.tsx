@@ -3,6 +3,7 @@ import { listInquiries, answerInquiry, listFaqs, type Inquiry, saveFaq, deleteFa
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
+import { Empty } from '../../components/Empty';
 
 const when = (iso: string) => new Date(iso).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
@@ -20,7 +21,7 @@ export function Inbox() {
     <section className="view on">
       <div className="head"><h1 className="hello">문의</h1><p className="lede">학부모가 보낸 1:1 문의예요. 답하면 <b>그 학부모에게만</b> 알림이 갑니다.</p></div>
       <div className="lab first">답변 대기<span className="r">{open.length}</span></div>
-      {data && (open.length ? <div className="box">{open.map(row)}</div> : <p className="muted" style={{ padding: '0 20px' }}>답변 대기 중인 문의가 없어요.</p>)}
+      {data && (open.length ? <div className="box">{open.map(row)}</div> : <div className="box"><Empty icon="chat" title="답변 대기 중인 문의가 없어요" hint="학부모가 1:1 문의를 보내면 여기에 쌓여요." /></div>)}
       <div className="lab">답변 완료</div>
       {data && (done.length ? <div className="box soft">{done.map(row)}</div> : <p className="muted" style={{ padding: '0 20px' }}>아직 없어요.</p>)}
       <div className="btnrow"><button className="btn line" onClick={() => nav.push('faq')}>자주 묻는 질문 관리</button></div>

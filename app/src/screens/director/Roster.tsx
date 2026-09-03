@@ -6,6 +6,7 @@ import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
+import { Empty } from '../../components/Empty';
 
 /* 명부: 반별 활성 학생 + 접힌 퇴원생. 행을 누르면 학생 상세, 편집은 작은 단추. 강사는 더보기 → 강사에서 따로 본다. */
 export function Roster() {
@@ -50,7 +51,7 @@ export function Roster() {
       {classes?.map(c => {
         const list = active.filter(s => s.classes.some(x => x.id === c.id));
         return <div key={c.id}><div className="lab">{c.name}<span className="r">{list.length}명</span></div>
-          <div className="box">{list.length ? list.map(row) : <p className="muted" style={{ padding: '14px 16px' }}>학생이 없어요.</p>}</div></div>;
+          <div className="box">{list.length ? list.map(row) : <Empty icon="people" title="이 반에 학생이 없어요" hint="아래 학생 추가로 넣으면 출석부와 할 것이 바로 생겨요." />}</div></div>;
       })}
       {noClass.length > 0 && <><div className="lab">반 없음<span className="r">{noClass.length}명</span></div><div className="box">{noClass.map(row)}</div></>}
       <div className="btnrow"><button className="btn" onClick={() => nav.push('student-edit')}>학생 추가</button></div>

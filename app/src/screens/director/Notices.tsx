@@ -4,6 +4,7 @@ import { uploadNoticePhotos, MAX_PHOTOS } from '../../lib/files';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
+import { Empty } from '../../components/Empty';
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
 
@@ -18,7 +19,7 @@ export function NoticeList() {
       <div className="btnrow" style={{ paddingTop: 0 }}><button className="btn" onClick={() => nav.push('notice-new')}>공지 쓰기</button></div>
       <div className="lab">올린 공지<span className="r">누르면 읽은 사람</span></div>
       {notices && (notices.length === 0
-        ? <p className="muted" style={{ padding: '0 20px' }}>아직 공지가 없어요. 첫 공지를 올려보세요.</p>
+        ? <div className="box"><Empty icon="notice" title="아직 공지가 없어요" hint="위 단추로 올리면 대상 반의 학부모와 학생에게 알림이 가요." /></div>
         : <div className="list">{notices.map(n => (
           <button key={n.id} className="post" style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.push('readers', { id: n.id })}>
             <div className="pt">{n.photos?.length ? '📷 ' : ''}{n.title}</div>

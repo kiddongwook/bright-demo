@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { listCalendar, addCalendar, removeCalendar, listClasses, listClassesFull, createClass, updateClass, assignClassTeacher, listTeachers, kstToday, fmtMDW, DOW, scheduleSummary, type CalItem, type Sched, type ClsFull, type Teacher } from '../../lib/api';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
+import { Empty } from '../../components/Empty';
 
 const KIND_LABEL: Record<CalItem['kind'], string> = { closed: '휴원', special: '특강', makeup: '보강' };
 
@@ -24,7 +25,7 @@ export function CalendarScreen() {
       <div className="head"><p className="lede">휴원일을 정하면 학부모·학생의 <b>다음 수업</b>과 <b>결석 신청</b>에서 그날이 빠져요.</p></div>
       <div className="lab first">다가오는 날<span className="r">{data ? `${data.length}개` : ''}</span></div>
       {data && (data.length ? <div className="box">{data.map(it => <div key={it.id} className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">{fmtMDW(it.date)} · {cname(it.class_id)}</span><span className="s">{it.note || KIND_LABEL[it.kind]}</span></span><span className={'tag ' + (it.kind === 'closed' ? 'danger' : it.kind === 'special' ? 'ok' : 'warn')}>{KIND_LABEL[it.kind]}</span><button className="btn sm line" style={{ marginLeft: 8 }} onClick={() => del(it)}>지우기</button></div>)}</div>
-        : <p className="muted" style={{ padding: '0 20px' }}>정해 둔 날이 없어요.</p>)}
+        : <div className="box"><Empty icon="calendar" title="정해 둔 날이 없어요" hint="아래에서 휴원일·특강을 넣으면 다음 수업에서 그날이 빠져요." /></div>)}
       <div className="lab">추가</div>
       <div style={{ padding: '0 20px' }}><input className="input" type="date" value={date} min={kstToday()} onChange={e => setDate(e.target.value)} /></div>
       <div className="seg" style={{ marginTop: 8 }}>{(['closed', 'special', 'makeup'] as CalItem['kind'][]).map(k => <button key={k} className={kind === k ? 'on' : ''} onClick={() => setKind(k)}>{KIND_LABEL[k]}</button>)}</div>
@@ -46,11 +47,13 @@ export function Classes() {
     <section className="view on">
       <div className="head"><p className="lede">반을 누르면 요일·시간·담당 강사를 고쳐요. 시간표는 <b>다음 수업</b>과 <b>결석 신청</b>에 바로 쓰여요.</p></div>
       <div className="lab first">반<span className="r">{data ? `${data.length}개` : ''}</span></div>
-      {data && <div className="box">{data.map(c => open === c.id
+      {data && (data.length === 0
+        ? (!adding && <div className="box"><Empty icon="calendar" title="아직 반이 없어요" hint="반을 만들면 출석부·다음 수업·할 것이 모두 여기서 시작해요." action={{ label: '반 추가', onClick: () => setAdding(true) }} /></div>)
+        : <div className="box">{data.map(c => open === c.id
         ? <ClassForm key={c.id} cls={c} teachers={teachers ?? []} onDone={() => { setOpen(null); reload(); }} />
-        : <button key={c.id} className="rw" onClick={() => setOpen(c.id)}><span className="bd"><span className="t">{c.name}</span><span className="s">{scheduleSummary(c.schedule)}{tname(c, teachers) ? ` · ${tname(c, teachers)}` : ''}</span></span><span className="go">›</span></button>)}</div>}
+        : <button key={c.id} className="rw" onClick={() => setOpen(c.id)}><span className="bd"><span className="t">{c.name}</span><span className="s">{scheduleSummary(c.schedule)}{tname(c, teachers) ? ` · ${tname(c, teachers)}` : ''}</span></span><span className="go">›</span></button>)}</div>)}
       {adding ? <div className="box" style={{ marginTop: 12 }}><ClassForm cls={null} teachers={teachers ?? []} onDone={() => { setAdding(false); reload(); }} /></div>
-        : <div className="btnrow"><button className="btn line" onClick={() => setAdding(true)}>반 추가</button></div>}
+        : data?.length ? <div className="btnrow"><button className="btn line" onClick={() => setAdding(true)}>반 추가</button></div> : null}
     </section>
   );
 }
