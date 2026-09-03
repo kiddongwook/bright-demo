@@ -5,6 +5,8 @@ import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 import { FirstSteps } from '../../components/FirstSteps';
+import { Skeleton } from '../../components/Skeleton';
+import { ErrorState } from '../../components/ErrorState';
 import '../ui.css';
 
 const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
@@ -20,6 +22,7 @@ export function Today() {
   const [busy, setBusy] = useState(false);
   const [closed, setClosed] = useState<Closed | undefined>();
   const [clsReady, setClsReady] = useState(false);
+  const [rowsReady, setRowsReady] = useState(false); const [rowsErr, setRowsErr] = useState(false);
   const isDirector = active?.role === 'director';
   const { data: sum, reload: reloadSum } = useLoad(() => todaySummary(!!isDirector), [isDirector]);
   const absRef = useRef<HTMLDivElement>(null);
@@ -33,7 +36,12 @@ export function Today() {
     if (pick) setCid(pick.id);
     setAbsences(await listAbsences());
   })().catch(errToast); }, []);
-  useEffect(() => { if (cid) todayAttendance(cid, today).then(setRows).catch(errToast); }, [cid]);
+  function loadRows() {
+    if (!cid) return;
+    setRowsReady(false); setRowsErr(false);
+    todayAttendance(cid, today).then(r => { setRows(r); setRowsReady(true); }).catch(e => { setRowsErr(true); errToast(e); });
+  }
+  useEffect(loadRows, [cid]);
   const cls = classes.find(c => c.id === cid);
   const hasClassToday = !!cls && (cls.schedule ?? []).some(s => s.dow === dowOf(today));
   const mark = (sid: string, st: AttStatus) => setRows(r => r.map(x => x.student_id === sid ? { ...x, status: x.status === st ? null : st } : x));
@@ -80,14 +88,16 @@ export function Today() {
       {!noClasses && <>
       {classes.length > 1 && <div className="seg" style={{ marginTop: 22 }}>{classes.map(c => <button key={c.id} className={c.id === cid ? 'on' : ''} onClick={() => setCid(c.id)}>{c.name}</button>)}</div>}
       <div className="lab">출석부</div>
-      <div className="box">
+      {!rowsReady
+        ? (rowsErr ? <ErrorState onRetry={loadRows} /> : <Skeleton rows={4} />)
+        : <div className="box">
         {rows.length === 0 && <p className="muted" style={{ padding: '14px 16px' }}>이 반에 학생이 없어요.</p>}
         {rows.map(r => (
           <div key={r.student_id} className="rw" style={{ padding: '12px 16px' }}>
             <span className="nm">{r.name.charAt(0)}</span><span className="bd"><span className="t">{r.name}</span></span>
             <span className="marks">{(['present', 'late', 'absent'] as AttStatus[]).map(st => <button key={st} className={r.status === st ? 'on ' + CLS[st] : ''} onClick={() => mark(r.student_id, st)} aria-label={st}>{MARK[st]}</button>)}</span>
           </div>))}
-      </div>
+      </div>}
       <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={save}>{busy ? '저장 중…' : '저장하고 알리기'}</button></div>
       <div className="btnrow" style={{ paddingTop: 0 }}><button className="btn line" onClick={() => nav.push('todos', { cid })}>이번 주 할 것 관리</button></div>

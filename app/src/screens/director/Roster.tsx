@@ -7,13 +7,17 @@ import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
+import { Skeleton } from '../../components/Skeleton';
+import { ErrorState } from '../../components/ErrorState';
+import { confirmSheet } from '../../components/Confirm';
+import { IcCheck } from '../../components/icons';
 
 /* 명부: 반별 활성 학생 + 접힌 퇴원생. 행을 누르면 학생 상세, 편집은 작은 단추. 강사는 더보기 → 강사에서 따로 본다. */
 export function Roster() {
   const nav = useNav(); const { active: me } = useSession();
   const isDirector = me?.role === 'director';
   const { data: classes } = useLoad(listClasses);
-  const { data: students } = useLoad(() => listStudents(undefined, true));
+  const { data: students, err: studentsErr, reload: reloadStudents } = useLoad(() => listStudents(undefined, true));
   const { data: myAcademy } = useLoad(academy);
   const { data: entryRows, err: entryErr } = useLoad(() => isDirector ? entryStatus() : Promise.resolve(null));
   useEffect(() => { if (entryErr) errToast(new Error(entryErr)); }, [entryErr]);
@@ -34,6 +38,9 @@ export function Roster() {
   return (
     <section className="view on">
       <div className="head"><p className="lede">명부에 있는 전화번호로만 앱에 들어올 수 있어요.<br />학생과 학부모는 <b>각자 번호로</b> 들어옵니다.</p></div>
+      {!students
+        ? (studentsErr ? <ErrorState onRetry={reloadStudents} /> : <Skeleton rows={4} />)
+        : <>
       {isDirector && entryRows && (notEntered.length > 0 ? (
         <details className="fold">
           <summary>아직 앱에 안 들어온 {notEntered.length}명</summary>
@@ -47,7 +54,7 @@ export function Roster() {
             ))}
           </div>
         </details>
-      ) : <p className="muted" style={{ padding: '0 20px' }}>명부의 학부모·학생이 모두 들어왔어요 🎉</p>)}
+      ) : <p className="muted" style={{ padding: '0 20px', display: 'flex', alignItems: 'center', gap: 6 }}><IcCheck size={18} style={{ color: 'var(--ok-ink)', flex: '0 0 auto' }} />명부의 학부모·학생이 모두 들어왔어요</p>)}
       {classes?.map(c => {
         const list = active.filter(s => s.classes.some(x => x.id === c.id));
         return <div key={c.id}><div className="lab">{c.name}<span className="r">{list.length}명</span></div>
@@ -56,6 +63,7 @@ export function Roster() {
       {noClass.length > 0 && <><div className="lab">반 없음<span className="r">{noClass.length}명</span></div><div className="box">{noClass.map(row)}</div></>}
       <div className="btnrow"><button className="btn" onClick={() => nav.push('student-edit')}>학생 추가</button></div>
       {left.length > 0 && <details className="fold"><summary>퇴원 {left.length}명</summary><div className="box">{left.map(s => <div key={s.id} className="rw" style={{ cursor: 'pointer' }} onClick={() => nav.push('student', { id: s.id })}><span className="nm">{s.name.charAt(0)}</span><span className="bd"><span className="t">{s.name}</span><span className="s">기록은 남아 있어요</span></span><span className="go">›</span></div>)}</div></details>}
+      </>}
     </section>
   );
 }
@@ -67,7 +75,14 @@ export function StudentEdit() {
   const [name, setName] = useState(''); const [cls, setCls] = useState<string[]>([]);
   const [sp, setSp] = useState(''); const [pp, setPp] = useState<string[]>(['']);
   const [busy, setBusy] = useState(false); const [loaded, setLoaded] = useState(!id);
-  useEffect(() => { if (!id) return; studentDetail(id).then(d => { setName(d.name); setCls(d.classes.map(c => c.id)); setSp(formatPhone(d.student_phone)); setPp(d.parent_phones.length ? d.parent_phones.map(formatPhone) : ['']); setLoaded(true); }).catch(errToast); }, [id]);
+  const [loadErr, setLoadErr] = useState(false);
+  function loadStudent() {
+    if (!id) return;
+    setLoadErr(false);
+    studentDetail(id).then(d => { setName(d.name); setCls(d.classes.map(c => c.id)); setSp(formatPhone(d.student_phone)); setPp(d.parent_phones.length ? d.parent_phones.map(formatPhone) : ['']); setLoaded(true); })
+      .catch(e => { setLoadErr(true); errToast(e); });
+  }
+  useEffect(loadStudent, [id]);
   const toggle = (cid: string) => setCls(l => l.includes(cid) ? l.filter(x => x !== cid) : [...l, cid]);
   async function save() {
     if (!name.trim()) { toast('이름을 적어주세요'); return; }
@@ -78,11 +93,17 @@ export function StudentEdit() {
     catch (e) { errToast(e); setBusy(false); }
   }
   async function leave() {
-    if (!id || !confirm('퇴원 처리하면 학부모·학생이 앱에 들어올 수 없어요. 출결·문의·메모 기록은 남아요.')) return;
+    if (!id) return;
+    if (!(await confirmSheet({ title: '퇴원 처리할까요?', body: '퇴원 처리하면 학부모·학생이 앱에 들어올 수 없어요. 출결·문의·메모 기록은 남아요.', okLabel: '퇴원 처리', danger: true }))) return;
     setBusy(true);
     try { await leaveStudent(id); toast('퇴원 처리했어요'); nav.tab('more'); } catch (e) { errToast(e); setBusy(false); }
   }
-  if (!loaded) return <section className="view on" />;
+  if (!loaded) return (
+    <section className="view on">
+      <div className="head"><p className="lede">이름·반·번호를 고쳐요. 학부모 번호는 여럿이어도 돼요.</p></div>
+      {loadErr ? <ErrorState onRetry={loadStudent} /> : <Skeleton rows={4} />}
+    </section>
+  );
   return (
     <section className="view on">
       <div className="head"><p className="lede">{id ? '이름·반·번호를 고쳐요.' : '학생을 넣으면 번호로 바로 들어올 수 있어요.'} 학부모 번호는 여럿이어도 돼요.</p></div>
@@ -105,7 +126,7 @@ export function StudentEdit() {
 
 /* 강사: 명부에 넣으면 번호로 들어온다. 담당 반 배정은 반·시간표에서. */
 export function Teachers() {
-  const { data, reload } = useLoad(listTeachers);
+  const { data, err, reload } = useLoad(listTeachers);
   const [name, setName] = useState(''); const [phone, setPhone] = useState(''); const [busy, setBusy] = useState(false);
   async function add() {
     if (!name.trim() || !isValidMobile(phone)) { toast('이름과 휴대폰 번호를 확인해 주세요'); return; }
@@ -113,14 +134,14 @@ export function Teachers() {
     try { await saveTeacher(name.trim(), normalizePhone(phone)); setName(''); setPhone(''); toast('강사를 넣었어요. 그 번호로 들어올 수 있어요'); reload(); } catch (e) { errToast(e); } finally { setBusy(false); }
   }
   async function remove(p: string, n: string) {
-    if (!confirm(`${n} 강사를 명부에서 뺄까요? 더는 들어올 수 없어요.`)) return;
+    if (!(await confirmSheet({ title: `${n} 강사를 뺄까요?`, body: '명부에서 빼면 더는 들어올 수 없어요.', okLabel: '빼기', danger: true }))) return;
     try { await removeTeacher(p); toast('뺐어요'); reload(); } catch (e) { errToast(e); }
   }
   return (
     <section className="view on">
       <div className="head"><p className="lede">강사는 <b>담당 반</b>의 출결·공지·문의만 봅니다. 반 배정은 <b>반·시간표</b>에서 해요.</p></div>
       <div className="lab first">강사<span className="r">{data ? `${data.length}명` : ''}</span></div>
-      {data && (data.length ? <div className="box">{data.map(t => <div key={t.phone} className="rw" style={{ cursor: 'default' }}><span className="nm">{t.name.charAt(0)}</span><span className="bd"><span className="t">{t.name}</span><span className="s">{formatPhone(t.phone)}{t.user_id ? ' · 들어옴' : ' · 아직 안 들어옴'}</span></span><button className="btn sm line" onClick={() => remove(t.phone, t.name)}>빼기</button></div>)}</div>
+      {!data ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={3} />) : (data.length ? <div className="box">{data.map(t => <div key={t.phone} className="rw" style={{ cursor: 'default' }}><span className="nm">{t.name.charAt(0)}</span><span className="bd"><span className="t">{t.name}</span><span className="s">{formatPhone(t.phone)}{t.user_id ? ' · 들어옴' : ' · 아직 안 들어옴'}</span></span><button className="btn sm line" onClick={() => remove(t.phone, t.name)}>빼기</button></div>)}</div>
         : <p className="muted" style={{ padding: '0 20px' }}>아직 강사가 없어요.</p>)}
       <div className="lab">강사 추가</div>
       <div style={{ padding: '0 20px', display: 'grid', gap: 8 }}>

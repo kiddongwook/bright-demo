@@ -3,10 +3,12 @@ import { listAbsences, confirmMakeup, nextSaturdays, fmtMDW } from '../../lib/ap
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
+import { Skeleton } from '../../components/Skeleton';
+import { ErrorState } from '../../components/ErrorState';
 
 export function Makeup() {
   const nav = useNav(); const id = nav.params.id;
-  const { data } = useLoad(() => listAbsences().then(l => l.find(a => a.id === id) ?? null), [id]);
+  const { data, err, reload } = useLoad(() => listAbsences().then(l => l.find(a => a.id === id) ?? null), [id]);
   const sats = nextSaturdays(2);
   const opts: { key: string; label: string; kind: 'saturday' | 'material'; at: string | null }[] = [
     ...sats.map(d => ({ key: d, label: `${fmtMDW(d)} 2시`, kind: 'saturday' as const, at: `${d}T14:00:00+09:00` })),
@@ -18,7 +20,7 @@ export function Makeup() {
     try { await confirmMakeup(id, o.kind, o.at); toast(`${data?.student_name} 학부모에게 ${o.kind === 'material' ? '자료 대체' : '보강 일정'}을 알렸어요`); nav.back(); }
     catch (e) { errToast(e); setBusy(false); }
   }
-  if (!data) return <section className="view on" />;
+  if (!data) return <section className="view on">{err ? <ErrorState onRetry={reload} /> : <Skeleton rows={3} />}</section>;
   return (
     <section className="view on">
       <div className="head"><p className="lede">{data.student_name} · <b>{fmtMDW(data.date)}</b> 결석<br />{data.reason}</p></div>

@@ -3,7 +3,10 @@ import { studentDetail, monthAttendance, timeline, listNotes, addNote, deleteNot
 import { formatPhone } from '../../lib/phone';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
-import { toast, errToast } from '../../lib/toast';
+import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
+import { Skeleton } from '../../components/Skeleton';
+import { ErrorState } from '../../components/ErrorState';
+import { confirmSheet } from '../../components/Confirm';
 
 const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
 const KIND: Record<TimelineItem['kind'], string> = { attendance: '출결', absence: '결석', inquiry: '문의', note: '메모' };
@@ -12,14 +15,15 @@ const when = (ts: string) => new Date(ts).toLocaleString('ko-KR', { month: 'nume
 /* 학생 상세: 출결 달력 · 기록(타임라인) · 메모 */
 export function StudentDetail() {
   const nav = useNav(); const id = nav.params.id;
-  const { data: s } = useLoad(() => studentDetail(id), [id]);
+  const { data: s, err, reload } = useLoad(() => studentDetail(id), [id]);
   const [tab, setTab] = useState<'att' | 'log' | 'note'>('att'); const [busy, setBusy] = useState(false);
   async function reenroll() {
-    if (!s || !confirm(`${s.name} 학생을 다시 다니는 것으로 할까요? 반과 번호를 다시 넣게 돼요.`)) return;
+    if (!s) return;
+    if (!(await confirmSheet({ title: `${s.name} 학생, 다시 다닐까요?`, body: '반과 번호를 다시 넣게 돼요.', okLabel: '다시 다니기' }))) return;
     setBusy(true);
     try { await saveStudent(s.id, s.name, [], '', []); toast('다시 다녀요. 반과 번호를 넣어주세요'); nav.replace('student-edit', { id: s.id }); } catch (e) { errToast(e); setBusy(false); }
   }
-  if (!s) return <section className="view on" />;
+  if (!s) return <section className="view on">{err ? <ErrorState onRetry={reload} /> : <Skeleton rows={4} />}</section>;
   return (
     <section className="view on">
       <div className="head">
@@ -77,22 +81,28 @@ function Timeline({ sid }: { sid: string }) {
 }
 
 function Notes({ sid }: { sid: string }) {
-  const { data, reload } = useLoad(() => listNotes(sid), [sid]);
+  const { data, err, reload, setData } = useLoad(() => listNotes(sid), [sid]);
   const [kind, setKind] = useState<Note['kind']>('consult'); const [body, setBody] = useState(''); const [busy, setBusy] = useState(false);
   async function add() {
     if (!body.trim()) { toast('내용을 적어주세요'); return; }
     setBusy(true);
     try { await addNote(sid, kind, body.trim()); setBody(''); toast('남겼어요'); reload(); } catch (e) { errToast(e); } finally { setBusy(false); }
   }
-  async function del(id: string) { if (!confirm('이 메모를 지울까요?')) return; try { await deleteNote(id); reload(); } catch (e) { errToast(e); } }
+  /* 지우기는 5초 뒤에 진짜로 — 되돌리기를 누르면 없던 일이 된다 */
+  function del(id: string) {
+    setData(l => l ? l.filter(n => n.id !== id) : l);
+    const cancel = deferDelete(`note:${id}`, () => { deleteNote(id).then(() => reload()).catch(e => { errToast(e); reload(); }); });
+    toast('메모를 지웠어요', { ms: 5000, action: { label: '되돌리기', onClick: () => { cancel(); reload(); } } });
+  }
+  const notes = data?.filter(n => !isPending(`note:${n.id}`));   /* 되돌리기를 기다리는 줄은 다시 읽어도 숨긴 채로 */
   return (
     <>
       <div className="lab first">새 메모<span className="r">원장님·강사만 봐요</span></div>
       <div className="seg"><button className={kind === 'consult' ? 'on' : ''} onClick={() => setKind('consult')}>상담</button><button className={kind === 'memo' ? 'on' : ''} onClick={() => setKind('memo')}>메모</button></div>
       <div style={{ padding: '10px 20px 0' }}><textarea className="input" style={{ minHeight: 80 }} value={body} onChange={e => setBody(e.target.value)} placeholder={kind === 'consult' ? '예) 어머님과 통화 — 단어 암기 계획 잡음' : '예) 수업 중 집중 잘함'} /></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>남기기</button></div>
-      <div className="lab">지난 메모<span className="r">{data ? `${data.length}개` : ''}</span></div>
-      {data && (data.length ? <div className="list">{data.map(n => <div key={n.id} className="tl"><span className={'k ' + (n.kind === 'consult' ? 'consult' : 'note')}>{n.kind === 'consult' ? '상담' : '메모'}</span><span className="bd"><span className="t" style={{ whiteSpace: 'pre-wrap' }}>{n.body}</span><span className="d">{n.author_name} · {when(n.created_at)}</span></span><button className="btn sm line" onClick={() => del(n.id)}>지우기</button></div>)}</div>
+      <div className="lab">지난 메모<span className="r">{notes ? `${notes.length}개` : ''}</span></div>
+      {!notes ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={2} />) : (notes.length ? <div className="list">{notes.map(n => <div key={n.id} className="tl"><span className={'k ' + (n.kind === 'consult' ? 'consult' : 'note')}>{n.kind === 'consult' ? '상담' : '메모'}</span><span className="bd"><span className="t" style={{ whiteSpace: 'pre-wrap' }}>{n.body}</span><span className="d">{n.author_name} · {when(n.created_at)}</span></span><button className="btn sm line" onClick={() => del(n.id)}>지우기</button></div>)}</div>
         : <p className="muted" style={{ padding: '0 20px' }}>아직 메모가 없어요.</p>)}
     </>
   );

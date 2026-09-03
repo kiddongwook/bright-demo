@@ -15,6 +15,8 @@ import { LinkEntry, type LinkTarget } from './screens/LinkEntry';
 import { takeLinkToken } from './lib/link';
 import { setReportScreen } from './lib/report';
 import { UpdateBanner } from './components/UpdateBanner';
+import { ConfirmHost } from './components/Confirm';
+import { IcBack } from './components/icons';
 import './theme.css';
 
 // 알림톡 버튼(?l=토큰)으로 들어왔는지 — 모듈 로드 때 한 번 읽고 주소에서 지운다 (렌더 중에 history 를 만지지 않게)
@@ -55,10 +57,11 @@ function Frame() {
   return (
     <div className="shell"><div className="app">
       <UpdateBanner />
+      <ConfirmHost />
       <header className="appbar">
         {nav.isTab
           ? <>{logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-bold.png')} alt={active!.academy_name} />}</>
-          : <><button className="bk" onClick={nav.back} aria-label="뒤로">&lsaquo;</button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}
+          : <><button className="bk" onClick={nav.back} aria-label="뒤로"><IcBack /></button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}
         {nav.view !== 'noti' && !nav.limited && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
           <span className="badge">{badge ? String(badge) : ''}</span>

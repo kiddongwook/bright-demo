@@ -8,11 +8,15 @@ import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 import { inviteText, copyInvite } from '../../lib/invite';
 import { applyBrand } from '../../lib/theme';
+import { Skeleton } from '../../components/Skeleton';
+import { ErrorState } from '../../components/ErrorState';
+import { confirmSheet } from '../../components/Confirm';
+import { IcCopy, IcDownload } from '../../components/icons';
 
 export function More() {
   const nav = useNav(); const { logout, active, session } = useSession();
   const isDirector = active?.role === 'director';
-  const { data: myClasses } = useLoad(() => isDirector ? Promise.resolve([]) : listClassesFull().then(l => l.filter(c => c.teacher_id === session?.user.id)));
+  const { data: myClasses, err: myClassesErr, reload: reloadMyClasses } = useLoad(() => isDirector ? Promise.resolve([]) : listClassesFull().then(l => l.filter(c => c.teacher_id === session?.user.id)));
   const { data: myAcademy } = useLoad(academy);
   const [busy, setBusy] = useState(false);
   const [invite, setInvite] = useState<string | null>(null);   // 클립보드가 안 되면 직접 눌러 복사하게 펼친다
@@ -30,8 +34,9 @@ export function More() {
     <section className="view on">
       <div className="head"><h1 className="hello">더보기</h1><p className="lede">{active?.academy_name} · 강사</p></div>
       <div className="lab first" style={{ marginTop: 0 }}>담당 반</div>
-      <div className="box">{myClasses?.length ? myClasses.map(c => <div key={c.id} className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">{c.name}</span><span className="s">출결·공지·문의·학생 기록을 이 반 안에서 봐요</span></span></div>)
-        : <p className="muted" style={{ padding: '14px 16px' }}>원장님이 담당 반을 지정하면 여기 보여요. 그 전엔 화면이 비어 있어요.</p>}</div>
+      {!myClasses ? (myClassesErr ? <ErrorState onRetry={reloadMyClasses} /> : <Skeleton rows={2} />)
+        : <div className="box">{myClasses.length ? myClasses.map(c => <div key={c.id} className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">{c.name}</span><span className="s">출결·공지·문의·학생 기록을 이 반 안에서 봐요</span></span></div>)
+        : <p className="muted" style={{ padding: '14px 16px' }}>원장님이 담당 반을 지정하면 여기 보여요. 그 전엔 화면이 비어 있어요.</p>}</div>}
       <div className="box" style={{ marginTop: 12 }}>
         <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('about')}><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
@@ -56,8 +61,8 @@ export function More() {
         <button className="rw" onClick={() => nav.push('academy')}><span className="bd"><span className="t">우리 학원</span><span className="s">이름 · 강조색 · 앱 아이콘</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('faq')}><span className="bd"><span className="t">자주 묻는 질문 관리</span><span className="s">학부모 문의 화면 맨 위에 보여요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('import')}><span className="bd"><span className="t">명부 CSV 올리기</span><span className="s">엑셀에서 저장한 표로 한 번에</span></span><span className="go">›</span></button>
-        <button className="rw" disabled={busy} onClick={download}><span className="bd"><span className="t">학원 데이터 내려받기</span><span className="s">학생·출결·공지·문의 전부 한 파일로 (JSON)</span></span><span className="go">↓</span></button>
-        <button className="rw" onClick={doCopyInvite}><span className="bd"><span className="t">학부모 초대 문구 복사</span><span className="s">카톡에 붙여 보내요</span></span><span className="go">⧉</span></button>
+        <button className="rw" disabled={busy} onClick={download}><span className="bd"><span className="t">학원 데이터 내려받기</span><span className="s">학생·출결·공지·문의 전부 한 파일로 (JSON)</span></span><span className="go"><IcDownload /></span></button>
+        <button className="rw" onClick={doCopyInvite}><span className="bd"><span className="t">학부모 초대 문구 복사</span><span className="s">카톡에 붙여 보내요</span></span><span className="go"><IcCopy /></span></button>
         {invite && <div style={{ padding: '0 16px 14px' }}><textarea className="input" readOnly value={invite} /><p className="muted" style={{ paddingTop: 6 }}>길게 눌러 복사해 주세요</p></div>}
         <button className="rw" onClick={() => nav.push('install')}><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('about')}><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
@@ -75,7 +80,7 @@ export function More() {
 
 const COLORS = ['#2B5BD9', '#1C1C1C', '#E8912D', '#5B7A5B', '#9C8B74'];
 export function Academy() {
-  const { data, setData } = useLoad(academy);
+  const { data, err, reload, setData } = useLoad(academy);
   const [busy, setBusy] = useState(false);
   const [busyLogo, setBusyLogo] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -93,7 +98,7 @@ export function Academy() {
   }
   async function clearLogo() {
     if (!data?.logo_path) return;
-    if (!confirm('로고를 지울까요? 문·인증 화면은 다시 기본 이미지로 보여요.')) return;
+    if (!(await confirmSheet({ title: '로고를 지울까요?', body: '문·인증 화면은 다시 기본 이미지로 보여요.', okLabel: '지우기', danger: true }))) return;
     setBusyLogo(true);
     try { await removeLogo(data.logo_path).catch(() => {}); await setLogo(null); setData({ ...data, logo_path: null }); toast('로고를 지웠어요'); }
     catch (e) { errToast(e); } finally { setBusyLogo(false); }
@@ -107,7 +112,7 @@ export function Academy() {
         <p className="hc">원장님과 학부모, 학생 폰 홈 화면에<br />이렇게 놓입니다.</p>
       </div>
       <div className="lab">앱에 보이는 것</div>
-      <div className="box">
+      {!data ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={3} />) : <div className="box">
         <div className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">학원 이름</span><span className="s">{data?.name ?? ''}</span></span></div>
         <div className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">강조색</span><span className="s">로고 컬러웨이 중 고르세요</span></span>
           <span className="chips">{COLORS.map(c => <button key={c} className={'chip' + (data?.brand_color === c ? ' on' : '')} style={{ background: c }} disabled={busy} onClick={() => pick(c)} aria-label={c} />)}</span></div>
@@ -120,7 +125,7 @@ export function Academy() {
             : <button className="btn sm line" disabled={busyLogo} onClick={() => fileRef.current?.click()}>올리기</button>}
           <input ref={fileRef} type="file" accept="image/png,image/jpeg" style={{ display: 'none' }} onChange={e => pickLogo(e.target.files?.[0])} />
         </div>
-      </div>
+      </div>}
       <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}>로고는 단색으로 두고, 강조색은 앱바·버튼·표시에 씁니다.</p>
     </section>
   );

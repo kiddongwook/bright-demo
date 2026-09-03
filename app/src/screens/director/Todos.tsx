@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { listClassesFull, listClassTodos, listStudents, createTodo, deleteTodo, todoDoneList, setTodoDoneBy, nextClassDays, kstToday, fmtMDW, type Cls, type TodoFull } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useSession } from '../../auth/session';
-import { toast, errToast } from '../../lib/toast';
+import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
+import { Skeleton } from '../../components/Skeleton';
+import { ErrorState } from '../../components/ErrorState';
 
 const KIND_LABEL: Record<'homework' | 'exam', string> = { homework: '숙제', exam: '시험' };
 
@@ -19,17 +21,23 @@ export function Todos() {
   const [due, setDue] = useState('');
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
+  const [ready, setReady] = useState(false); const [loadErr, setLoadErr] = useState(false);
   const [doneList, setDoneList] = useState<{ student_id: string; name: string; done: boolean }[]>([]);
   const addRef = useRef<HTMLDivElement>(null); const titleRef = useRef<HTMLInputElement>(null);
   const focusAdd = () => { addRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => titleRef.current?.focus(), 350); };
-  useEffect(() => { (async () => {
-    // 강사는 담당 반만 (오늘 화면과 같은 필터 — 넣기는 RLS 가 다시 막는다)
-    const all = await listClassesFull();
-    const cs: Cls[] = active?.role === 'teacher' ? all.filter(c => c.teacher_id === session?.user.id) : all;
-    setClasses(cs);
-    const want = nav.params.cid;
-    setCid((want && cs.some(c => c.id === want) ? want : cs[0]?.id) ?? '');
-  })().catch(errToast); }, []);
+  function loadClasses() {
+    setLoadErr(false);
+    (async () => {
+      // 강사는 담당 반만 (오늘 화면과 같은 필터 — 넣기는 RLS 가 다시 막는다)
+      const all = await listClassesFull();
+      const cs: Cls[] = active?.role === 'teacher' ? all.filter(c => c.teacher_id === session?.user.id) : all;
+      setClasses(cs);
+      const want = nav.params.cid;
+      setCid((want && cs.some(c => c.id === want) ? want : cs[0]?.id) ?? '');
+      setReady(true);
+    })().catch(e => { setLoadErr(true); errToast(e); });
+  }
+  useEffect(loadClasses, []);
   const cls = classes.find(c => c.id === cid);
   function load(id = cid) {
     if (!id) return;
@@ -54,16 +62,22 @@ export function Todos() {
     try { await createTodo(cid, kind, title.trim(), pick); toast('넣었어요. 학생 화면에 바로 보여요'); setTitle(''); setDue(''); load(); }
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
-  async function del(t: TodoFull) {
-    if (!confirm(`「${t.title}」을 지울까요? 학생 화면에서도 사라져요.`)) return;
-    try { await deleteTodo(t.id); toast('지웠어요'); load(); } catch (e) { errToast(e); }
+  /* 지우기는 5초 뒤에 진짜로 — 그 사이 되돌리기를 누르면 없던 일이 된다 (화면을 떠나도 삭제는 돈다) */
+  function del(t: TodoFull) {
+    setTodos(l => l.filter(x => x.id !== t.id));
+    const cancel = deferDelete(`todo:${t.id}`, () => { deleteTodo(t.id).then(() => load()).catch(e => { errToast(e); load(); }); });
+    toast(`「${t.title}」을 지웠어요`, { ms: 5000, action: { label: '되돌리기', onClick: () => { cancel(); load(); } } });
   }
+  const shown = todos.filter(t => !isPending(`todo:${t.id}`));   /* 되돌리기를 기다리는 줄은 다시 읽어도 숨긴 채로 */
   return (
     <section className="view on">
       <div className="head"><p className="lede">숙제·시험을 넣으면 <b>학생·학부모 화면에 바로</b> 보여요. 학생이 직접 체크하고, 원장님이 대신 체크할 수도 있어요.</p></div>
+      {!ready
+        ? (loadErr ? <ErrorState onRetry={loadClasses} /> : <Skeleton rows={4} />)
+        : <>
       {classes.length > 1 && <div className="seg">{classes.map(c => <button key={c.id} className={c.id === cid ? 'on' : ''} onClick={() => setCid(c.id)}>{c.name}</button>)}</div>}
       <div className="lab first" style={classes.length > 1 ? { marginTop: 22 } : undefined}>다가오는 할 것<span className="r">{cls?.name ?? ''}</span></div>
-      {todos.length ? <div className="box">{todos.map(t => (
+      {shown.length ? <div className="box">{shown.map(t => (
         <div key={t.id}>
           <div className="rw" style={{ cursor: 'pointer' }} onClick={() => toggleOpen(t)}>
             <span className={'tag ' + (t.kind === 'exam' ? 'warn' : 'ok')}>{KIND_LABEL[t.kind]}</span>
@@ -87,6 +101,7 @@ export function Todos() {
       <div style={{ padding: '8px 20px 0' }}><input className="input" type="date" value={pick} min={kstToday()} onChange={e => setDue(e.target.value)} /></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>넣기</button></div>
       <p className="muted" style={{ padding: '0 20px' }}>마감은 이 반 다음 수업일로 잡아 뒀어요. 원장님이 바꾸셔도 돼요.</p>
+      </>}
     </section>
   );
 }

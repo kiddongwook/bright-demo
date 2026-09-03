@@ -2,16 +2,18 @@ import { useEffect, useState } from 'react';
 import { listTodos, listAbsences, setTodoDone, closedByClass, nextClassDaysFor, kstToday, type Closed, fmtMDW, fmtDayOrToday, dowOf, weekRange, type Todo, type Absence } from '../../lib/api';
 import { useChild, TodoList, WeekStrip, useWeekAtt } from '../parent/Child';
 import { Empty } from '../../components/Empty';
+import { Skeleton } from '../../components/Skeleton';
+import { ErrorState } from '../../components/ErrorState';
 import { toast, errToast } from '../../lib/toast';
 import '../ui.css';
 
 export function Me() {
-  const me = useChild();
+  const { child: me, err, reload } = useChild();
   const [todos, setTodos] = useState<Todo[]>([]); const [absences, setAbsences] = useState<Absence[]>([]); const [closed, setClosed] = useState<Closed | undefined>();
   const att = useWeekAtt(me?.id ?? '');
   const load = () => { if (!me) return; listTodos(me.classes.map(c => c.id), me.id).then(setTodos).catch(errToast); listAbsences().then(setAbsences).catch(errToast); closedByClass().then(setClosed).catch(() => {}); };
   useEffect(load, [me?.id]);
-  if (!me) return <section className="view on" />;
+  if (!me) return <section className="view on">{err ? <ErrorState onRetry={reload} /> : <Skeleton rows={4} />}</section>;
   const left = todos.filter(t => !t.done).length;
   const next = nextClassDaysFor(me.classes, 1, closed)[0];
   const nextCls = next ? me.classes.find(c => (c.schedule ?? []).some(s => s.dow === dowOf(next))) : undefined;

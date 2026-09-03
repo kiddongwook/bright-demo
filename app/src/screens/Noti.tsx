@@ -3,11 +3,19 @@ import { listNotifications, markAllRead, type Noti as N } from '../lib/api';
 import { useNav, linkToNav, TABS, type Role } from '../lib/nav';
 import { useSession } from '../auth/session';
 import { Empty } from '../components/Empty';
+import { Skeleton } from '../components/Skeleton';
+import { ErrorState } from '../components/ErrorState';
 
 export function Noti({ onRead }: { onRead: () => void }) {
   const nav = useNav(); const { active } = useSession();
   const [list, setList] = useState<N[] | null>(null);
-  useEffect(() => { (async () => { const l = await listNotifications(); setList(l); if (l.some(n => !n.read_at)) { await markAllRead(); onRead(); } })(); }, []);
+  const [err, setErr] = useState(false);
+  function load() {
+    setErr(false);
+    (async () => { const l = await listNotifications(); setList(l); if (l.some(n => !n.read_at)) { await markAllRead(); onRead(); } })()
+      .catch(() => setErr(true));
+  }
+  useEffect(load, []);
   const role = (active?.role ?? 'parent') as Role;
   function open(n: N) {
     const t = linkToNav(n.link, role); if (!t) return;
@@ -16,7 +24,7 @@ export function Noti({ onRead }: { onRead: () => void }) {
   return (
     <section className="view on">
       <div className="lab first" style={{ marginTop: 20 }}>최근</div>
-      {list === null ? null : list.length === 0
+      {list === null ? (err ? <ErrorState onRetry={load} /> : <Skeleton rows={4} />) : list.length === 0
         ? <div className="box"><Empty icon="bell" title="아직 알림이 없어요" hint="출결·공지·문의 소식이 오면 여기에 모여요." /></div>
         : <div className="list">{list.map(n => (
             <button key={n.id} className={'post' + (n.read_at ? '' : ' new')} style={{ width: '100%', textAlign: 'left' }} onClick={() => open(n)}>

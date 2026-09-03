@@ -42,3 +42,31 @@
 .nextrow .big{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.03em}
 .nextrow .big em{font-style:normal;color:var(--brand)}
 .nextrow .s{display:block;font-size:var(--t-sub);color:var(--ink3);margin-top:5px}
+
+/* ── Task B — 스켈레톤 · 오류 · 확인 시트 ── */
+
+/* 스켈레톤: 줄 모양 회색 막대. 반짝임은 prefers-reduced-motion 에서 전역으로 꺼진다 */
+.sk .skr{display:flex;flex-direction:column;gap:8px;padding:16px;border-bottom:1px solid var(--rule2)}
+.sk .skr:last-child{border-bottom:0}
+.sk .b{display:block;height:12px;border-radius:6px;background:var(--rule2);
+  background-image:linear-gradient(90deg,var(--rule2) 0%,var(--rule) 50%,var(--rule2) 100%);
+  background-size:220% 100%;animation:shim 1.25s linear infinite}
+.sk .b1{width:52%}
+.sk .b2{width:76%;height:10px;opacity:.7}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+
+/* 오류 상태는 빈 상태 틀을 쓰고 아이콘만 경고색 */
+.empty .ico.warn{background:var(--danger-soft);color:var(--danger)}
+
+/* 확인 시트: 폰 틀(.app) 안에서만 덮는다 */
+.sheet-dim{position:absolute;inset:0;z-index:80;background:rgba(0,0,0,.38);display:flex;align-items:flex-end;justify-content:center;
+  animation:dim .16s ease-out}
+@keyframes dim{from{opacity:0}to{opacity:1}}
+.sheet{width:100%;max-width:480px;margin:0 auto;background:var(--paper);border-radius:18px 18px 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -10px 34px rgba(0,0,0,.22);animation:sheetup .22s cubic-bezier(.2,.7,.3,1)}
+@keyframes sheetup{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}
+.sheet .st{font-size:16px;font-weight:600;color:var(--ink);letter-spacing:-.02em;line-height:1.5}
+.sheet .sb{font-size:14px;color:var(--ink2);line-height:1.7;margin-top:8px}
+.sheet .sa{display:flex;gap:9px;margin-top:20px}
+.sheet .sa .btn{flex:1}
+.sheet .sa .btn.danger{background:var(--danger);color:#fff}

@@ -5,15 +5,16 @@ import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
+import { Skeleton } from '../../components/Skeleton';
+import { ErrorState } from '../../components/ErrorState';
 import '../ui.css';
 
 const WK: Record<AttStatus, string> = { present: 'p', late: 'l', absent: 'a', makeup: 'm' };
 const ATT_TODAY: Record<AttStatus, string> = { present: '오늘 출석했어요', late: '오늘 조금 늦게 왔어요', absent: '오늘 결석했어요', makeup: '오늘 보강에 왔어요' };
 export function useChild() {
   const { active } = useSession();
-  const [child, setChild] = useState<Student | null>(null);
-  useEffect(() => { myChildren().then(l => setChild(l.find(s => s.id === active?.student_id) ?? l[0] ?? null)).catch(errToast); }, [active?.student_id]);
-  return child;
+  const { data: child, err, reload } = useLoad<Student | null>(() => myChildren().then(l => l.find(s => s.id === active?.student_id) ?? l[0] ?? null), [active?.student_id]);
+  return { child, err, reload };
 }
 export function TodoList({ todos, editable, onToggle }: { todos: Todo[]; editable: boolean; onToggle?: (t: Todo) => void }) {
   if (!todos.length) return <Empty icon="check" title="할 것이 아직 없어요" hint="숙제·시험이 나오면 여기에 바로 보여요." />;
@@ -45,12 +46,12 @@ export function WeekStrip({ studentId, absences, att }: { studentId: string; abs
 }
 
 export function Child() {
-  const nav = useNav(); const child = useChild();
+  const nav = useNav(); const { child, err, reload } = useChild();
   const [todos, setTodos] = useState<Todo[]>([]); const [absences, setAbsences] = useState<Absence[]>([]); const [closed, setClosed] = useState<Closed | undefined>();
   const att = useWeekAtt(child?.id ?? '');
   const { data: notices } = useLoad(listNotices);
   useEffect(() => { if (!child) return; listTodos(child.classes.map(c => c.id), child.id).then(setTodos).catch(errToast); listAbsences().then(setAbsences).catch(errToast); closedByClass().then(setClosed).catch(() => {}); }, [child?.id]);
-  if (!child) return <section className="view on" />;
+  if (!child) return <section className="view on">{err ? <ErrorState onRetry={reload} /> : <Skeleton rows={4} />}</section>;
   const next = nextClassDaysFor(child.classes, 1, closed)[0];
   const nextCls = next ? child.classes.find(c => (c.schedule ?? []).some(s => s.dow === dowOf(next))) : undefined;
   const nextStart = nextCls?.schedule.find(s => s.dow === dowOf(next))?.start ?? '';
@@ -86,11 +87,11 @@ export function Child() {
 }
 
 export function Absence() {
-  const nav = useNav(); const child = useChild();
+  const nav = useNav(); const { child, err, reload } = useChild();
   const [date, setDate] = useState(''); const [reason, setReason] = useState(''); const [busy, setBusy] = useState(false);
   const [closed, setClosed] = useState<Closed | undefined>();
   useEffect(() => { closedByClass().then(setClosed).catch(() => {}); }, []);
-  if (!child) return <section className="view on" />;
+  if (!child) return <section className="view on">{err ? <ErrorState onRetry={reload} /> : <Skeleton rows={3} />}</section>;
   const opts = nextClassDaysFor(child.classes, 3, closed);
   const pick = date || opts[0];
   async function send() {
