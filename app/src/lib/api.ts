@@ -5,7 +5,7 @@ export type Cls = { id: string; name: string; schedule: Sched[] };
 export type Student = { id: string; name: string; classes: Cls[] };
 export type AttStatus = 'present' | 'late' | 'absent' | 'makeup';
 export type AttRow = { student_id: string; name: string; status: AttStatus | null };
-export type Notice = { id: string; title: string; body: string; target_class_id: string | null; created_at: string; reminded_at: string | null; read: boolean; read_count: number };
+export type Notice = { id: string; title: string; body: string; target_class_id: string | null; created_at: string; reminded_at: string | null; photos: string[]; read: boolean; read_count: number };
 export type Reader = { user_id: string; name: string; read_at: string | null };
 export type Inquiry = { id: string; student_id: string | null; asked_by: string; asker_name: string; student_name: string | null; topic: string; body: string; answer: string | null; answered_at: string | null; created_at: string };
 export type Faq = { id: string; q: string; a: string; sort: number };
@@ -195,12 +195,16 @@ export async function weekAttendance(studentId: string, from: string, to: string
 
 /* ── 공지 ── */
 export async function listNotices(): Promise<Notice[]> {
-  const rows = must(await supabase.from('notices').select('id, title, body, target_class_id, created_at, reminded_at, notice_reads(user_id)').order('created_at', { ascending: false })) as any[];
-  return rows.map(r => ({ ...r, read: (r.notice_reads ?? []).some((x: any) => x.user_id === ctx.userId), read_count: (r.notice_reads ?? []).length }));
+  const rows = must(await supabase.from('notices').select('id, title, body, target_class_id, created_at, reminded_at, photos, notice_reads(user_id)').order('created_at', { ascending: false })) as any[];
+  return rows.map(r => ({ ...r, photos: (r.photos ?? []) as string[], read: (r.notice_reads ?? []).some((x: any) => x.user_id === ctx.userId), read_count: (r.notice_reads ?? []).length }));
 }
-export async function createNotice(title: string, body: string, targetClassId: string | null): Promise<Notice> {
-  const r = must(await supabase.from('notices').insert({ academy_id: ctx.academyId, author_id: ctx.userId, title, body, target_class_id: targetClassId }).select('id, title, body, target_class_id, created_at, reminded_at').single()) as any;
-  return { ...r, read: false, read_count: 0 };
+export async function createNotice(title: string, body: string, targetClassId: string | null, photos: string[] = []): Promise<Notice> {
+  const r = must(await supabase.from('notices').insert({ academy_id: ctx.academyId, author_id: ctx.userId, title, body, target_class_id: targetClassId, photos }).select('id, title, body, target_class_id, created_at, reminded_at, photos').single()) as any;
+  return { ...r, photos: (r.photos ?? []) as string[], read: false, read_count: 0 };
+}
+/** 사진은 공지를 만든 뒤에 올린다(경로에 notice_id 가 들어가서). 다 올린 뒤 경로를 붙인다. */
+export async function updateNoticePhotos(id: string, photos: string[]) {
+  must(await supabase.from('notices').update({ photos }).eq('id', id));
 }
 export async function markNoticeRead(id: string) {
   await supabase.from('notice_reads').upsert({ notice_id: id, user_id: ctx.userId }, { onConflict: 'notice_id,user_id', ignoreDuplicates: true });
