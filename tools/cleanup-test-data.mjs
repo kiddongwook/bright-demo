@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, { auth: { persistSession: false } });
-const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%');
+const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%');
 let users = 0;
 for (const a of acs ?? []) {
   const { data: ms } = await admin.from('memberships').select('user_id').eq('academy_id', a.id);
