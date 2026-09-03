@@ -120,10 +120,11 @@ export function nextClassDaysFor(classes: Cls[], count: number, closed?: Closed)
 }
 /** 반별 월 출결표: 학생 × 수업일 (시간표 기준, 휴원 제외) */
 export async function classMonthTable(classId: string, ym: string): Promise<{ students: { id: string; name: string }[]; days: string[]; cells: Record<string, Record<string, AttStatus>> }> {
+  const grid = monthGrid(ym).days.filter((d): d is string => !!d); const first = grid[0], last = grid[grid.length - 1]; // 9월 31일 같은 날짜는 400
   const cls = must(await supabase.from('classes').select('id, schedule').eq('id', classId).single()) as Cls;
   const students = await listStudents(classId);
-  const rows = must(await supabase.from('attendance').select('student_id, date, status').eq('class_id', classId).gte('date', ym + '-01').lte('date', ym + '-31')) as { student_id: string; date: string; status: AttStatus }[];
-  const cal = must(await supabase.from('calendar').select('date, class_id').eq('kind', 'closed').gte('date', ym + '-01').lte('date', ym + '-31')) as { date: string; class_id: string | null }[];
+  const rows = must(await supabase.from('attendance').select('student_id, date, status').eq('class_id', classId).gte('date', first).lte('date', last)) as { student_id: string; date: string; status: AttStatus }[];
+  const cal = must(await supabase.from('calendar').select('date, class_id').eq('kind', 'closed').gte('date', first).lte('date', last)) as { date: string; class_id: string | null }[];
   const closed = new Set(cal.filter(c => !c.class_id || c.class_id === classId).map(c => c.date));
   const dows = new Set((cls.schedule ?? []).map(s => s.dow));
   const days = monthGrid(ym).days.filter((d): d is string => !!d && dows.has(dowOf(d)) && !closed.has(d));

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { listClasses, todayAttendance, saveAttendance, listAbsences, closedByClass, closedFor, markMakeupAttended, type Closed, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
+import { listClassesFull, todayAttendance, saveAttendance, listAbsences, closedByClass, closedFor, markMakeupAttended, type Closed, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttRow, type AttStatus, type Absence } from '../../lib/api';
 import { useNav } from '../../lib/nav';
+import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 
 const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
 const CLS: Record<AttStatus, string> = { present: 'p', late: 'l', absent: 'a', makeup: 'p' };
 
 export function Today() {
-  const nav = useNav();
+  const nav = useNav(); const { active, session } = useSession();
   const today = kstToday();
   const [classes, setClasses] = useState<Cls[]>([]);
   const [cid, setCid] = useState<string>('');
@@ -16,7 +17,9 @@ export function Today() {
   const [busy, setBusy] = useState(false);
   const [closed, setClosed] = useState<Closed | undefined>();
   useEffect(() => { (async () => {
-    const cs = await listClasses(); setClasses(cs);
+    // 강사는 담당 반만 (반 목록은 학원 전체가 보이므로 여기서 거른다 — 학생·출결은 RLS 가 이미 막는다)
+    const all = await listClassesFull();
+    const cs: Cls[] = active?.role === 'teacher' ? all.filter(c => c.teacher_id === session?.user.id) : all; setClasses(cs);
     closedByClass().then(setClosed).catch(() => {});
     const todayDow = dowOf(today);
     const pick = cs.find(c => (c.schedule ?? []).some(s => s.dow === todayDow)) ?? cs[0];
