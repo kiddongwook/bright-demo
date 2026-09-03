@@ -78,7 +78,7 @@ export function More() {
   );
 }
 
-const COLORS = ['#2B5BD9', '#1C1C1C', '#E8912D', '#5B7A5B', '#9C8B74'];
+const COLORS = ['#3182F6', '#191F28', '#0FA37F', '#F97316', '#7C5CE6'];
 export function Academy() {
   const { data, err, reload, setData } = useLoad(academy);
   const [busy, setBusy] = useState(false);

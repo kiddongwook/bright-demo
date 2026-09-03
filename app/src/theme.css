@@ -2,15 +2,15 @@
 
 :root{
   color-scheme: light dark;
-  --paper:#FFFFFF; --ground:#F2F3F5; --stage:#E3E3DF;
+  --paper:#FFFFFF; --ground:#F5F6F8; --stage:#E3E3DF; --track:#EBEDF1;
   --ink:#1C1C1C; --ink2:#5A5A57; --ink3:#9A9A96;
-  --rule:#E2E4E8; --rule2:#EDEFF2;
+  --rule:#E6E8EB; --rule2:#EEF0F3;
   --warn:#B8860B; --warn-soft:#FBF1DC; --warn-ink:#9A6B10;
   --danger:#C0392B; --danger-soft:#FAE9E6;
   --ok:#1F7A4D; --ok-soft:#E6F2EA; --ok-ink:#2F6B45;
   --inverse:#1C1C1C; --inverse-ink:#fff; --inverse-ink-dim:rgba(255,255,255,.6); --inverse-accent:#FFD86B;
   --closed-stripe:#E4E5E8;
-  --brand:#2B5BD9; --brand-soft:#E8EEFB;   /* 학원 강조색 — 기본 남색, 원장이 칩으로 바꾼다 */
+  --brand:#3182F6; --brand-soft:#EAF2FF;   /* 학원 강조색 — 기본 파랑, 원장이 칩으로 바꾼다 */
   --ui:"Pretendard Variable","Pretendard",system-ui,sans-serif;
   /* 8pt 리듬 · 글자 크기 계단 */
   --s1:8px; --s2:16px; --s3:24px; --s4:32px;
@@ -18,7 +18,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --paper:#1B1C1F; --ground:#111214; --stage:#23252A;
+    --paper:#1B1C1F; --ground:#111214; --stage:#23252A; --track:#0D0E11;
     --ink:#F1F1EE; --ink2:#B9BAB6; --ink3:#83847F;
     --rule:#2C2D31; --rule2:#26272B;
     --warn-soft:#3A2E12; --warn-ink:#E3B95C;
@@ -26,7 +26,7 @@
     --ok-soft:#16301F; --ok-ink:#7CC79A;
     --inverse:#F1F1EE; --inverse-ink:#141517; --inverse-ink-dim:rgba(20,21,23,.62); --inverse-accent:#7A4E00;
     --closed-stripe:#33353A;
-    --brand-soft:#1E2A4A;
+    --brand-soft:#16233A;
   }
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -104,8 +104,8 @@ select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
 .lab{font-size:var(--t-label);font-weight:700;letter-spacing:.02em;color:var(--ink2);padding:0 20px;margin:var(--s3) 0 9px;display:flex;align-items:baseline;gap:8px}
 .lab.first{margin-top:0}
 .lab .r{margin-left:auto;font-weight:500}
-.box{margin:0 20px;border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.box.soft{border-color:var(--rule)}
+.box{margin:0 20px;border:1px solid var(--rule2);border-radius:16px;overflow:hidden;background:var(--paper)}
+.box.soft{border-color:var(--rule2)}
 /* 목록형: 화면 끝까지 붙는 줄 묶음. 카드(.box) 와 짝을 이룬다 */
 .list{margin:0;border:0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);border-radius:0;box-shadow:none;background:var(--paper)}
 .list .rw{padding:14px 20px}
@@ -121,7 +121,7 @@ select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
 .rw.soon .t{color:var(--ink2)}
 .rw .cb{width:24px;height:24px;border-radius:50%;border:1px solid var(--brand);flex:0 0 auto;display:grid;place-items:center;font-size:13px;background:var(--paper);color:var(--brand)}
 .rw .cb.on{background:var(--brand);color:#fff}
-.nm{width:34px;height:34px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto}
+.nm{width:34px;height:34px;border-radius:50%;background:var(--ground);color:var(--ink2);display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto}
 .tag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;flex:0 0 auto}
 .tag.ok{color:var(--ok-ink);background:var(--ok-soft)}
 .tag.warn{color:var(--warn-ink);background:var(--warn-soft)}
@@ -136,11 +136,16 @@ select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
 .muted{font-size:var(--t-sub);color:var(--ink3);line-height:1.65}
 
 /* ── 버튼 ── */
-.btn{display:block;width:100%;background:var(--brand);color:#fff;font-weight:600;font-size:15px;padding:14px;border-radius:11px;letter-spacing:-.02em;text-align:center}
-.btn.line{background:var(--paper);color:var(--brand);border:1px solid var(--brand)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;background:var(--brand);color:#fff;
+  font-weight:600;font-size:16px;padding:12px 16px;border-radius:14px;letter-spacing:-.02em;text-align:center;box-shadow:none}
+/* 두 번째 단추는 눌리는 자리만 남기고 색을 뺀다 — 파랑은 한 화면에 하나 */
+.btn.line{background:var(--paper);color:var(--ink);border:1px solid var(--rule)}
+.btn.line:hover,.btn.line:active{background:var(--ground)}
+.btn.danger{background:var(--danger);color:#fff}
 .btn.sm{width:auto;flex:0 0 auto;padding:8px 13px;font-size:12.5px;border-radius:8px}
 .btn:active{opacity:.82}
 .btnrow{display:flex;gap:9px;padding:var(--s2) 20px 0}
+.btnrow+.btnrow{padding-top:10px}
 .btnrow .btn{flex:1}
 /* 눌리는 느낌 — prefers-reduced-motion 에서는 아래 블록이 통째로 끈다 */
 .btn,.rw,.tabbar a,.seg button{transition:transform .1s ease,opacity .15s}
@@ -206,24 +211,28 @@ select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
 .post:last-child{border-bottom:0}
 .post .pt{font-size:15px;font-weight:600;letter-spacing:-.02em;line-height:1.45}
 .post .pm{font-size:12px;color:var(--ink3);margin-top:5px;display:flex;gap:6px;flex-wrap:wrap}
-.post .pm b{color:var(--brand);font-weight:700}
+.post .pm b{color:var(--ink2);font-weight:700}
 .post.new .pt::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--danger);margin-right:7px;vertical-align:middle}
 .faq summary{list-style:none;cursor:pointer;padding:14px 16px;font-size:14.5px;font-weight:600;letter-spacing:-.02em;display:flex;gap:10px;align-items:center}
-.faq summary::before{content:"Q";font-size:12px;font-weight:700;color:var(--brand);flex:0 0 auto}
+.faq summary::before{content:"Q";font-size:12px;font-weight:700;color:var(--ink3);flex:0 0 auto}
 .faq summary::-webkit-details-marker{display:none}
 .faq[open] summary{border-bottom:1px solid var(--rule2)}
 .faq .a{padding:12px 16px 16px 36px;font-size:13.5px;line-height:1.75;color:var(--ink2)}
 .faq{border-bottom:1px solid var(--rule)}
 .faq:last-child{border-bottom:0}
 .bubble{margin:0 20px;border:1px solid var(--rule);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.75;background:var(--paper)}
-.bubble.me{border-color:var(--brand);background:var(--brand-soft)}
+.bubble.me{border-color:var(--rule);background:var(--ground)}
 .bubble .who{font-size:11.5px;font-weight:600;color:var(--ink3);margin-bottom:5px}
 .bubble+.bubble{margin-top:10px}
-.seg{display:flex;gap:6px;padding:0 20px}
-.seg button{flex:1;padding:10px;border:1px solid var(--rule);border-radius:9px;font-size:13px;font-weight:600;color:var(--ink3);background:var(--paper)}
-.seg button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+/* 갈래 단추: 회색 홈 위에 흰 알약이 얹힌 iOS 식. 파랑은 안 쓴다 — 고른 것은 흰색이 알린다 */
+.seg{display:flex;gap:4px;padding:4px;background:var(--track);border-radius:14px}
+.view>.seg{margin:0 20px}
+.seg button{flex:1;min-width:0;padding:8px 6px;border:0;border-radius:10px;font-size:15px;font-weight:600;color:var(--ink2);
+  background:transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .seg.col{flex-direction:column}
-.seg.col button{text-align:left;padding:12px 14px}
+.seg.col button{text-align:left;padding:12px 14px;white-space:normal;overflow:visible;text-overflow:clip}
+.seg.col button.on{box-shadow:inset 0 0 0 1.5px var(--ink),0 1px 2px rgba(0,0,0,.08)}
 
 /* ── 더보기 ── */
 .chips{display:flex;gap:10px;padding:2px 0}
@@ -252,7 +261,7 @@ select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
 
 /* 4주차 관리: 접기 · 월 달력 · 타임라인 */
 .fold{margin:12px 20px 0}.fold summary{list-style:none;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink3);padding:6px 0}.fold summary::-webkit-details-marker{display:none}.fold summary::before{content:"▸ ";}.fold[open] summary::before{content:"▾ ";}.fold .box{margin-top:6px}
-.calnav{background:none;border:0;color:var(--brand);font-size:18px;padding:0 10px;cursor:pointer;line-height:1}
+.calnav{background:none;border:0;color:var(--ink2);font-size:18px;padding:0 10px;cursor:pointer;line-height:1}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:10px 10px 12px}
 .cal b{font-size:11px;font-weight:600;color:var(--ink3);text-align:center;padding:2px 0 4px}
 .cal i{position:relative;aspect-ratio:1;border-radius:9px;display:grid;place-items:center;font-style:normal;font-size:12.5px;color:var(--ink2);background:var(--ground)}
@@ -278,7 +287,8 @@ select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
   body.wide .app{width:min(96vw,1024px);border-radius:16px}
   body.wide .box{margin:0 var(--s4)}
   body.wide .head,body.wide .btnrow{padding-left:var(--s4);padding-right:var(--s4)}
-  body.wide .lab,body.wide .seg{padding:0 var(--s4)}
+  body.wide .lab{padding:0 var(--s4)}
+  body.wide .view>.seg{margin:0 var(--s4)}
 }
 .legend .more{margin-left:auto;background:none;border:0;color:var(--brand);font-weight:700;font-size:12px;cursor:pointer}
 /* 8주차: 공지 사진 */
@@ -328,7 +338,8 @@ select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
   /* body.wide 가 넓힌 좌우 여백은 본문 칸 안에서 다시 20px 로 — 32px 칸 여백과 겹치지 않게 */
   body.pc.wide .box{margin:0 20px}
   body.pc.wide .head,body.pc.wide .btnrow{padding-left:20px;padding-right:20px}
-  body.pc.wide .lab,body.pc.wide .seg{padding:0 20px}
+  body.pc.wide .lab{padding:0 20px}
+  body.pc.wide .view>.seg{margin:0 20px}
   /* 겹쳐 뜨는 것들은 본문 칸 기준으로 */
   body.pc .sheet-dim{left:232px;align-items:center}
   body.pc .sheet{max-width:420px;border-radius:18px;padding-bottom:22px}

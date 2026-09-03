@@ -21,9 +21,21 @@ export function brandFor(color: string, dark: boolean): string {
   const mix = rgb.map(v => Math.round(v + (255 - v) * 0.62));
   return '#' + mix.map(v => v.toString(16).padStart(2, '0')).join('');
 }
+/* 연한 강조색(--brand-soft): 강조색을 바탕색에 옅게 섞어 만든다 — 어떤 색을 골라도 파랑 잔상이 남지 않게 */
+const toHex = (rgb: number[]) => '#' + rgb.map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+export function softFor(color: string, dark: boolean): string | null {
+  const rgb = hex(brandFor(color, dark));
+  if (!rgb) return null;
+  const base = dark ? [27, 28, 31] : [255, 255, 255];
+  const t = dark ? 0.22 : 0.12;   // 강조색 비율
+  return toHex(rgb.map((v, i) => base[i] + (v - base[i]) * t));
+}
 export function applyBrand(color: string) {
   lastBrand = color;
-  document.documentElement.style.setProperty('--brand', brandFor(color, getSnapshot()));
+  const dark = getSnapshot();
+  document.documentElement.style.setProperty('--brand', brandFor(color, dark));
+  const soft = softFor(color, dark);
+  if (soft) document.documentElement.style.setProperty('--brand-soft', soft);
 }
 mq()?.addEventListener('change', () => { if (lastBrand) applyBrand(lastBrand); });
 

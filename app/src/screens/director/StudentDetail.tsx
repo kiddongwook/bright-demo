@@ -27,16 +27,18 @@ export function StudentDetail() {
   return (
     <section className="view on">
       <div className="head">
-        <h1 className="hello">{s.name}{s.status === 'left' && <span className="tag muted" style={{ marginLeft: 8, verticalAlign: 'middle' }}>퇴원</span>}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <h1 className="hello" style={{ margin: 0 }}>{s.name}{s.status === 'left' && <span className="tag muted" style={{ marginLeft: 8, verticalAlign: 'middle' }}>퇴원</span>}</h1>
+          {s.status === 'active' && <button className="btn sm line" onClick={() => nav.push('student-edit', { id })}>편집</button>}
+        </div>
         <p className="lede">{s.classes.map(c => c.name).join(' · ') || '반 없음'}{s.student_phone ? ` · 학생 ${formatPhone(s.student_phone)}` : ''}{s.parent_phones.length ? ` · 학부모 ${s.parent_phones.map(formatPhone).join(', ')}` : ''}</p>
       </div>
       <div className="seg" style={{ marginBottom: 6 }}>
         <button className={tab === 'att' ? 'on' : ''} onClick={() => setTab('att')}>출결</button>
         <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>기록</button>
         <button className={tab === 'note' ? 'on' : ''} onClick={() => setTab('note')}>메모</button>
-        {s.status === 'active' ? <button className="btn sm line" style={{ flex: '0 0 auto' }} onClick={() => nav.push('student-edit', { id })}>편집</button>
-          : <button className="btn sm" style={{ flex: '0 0 auto' }} disabled={busy} onClick={reenroll}>다시 다니기</button>}
       </div>
+      {s.status === 'left' && <div className="btnrow" style={{ paddingTop: 0 }}><button className="btn line" disabled={busy} onClick={reenroll}>다시 다니기</button></div>}
       {tab === 'att' && <MonthCal sid={id} />}
       {tab === 'log' && <Timeline sid={id} />}
       {tab === 'note' && <Notes sid={id} />}
