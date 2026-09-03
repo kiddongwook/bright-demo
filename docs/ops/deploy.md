@@ -41,3 +41,4 @@ node --env-file=../.env.local setup-outbox.mjs https://kiddongwook.github.io/bri
 
 ## 확인 기록
 - 2026-09-03 첫 배포(`8619e45`): 푸시 직후 Pages 반영. `manifest.webmanifest` 200 `application/manifest+json`, `sw.js` 200. 실제 주소에서 문 → 인증 → 홈, 서비스워커 scope `https://kiddongwook.github.io/bright-demo/pwa/` 활성. `APP_URL` 을 실제 주소로 바꾼 뒤 알림톡 링크가 `https://kiddongwook.github.io/bright-demo/pwa/?l=…` 로 나오고, 새 브라우저에서 누르면 공지가 제한 세션으로 열림.
+- 2026-09-03 둘째 배포(`e373a56`): 옛 서비스워커가 남은 브라우저에서 실제 주소 열고 로그인 → 갱신 확인 1초 안에 "새 버전이 있어요" → 새로고침 → 번들 교체, 더보기 → 앱 정보·진단 버전 `2026-09-03 16:15`. 실제 도메인에서 갱신 흐름 확인 끝.
