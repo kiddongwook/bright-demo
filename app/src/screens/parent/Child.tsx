@@ -9,6 +9,7 @@ import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { BottomCta } from '../../components/BottomCta';
 import { usePop } from '../../lib/pop';
+import { IcBook, IcTarget } from '../../components/icons';
 import '../ui.css';
 
 const WK: Record<AttStatus, string> = { present: 'p', late: 'l', absent: 'a', makeup: 'm' };
@@ -24,7 +25,7 @@ export function TodoList({ todos, editable, onToggle }: { todos: Todo[]; editabl
   return <>{todos.map(t => (
     <div key={t.id} className={'todo' + (t.done ? ' done' : '')}>
       {editable ? <button className={'cb' + pop.cls(t.id)} onClick={async () => { await onToggle?.(t); if (!t.done) pop.fire(t.id); }} onAnimationEnd={pop.end} aria-label="했어요">{t.done ? '✓' : ''}</button> : <span className="cb">{t.done ? '✓' : ''}</span>}
-      <div className="bd"><div className={'k' + (t.kind === 'exam' ? ' exam' : '')}>{t.kind === 'exam' ? '시험' : '숙제'}</div><div className="t">{t.title}</div><div className="s">{fmtMDW(t.due_date)}까지</div></div>
+      <div className="bd"><div className={'k' + (t.kind === 'exam' ? ' exam' : '')}>{t.kind === 'exam' ? <><IcTarget size={13} style={{ verticalAlign: -2, marginRight: 3 }} />시험</> : <><IcBook size={13} style={{ verticalAlign: -2, marginRight: 3 }} />숙제</>}</div><div className="t">{t.title}</div><div className="s">{fmtMDW(t.due_date)}까지</div></div>
     </div>))}</>;
 }
 /** 이번 주 출결 — 주 스트립과 "오늘 출결" 줄이 같이 쓴다 (홈에서 한 번만 읽는다) */

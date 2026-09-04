@@ -27,7 +27,7 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   }
   if (academy === null) {
     return (
-      <section className="view on" style={{ background: 'var(--paper)' }}>
+      <section className="view on" style={{ background: 'var(--ground)' }}>
         <div className="gate">
           <h1>학원을 찾을 수 없어요</h1>
           <p>원장님께 받은 주소로 다시 들어와 주세요.</p>
@@ -36,7 +36,7 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
     );
   }
   return (
-    <section className="view on" style={{ background: 'var(--paper)' }}>
+    <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
         <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-medium.png')} alt={name} />
         <h1>문을 열어드릴게요</h1>

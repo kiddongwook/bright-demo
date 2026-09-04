@@ -7,6 +7,7 @@ import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { confirmSheet } from '../../components/Confirm';
+import { IcPhone } from '../../components/icons';
 
 const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
 const KIND: Record<TimelineItem['kind'], string> = { attendance: '출결', absence: '결석', inquiry: '문의', note: '메모' };
@@ -31,7 +32,11 @@ export function StudentDetail() {
           <h1 className="hello" style={{ margin: 0 }}>{s.name}{s.status === 'left' && <span className="tag muted" style={{ marginLeft: 8, verticalAlign: 'middle' }}>퇴원</span>}</h1>
           {s.status === 'active' && <button className="btn sm line" onClick={() => nav.push('student-edit', { id })}>편집</button>}
         </div>
-        <p className="lede">{s.classes.map(c => c.name).join(' · ') || '반 없음'}{s.student_phone ? ` · 학생 ${formatPhone(s.student_phone)}` : ''}{s.parent_phones.length ? ` · 학부모 ${s.parent_phones.map(formatPhone).join(', ')}` : ''}</p>
+        <p className="lede">
+          {s.classes.map(c => c.name).join(' · ') || '반 없음'}
+          {s.student_phone ? <> · <a href={'tel:' + s.student_phone} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none', color: 'inherit' }}><IcPhone size={13} style={{ color: 'var(--brand)', verticalAlign: -1 }} />학생 {formatPhone(s.student_phone)}</a></> : ''}
+          {s.parent_phones.length ? <> · {s.parent_phones.map(p => <a key={p} href={'tel:' + p} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none', color: 'inherit' }}><IcPhone size={13} style={{ color: 'var(--brand)', verticalAlign: -1 }} />학부모 {formatPhone(p)}</a>)}</> : ''}
+        </p>
       </div>
       <div className="seg" style={{ marginBottom: 6 }}>
         <button className={tab === 'att' ? 'on' : ''} onClick={() => setTab('att')}>출결</button>

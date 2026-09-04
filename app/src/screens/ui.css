@@ -2,7 +2,7 @@
 
 /* 빈 상태: 아이콘 + 제목 + 한 줄 + (CTA) */
 .empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:var(--s3) 20px}
-.empty .ico{width:40px;height:40px;border-radius:50%;background:var(--rule2);color:var(--ink3);display:grid;place-items:center;flex:0 0 auto}
+.empty .ico{width:40px;height:40px;border-radius:50%;background:var(--rule);color:var(--ink3);display:grid;place-items:center;flex:0 0 auto}
 .empty .ico svg{width:20px;height:20px}
 .empty .et{font-size:var(--t-body);font-weight:600;color:var(--ink);letter-spacing:-.01em}
 .empty .eh{font-size:var(--t-sub);color:var(--ink3);line-height:1.6;max-width:26em}
@@ -11,24 +11,26 @@
 
 /* 오늘 요약 타일 */
 .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:var(--s1);margin:0 20px}
-.summary .st{background:var(--paper);border:1px solid var(--rule2);border-radius:var(--r-card);padding:12px 13px;text-align:left;
-  display:flex;flex-direction:column;gap:5px;min-height:70px}
-.summary .st .k{font-size:var(--t-label);font-weight:600;color:var(--ink3);letter-spacing:.01em}
+.summary .st{background:var(--tile1);border:0;border-radius:var(--r-card);padding:14px 15px;text-align:left;
+  display:flex;flex-direction:column;gap:5px;min-height:74px}
+.summary .st:nth-child(3n+2){background:var(--tile2)}
+.summary .st:nth-child(3n+3){background:var(--tile3)}
+.summary .st .k{font-size:var(--t-label);font-weight:600;color:var(--ink2);letter-spacing:.01em}
 .summary .st .v{white-space:nowrap;font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.summary .st .v em{font-style:normal;font-size:12px;font-weight:600;color:var(--ink3);margin-left:3px}
+.summary .st .v em{font-style:normal;font-size:12px;font-weight:600;color:var(--ink2);margin-left:3px}
 .summary .st.hot .v{color:var(--brand)}
-.summaryline{margin:0 20px;padding:14px 15px;border:1px solid var(--rule2);border-radius:var(--r-card);background:var(--paper);
+.summaryline{margin:0 20px;padding:14px 15px;border:0;border-radius:var(--r-card);background:var(--paper);
   font-size:var(--t-body);color:var(--ink2);line-height:1.6}
 .summaryline b{color:var(--ink);font-weight:600}
 
 /* 첫걸음 카드 */
-.fs{margin:var(--s2) 20px 0;border:1px solid var(--rule2);border-radius:var(--r-card);background:var(--paper);overflow:hidden}
+.fs{margin:var(--s2) 20px 0;border:0;border-radius:var(--r-card);background:var(--paper);overflow:hidden}
 .fs .fshead{display:flex;align-items:baseline;gap:8px;padding:14px 16px 10px}
 .fs .fshead .t{font-size:var(--t-title);font-weight:700;color:var(--ink);letter-spacing:-.02em}
 .fs .fshead .hide{margin-left:auto;font-size:var(--t-sub);color:var(--ink3);font-weight:500}
 .fs .fsl{font-size:var(--t-sub);color:var(--ink3);padding:0 16px 12px;line-height:1.6}
-.fs .step{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 16px;border-top:1px solid var(--rule2);min-height:56px}
-.fs .step .chk{width:24px;height:24px;border-radius:50%;border:1px solid var(--rule);color:var(--ink3);flex:0 0 auto;
+.fs .step{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 16px;border-top:1px solid var(--rule);min-height:56px}
+.fs .step .chk{width:24px;height:24px;border-radius:50%;border:1px solid var(--rule);background:var(--ground);color:var(--ink3);flex:0 0 auto;
   display:grid;place-items:center;font-size:13px;font-weight:700}
 .fs .step.done .chk{background:var(--ok-soft);border-color:var(--ok-soft);color:var(--ok-ink)}
 .fs .step .bd{flex:1 1 auto;min-width:0}
@@ -37,19 +39,21 @@
 .fs .step .bd .s{display:block;font-size:var(--t-sub);color:var(--ink3);margin-top:3px;line-height:1.45}
 .fs .step .goto{font-size:var(--t-sub);font-weight:600;color:var(--brand);flex:0 0 auto}
 
-/* 다음 수업 강조 줄 (학부모·학생 홈) */
-.rw.nextrow{display:block;padding:15px 16px}
-.nextrow .big{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.03em}
-.nextrow .big em{font-style:normal;color:var(--brand)}
-.nextrow .s{display:block;font-size:var(--t-sub);color:var(--ink3);margin-top:5px}
+/* 다음 수업 (학부모·학생 홈) — 그라데이션 히어로 카드.
+   .box 안 단독 자식이라 카드 전체가 그라데이션이 된다. 눌림 색(.rw:active)은 여기서 되돌린다 */
+.rw.nextrow{display:block;padding:18px 16px;background:var(--grad);color:#fff;border-bottom:0;border-radius:var(--r-card)}
+.rw.nextrow:active{background:var(--grad)}
+.nextrow .big{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.nextrow .big em{font-style:normal;color:#FFE066}
+.rw.nextrow .s, .rw.nextrow .bd .s{display:block;font-size:var(--t-sub);color:rgba(255,255,255,.78);margin-top:5px}
 
 /* ── Task B — 스켈레톤 · 오류 · 확인 시트 ── */
 
 /* 스켈레톤: 줄 모양 회색 막대. 반짝임은 prefers-reduced-motion 에서 전역으로 꺼진다 */
-.sk .skr{display:flex;flex-direction:column;gap:8px;padding:16px;border-bottom:1px solid var(--rule2)}
+.sk .skr{display:flex;flex-direction:column;gap:8px;padding:16px;border-bottom:1px solid var(--rule)}
 .sk .skr:last-child{border-bottom:0}
-.sk .b{display:block;height:12px;border-radius:6px;background:var(--rule2);
-  background-image:linear-gradient(90deg,var(--rule2) 0%,var(--rule) 50%,var(--rule2) 100%);
+.sk .b{display:block;height:12px;border-radius:6px;background:var(--rule);
+  background-image:linear-gradient(90deg,var(--rule) 0%,var(--rule2) 50%,var(--rule) 100%);
   background-size:220% 100%;animation:shim 1.25s linear infinite}
 .sk .b1{width:52%}
 .sk .b2{width:76%;height:10px;opacity:.7}
@@ -62,8 +66,8 @@
 .sheet-dim{position:absolute;inset:0;z-index:80;background:rgba(0,0,0,.38);display:flex;align-items:flex-end;justify-content:center;
   animation:dim .16s ease-out}
 @keyframes dim{from{opacity:0}to{opacity:1}}
-.sheet{width:100%;max-width:480px;margin:0 auto;background:var(--paper);border-radius:var(--r-sheet) var(--r-sheet) 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
-  box-shadow:0 -10px 34px rgba(0,0,0,.22);animation:sheetup .22s cubic-bezier(.2,.7,.3,1)}
+.sheet{width:100%;max-width:480px;margin:0 auto;background:var(--ground);border-radius:var(--r-sheet) var(--r-sheet) 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -1px 0 var(--rule),0 -10px 34px rgba(0,0,0,.22);animation:sheetup .22s cubic-bezier(.2,.7,.3,1)}
 @keyframes sheetup{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}
 .sheet .st{font-size:16px;font-weight:600;color:var(--ink);letter-spacing:-.02em;line-height:1.5}
 .sheet .sb{font-size:14px;color:var(--ink2);line-height:1.7;margin-top:8px}
@@ -74,12 +78,51 @@
 /* ── Task C — 공지 쓰기: 템플릿 칩 · 미리보기 ── */
 /* .chip 은 더보기의 색 동그라미라서 이름을 따로 쓴다 */
 .chips-row{display:flex;flex-wrap:wrap;gap:6px;padding:0 20px}
-.chips-row button{min-height:40px;padding:9px 14px;border:1px solid var(--rule);border-radius:var(--r-tag);background:var(--paper);
+.chips-row button{min-height:40px;padding:9px 14px;border:1px solid transparent;border-radius:var(--r-tag);background:var(--paper);
   color:var(--ink2);font-size:13px;font-weight:600;letter-spacing:-.01em;transition:transform .1s ease,opacity .15s}
 .chips-row button:active{transform:scale(.98)}
 .chips-row button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
 /* 미리보기: 학부모가 여는 화면 그대로를 카드 안에 담는다 */
-.notice-preview{margin-top:6px;border:1px solid var(--rule2);border-radius:var(--r-card);background:var(--paper);
+.notice-preview{margin-top:6px;border:1px solid var(--rule);border-radius:var(--r-card);background:var(--ground);
   padding:0 0 18px;overflow:hidden}
 .notice-preview .head{padding-top:var(--s2)}
 .notice-preview .hello{font-size:var(--t-title)}
+
+/* ── Task D — 오늘 출석부: 이름 타일 ── */
+/* 줄 목록 + ○△✕ 대신 격자. 반 전체가 한 눈에 들어오고, 누를 곳이 이름 그 자체가 된다.
+   색은 학원 강조색(--brand)과 따로 노는 의미색(--att-*)이다 — 원장이 색을 바꿔도 출결은 그대로. */
+.att{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s1);margin:0 20px}
+.stu{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:12px 8px 11px;
+  background:var(--paper);border:1.5px solid transparent;border-radius:var(--r-card);text-align:center;
+  transition:transform .1s ease,background .12s ease,border-color .12s ease}
+.stu:active{transform:scale(.97)}
+.stu .av{width:var(--att-av);height:var(--att-av);border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--avatar);color:var(--avatar-ink);font-size:16px;font-weight:700;letter-spacing:-.02em}
+.stu .n{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:13.5px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.stu .st{font-size:11px;font-weight:700;letter-spacing:.01em;line-height:1;color:var(--ink3)}
+.stu.p{background:var(--att-ok-soft);border-color:var(--att-ok)}
+.stu.p .av{background:var(--att-ok);color:#fff}
+.stu.p .st{color:var(--att-ok-ink)}
+.stu.l{background:var(--att-late-soft);border-color:var(--att-late)}
+.stu.l .av{background:var(--att-late);color:#fff}
+.stu.l .st{color:var(--att-late-ink)}
+.stu.a{background:var(--att-abs-soft);border-color:var(--att-abs)}
+.stu.a .av{background:var(--att-abs);color:#fff}
+.stu.a .st{color:var(--att-abs-ink)}
+/* 라벨 줄 오른쪽의 글자 단추 (전원 출석 · 전체 지우기) */
+.lab button.r{margin-left:auto;background:none;border:0;padding:2px 0;color:var(--brand);font-size:12px;font-weight:700;cursor:pointer}
+.lab button.r:active{opacity:.7}
+/* 격자 아래 한 줄 셈 */
+.sum{margin:10px 20px 0;font-size:var(--t-sub);font-weight:600;letter-spacing:-.01em;color:var(--ink3);font-variant-numeric:tabular-nums}
+.sum b{font-weight:700;color:var(--ink2)}
+.sum b.p{color:var(--att-ok-ink)}
+.sum b.l{color:var(--att-late-ink)}
+.sum b.a{color:var(--att-abs-ink)}
+/* PC 관리 모드는 본문 칸이 960px — 한 줄에 6장까지 */
+@media(min-width:1024px){body.pc .att{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}}
+
+/* 눌리는 요약 타일에만 작은 꺾쇠 — 첫 타일(오늘 수업)은 눌리지 않으니 붙이지 않는다 */
+.summary button.st .k{display:flex;align-items:center;gap:3px}
+.summary button.st .k::after{content:"›";color:var(--ink3);font-weight:700;line-height:1}
+.summary button.st:active{transform:scale(.98)}

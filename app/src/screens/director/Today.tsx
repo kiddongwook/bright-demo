@@ -11,8 +11,13 @@ import { BottomCta } from '../../components/BottomCta';
 import { usePop } from '../../lib/pop';
 import '../ui.css';
 
-const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
+/* 출석부 타일 — 이름 아래 말, 타일 색, 다음에 누르면 갈 곳 */
+const LABEL: Record<AttStatus, string> = { present: '출석', late: '지각', absent: '결석', makeup: '보강' };
 const CLS: Record<AttStatus, string> = { present: 'p', late: 'l', absent: 'a', makeup: 'p' };
+/* 미기록 → 출석 → 지각 → 결석 → 미기록. 보강(보강 화면에서 붙는다)에서 누르면 보통 차례로 들어온다 */
+const NEXT: Record<string, AttStatus | null> = { '': 'present', present: 'late', late: 'absent', absent: null, makeup: 'present' };
+/* 지금 화면의 표시 — 마지막으로 불러온(또는 저장한) 것과 견줘 "고쳤는지"를 본다 */
+const snap = (rs: AttRow[]): Record<string, AttStatus | null> => Object.fromEntries(rs.map(r => [r.student_id, r.status]));
 
 export function Today() {
   const nav = useNav(); const { active, session } = useSession();
@@ -20,6 +25,7 @@ export function Today() {
   const [classes, setClasses] = useState<Cls[]>([]);
   const [cid, setCid] = useState<string>('');
   const [rows, setRows] = useState<AttRow[]>([]);
+  const [base, setBase] = useState<Record<string, AttStatus | null>>({});   // 서버에 있는 것 — 이것과 다를 때만 저장 바가 뜬다
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);   // 저장 직후 0.9초 — 단추 안에 체크가 뜬다
@@ -45,21 +51,33 @@ export function Today() {
   function loadRows() {
     if (!cid) return;
     setRowsReady(false); setRowsErr(false);
-    todayAttendance(cid, today).then(r => { setRows(r); setRowsReady(true); }).catch(e => { setRowsErr(true); errToast(e); });
+    todayAttendance(cid, today).then(r => { setRows(r); setBase(snap(r)); setRowsReady(true); }).catch(e => { setRowsErr(true); errToast(e); });
   }
   useEffect(loadRows, [cid]);
   const cls = classes.find(c => c.id === cid);
   const hasClassToday = !!cls && (cls.schedule ?? []).some(s => s.dow === dowOf(today));
-  function mark(sid: string, st: AttStatus) {
-    const cur = rows.find(x => x.student_id === sid)?.status;
-    if (cur !== st) pop.fire(sid + ':' + st);   // 켜질 때만 튄다 (끌 때는 조용히)
-    setRows(r => r.map(x => x.student_id === sid ? { ...x, status: x.status === st ? null : st } : x));
+  // 타일을 누르면 다음 상태로 넘어간다 — 세 개 중 하나를 고르는 게 아니라 한 자리를 돌린다
+  function mark(sid: string) {
+    pop.fire(sid);
+    setRows(r => r.map(x => x.student_id === sid ? { ...x, status: NEXT[x.status ?? ''] ?? null } : x));
   }
+  const allPresent = rows.length > 0 && rows.every(r => r.status === 'present');
+  // 전원 출석: 아직 안 누른 사람만 출석으로 (지각·결석으로 이미 표시한 사람은 건드리지 않는다).
+  // 다 출석이면 같은 자리가 전체 지우기가 된다 — 잘못 누른 뒤 되돌릴 곳이 있어야 해서.
+  function markAll() {
+    setRows(r => r.map(x => allPresent ? { ...x, status: null } : x.status ? x : { ...x, status: 'present' }));
+  }
+  const dirty = rows.some(r => r.status !== (base[r.student_id] ?? null));
+  const count = (st: AttStatus) => rows.filter(r => r.status === st).length;
+  const nPresent = count('present') + count('makeup'), nLate = count('late'), nAbsent = count('absent');
+  const nNone = rows.filter(r => !r.status).length;
   async function save() {
     const marked = rows.filter(r => r.status).map(r => ({ student_id: r.student_id, status: r.status! }));
     if (!marked.length) { toast('아직 아무도 표시하지 않았어요'); return; }
+    const sent = snap(rows);   // 저장을 누른 그 순간의 표시 — 성공하면 이것이 새 기준이 된다
     setBusy(true);
     try { await saveAttendance(cid, today, marked); const n = marked.filter(m => m.status !== 'present').length; toast(n ? `출결을 저장하고, 결석·지각 ${n}명의 학부모에게 알림을 보냈어요` : '출결을 저장했어요. 모두 출석이라 알림은 없어요'); reloadSum();
+      setBase(sent);
       setSaved(true); clearTimeout(savedT.current); savedT.current = window.setTimeout(() => setSaved(false), 900); }
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
@@ -86,7 +104,7 @@ export function Today() {
     <section className="view on">
       <div className="head">
         <h1 className="hello">오늘 · {fmtMDW(today)}</h1>
-        {noClasses ? <p className="lede">반을 만들면 여기에 <b>출석부</b>가 생겨요. 아래 첫걸음을 따라 해 보세요.</p> : <p className="lede">{cls ? `${cls.name} · ` : ''}{isClosed ? '오늘은 휴원일이에요. 그래도 기록할 수 있어요. 저장하면 ' : hasClassToday ? '이름 옆을 누르면 바로 표시돼요. 저장하면 ' : '오늘은 이 반 수업이 없는 날이에요. 그래도 기록할 수 있어요. 저장하면 '}<b>결석·지각 학부모 알림까지 한 번에</b> 나갑니다.</p>}
+        {noClasses ? <p className="lede">반을 만들면 여기에 <b>출석부</b>가 생겨요. 아래 첫걸음을 따라 해 보세요.</p> : <p className="lede">{cls ? `${cls.name} · ` : ''}{isClosed ? '오늘은 휴원일이에요. 그래도 기록할 수 있어요. 저장하면 ' : hasClassToday ? '이름을 누르면 바로 표시돼요. 저장하면 ' : '오늘은 이 반 수업이 없는 날이에요. 그래도 기록할 수 있어요. 저장하면 '}<b>결석·지각 학부모 알림까지 한 번에</b> 나갑니다.</p>}
       </div>
       <FirstSteps summary={sum} />
       {sum && clsReady && !noClasses && (todayClasses.length
@@ -98,20 +116,27 @@ export function Today() {
         : <p className="summaryline">오늘은 수업이 없어요{nextDay ? <> · 다음 수업 <b>{fmtMDW(nextDay)}</b></> : ''}</p>)}
       {!noClasses && <>
       {classes.length > 1 && <div className="seg" style={{ marginTop: 22 }}>{classes.map(c => <button key={c.id} className={c.id === cid ? 'on' : ''} onClick={() => setCid(c.id)}>{c.name}</button>)}</div>}
-      <div className="lab">출석부</div>
+      <div className="lab">출석부 · 누를 때마다 출석 → 지각 → 결석
+        {rowsReady && rows.length > 0 && <button className="r" onClick={markAll}>{allPresent ? '전체 지우기' : '전원 출석'}</button>}</div>
       {!rowsReady
         ? (rowsErr ? <ErrorState onRetry={loadRows} /> : <Skeleton rows={4} />)
-        : <div className="box">
-        {rows.length === 0 && <p className="muted" style={{ padding: '14px 16px' }}>이 반에 학생이 없어요.</p>}
-        {rows.map(r => (
-          <div key={r.student_id} className="rw" style={{ padding: '12px 16px' }}>
-            <span className="nm">{r.name.charAt(0)}</span><span className="bd"><span className="t">{r.name}</span></span>
-            <span className="marks">{(['present', 'late', 'absent'] as AttStatus[]).map(st => <button key={st} className={(r.status === st ? 'on ' + CLS[st] : '') + pop.cls(r.student_id + ':' + st)} onClick={() => mark(r.student_id, st)} onAnimationEnd={pop.end} aria-label={st}>{MARK[st]}</button>)}</span>
-          </div>))}
-      </div>}
-      <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span></div>
+        : rows.length === 0
+          ? <p className="muted" style={{ padding: '0 20px' }}>이 반에 학생이 없어요.</p>
+          : <>
+            <div className="att" role="group" aria-label="출석부">
+              {rows.map(r => (
+                <button key={r.student_id} className={'stu' + (r.status ? ' ' + CLS[r.status] : '')} onClick={() => mark(r.student_id)}
+                  aria-label={`${r.name}: ${r.status ? LABEL[r.status] : '미기록'}`}>
+                  <span className={'av' + pop.cls(r.student_id)} onAnimationEnd={pop.end}>{r.name.charAt(0)}</span>
+                  <span className="n">{r.name}</span>
+                  <span className="st">{r.status ? LABEL[r.status] : '—'}</span>
+                </button>))}
+            </div>
+            <p className="sum">출석 <b className="p">{nPresent}</b> · 지각 <b className="l">{nLate}</b> · 결석 <b className="a">{nAbsent}</b> · 미기록 <b>{nNone}</b></p>
+          </>}
       <div className="btnrow"><button className="btn line" onClick={() => nav.push('todos', { cid })}>이번 주 할 것 관리</button></div>
-      <BottomCta primary={{ label: '저장하고 알리기', onClick: save, busy, done: saved, doneLabel: '알렸어요' }} />
+      {/* 고친 게 있을 때만 바가 올라온다 — 저장 뒤 0.9초는 "알렸어요"를 보여주고 내려간다 */}
+      {((rowsReady && dirty) || busy || saved) && <BottomCta primary={{ label: '저장하고 알리기', onClick: save, busy, done: saved, doneLabel: '알렸어요' }} />}
 
       <div className="lab" ref={absRef}>결석 신청<span className="r">학부모가 미리 알린 것</span></div>
       {pending.length ? <div className="box">{pending.map(absRow)}</div> : <p className="muted" style={{ padding: '0 20px' }}>새 결석 신청이 없어요.</p>}

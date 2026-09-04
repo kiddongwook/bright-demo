@@ -24,7 +24,7 @@ export function Otp({ phone, onBack }: { phone: string; onBack: () => void }) {
     await setFromVerify(j.session, j.memberships);
   }
   return (
-    <section className="view on" style={{ background: 'var(--paper)' }}>
+    <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
         <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-medium.png')} alt={name} />
         <h1>인증번호를 보냈어요</h1>

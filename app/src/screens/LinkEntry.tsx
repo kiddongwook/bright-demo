@@ -32,7 +32,7 @@ export function LinkEntry({ token, currentUserId, onDone }: { token: string; cur
     onDone(target);
   })(); }, [token]);
   return (
-    <section className="view on" style={{ background: 'var(--paper)' }}>
+    <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
         <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-medium.png')} alt={name} />
         {err ? <><h1>열지 못했어요</h1><p>{err}</p><div className="btnrow" style={{ padding: '20px 0 0', width: '100%' }}><button className="btn" onClick={() => onDone(null)}>번호로 들어가기</button></div></>

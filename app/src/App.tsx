@@ -53,6 +53,10 @@ function Frame() {
   // PC 관리 모드: 폭 1024px 이상 + 원장·강사 → 폰 틀을 벗고 좌측 내비. 학부모·학생은 PC 에서도 폰 틀 그대로.
   const pc = useMedia('(min-width:1024px)') && (role === 'director' || role === 'teacher') && !nav.limited;
   useEffect(() => { document.body.classList.toggle('pc', pc); return () => document.body.classList.remove('pc'); }, [pc]);
+  // 밀고 들어간 화면(공지 쓰기·학생 편집…)에는 탭바를 그리지 않는다 — 돌아가는 길은 앱바의 뒤로 꺾쇠.
+  // 제한 세션은 자리에 .limited-bar 가 그대로 남으므로 여백을 줄이지 않는다.
+  const noTab = !nav.isTab && !nav.limited;
+  useEffect(() => { document.body.classList.toggle('no-tab', noTab); return () => document.body.classList.remove('no-tab'); }, [noTab]);
   useEffect(() => { window.scrollTo(0, 0); }, [nav.view]);   // 화면이 바뀌면 맨 위부터
   useEffect(() => { academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; }).catch(() => {}); }, [active!.academy_id]);
   const key = `${role}:${nav.view}`;
@@ -75,7 +79,8 @@ function Frame() {
             <span className={'sct' + (showScrollTitle ? ' on' : '')} aria-hidden={!showScrollTitle}>{scrollTitle}</span>
           </>
           : <><button className="bk" onClick={nav.back} aria-label="뒤로"><IcBack /></button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}
-        {nav.view !== 'noti' && !nav.limited && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
+        {/* 종은 탭 루트에서만 — 진입 화면 앱바는 뒤로·제목 자리다 (noti 는 탭이 아니라 nav.isTab 이 이미 거른다) */}
+        {nav.isTab && !nav.limited && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
           <span className="badge">{badge ? String(badge) : ''}</span>
         </button>}
@@ -83,7 +88,7 @@ function Frame() {
       <Screen key={key + JSON.stringify(nav.params)} />
       {nav.limited
         ? <div className="limited-bar"><span>카톡에서 열었어요</span><button onClick={() => { endLimited(); }}>전체 기능은 번호로 들어가기 ›</button></div>
-        : <nav className="tabbar">
+        : nav.isTab && <nav className="tabbar">
           {TABS[role].map(t => <a key={t} href="#" className={t === nav.tabBase ? 'on' : ''} onClick={e => { e.preventDefault(); nav.tab(t); }}><span dangerouslySetInnerHTML={{ __html: ICON[TABMETA[t][1]] }} />{TABMETA[t][0]}</a>)}
         </nav>}
     </div></div>

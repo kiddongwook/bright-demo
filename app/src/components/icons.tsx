@@ -32,3 +32,18 @@ export const IcClose = (p: IconProps) => <Ic {...p}><path d="M6.5 6.5 17.5 17.5M
 export const IcClock = (p: IconProps) => <Ic {...p}><path d="M12 20.2a8.2 8.2 0 1 0 0-16.4 8.2 8.2 0 0 0 0 16.4" /><path d="M12 7.6V12l3 1.8" /></Ic>;
 export const IcTable = (p: IconProps) => <Ic {...p}><path d="M4 5.5h16v13H4z" /><path d="M4 10h16M4 14.2h16M10 10v8.5" /></Ic>;
 export const IcPerson = (p: IconProps) => <Ic {...p}><path d="M12 11.5a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8" /><path d="M5 20c0-3.2 3.1-5.4 7-5.4s7 2.2 7 5.4" /></Ic>;
+
+/* 실무 및 화면 디테일 강화 아이콘 한 벌 */
+export const IcPhone = (p: IconProps) => <Ic {...p}><path d="M6.5 4h3l1.5 3.5-2 1.8a12.5 12.5 0 0 0 5.7 5.7l1.8-2 3.5 1.5v3c0 1.1-.9 2-2 2A15 15 0 0 1 4.5 6c0-1.1.9-2 2-2" /></Ic>;
+export const IcShareIos = (p: IconProps) => <Ic {...p}><path d="M12 3.5v10.5M8 7.5l4-4 4 4M5 10.5v8A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-8" /></Ic>;
+export const IcMoreVertical = (p: IconProps) => <Ic {...p}><circle cx="12" cy="5" r="1.3" fill="currentColor" /><circle cx="12" cy="12" r="1.3" fill="currentColor" /><circle cx="12" cy="19" r="1.3" fill="currentColor" /></Ic>;
+export const IcBook = (p: IconProps) => <Ic {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H12v-13H6.5A2.5 2.5 0 0 0 4 6.5zM20 19.5A2.5 2.5 0 0 0 17.5 17H12v-13h5.5A2.5 2.5 0 0 1 20 6.5z" /></Ic>;
+export const IcTarget = (p: IconProps) => <Ic {...p}><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3.5" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2" /></Ic>;
+export const IcNote = (p: IconProps) => <Ic {...p}><path d="M16 4H6.5A2.5 2.5 0 0 0 4 6.5v11A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5V8z" /><path d="M15 4v4h4M8 12h8M8 16h5" /></Ic>;
+export const IcPalette = (p: IconProps) => <Ic {...p}><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5c0-1.4-1.1-2.5-2.5-2.5h-1.5a2 2 0 0 1-2-2V6a2.5 2.5 0 0 0-2.5-2.5z" /><circle cx="7.5" cy="10.5" r="1" fill="currentColor" /><circle cx="10.5" cy="7.5" r="1" fill="currentColor" /><circle cx="14.5" cy="7.5" r="1" fill="currentColor" /></Ic>;
+export const IcHelp = (p: IconProps) => <Ic {...p}><circle cx="12" cy="12" r="8.5" /><path d="M9.5 9.5a2.5 2.5 0 0 1 4.5 1.2c0 1.3-1.8 1.8-1.8 3M12 17.2h.01" /></Ic>;
+export const IcReceipt = (p: IconProps) => <Ic {...p}><path d="M5 4h14v16.5l-2.5-1.5-2.2 1.5-2.3-1.5-2.3 1.5-2.2-1.5L5 20.5z" /><path d="M8 8.5h8M8 12.5h8M8 16h5" /></Ic>;
+export const IcSparkle = (p: IconProps) => <Ic {...p}><path d="m12 3.5 2.2 5.3 5.3 2.2-5.3 2.2L12 18.5l-2.2-5.3L4.5 11l5.3-2.2zM19 18l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z" /></Ic>;
+export const IcMail = (p: IconProps) => <Ic {...p}><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z" /><path d="m5 7 7 5 7-5" /></Ic>;
+export const IcTrendingUp = (p: IconProps) => <Ic {...p}><path d="M4 17l6-6 4 4 6-6" /><path d="M15 9h5v5" /></Ic>;
+
