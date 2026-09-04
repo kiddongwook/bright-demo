@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { countRecipients, type EntryRow } from './api';
 
 const row = (role: EntryRow['role'], phone: string, studentName: string | null, name = '이름'): EntryRow =>
-  ({ role, name, phone, student_name: studentName, entered: false });
+  ({ role, name, phone, student_name: studentName, entered: false, push: false, kakao_ok: false });
 
 describe('countRecipients', () => {
   it('대상 학생의 본인 번호와 학부모 번호를 함께 센다', () => {

@@ -15,11 +15,17 @@ import { IcCheck, IcPhone } from '../../components/icons';
 import { Counter } from '../../components/Counter';
 import { LIMITS } from '../../lib/limits';
 
+/* 초대 문구 말고 그냥 글자를 복사할 때 — copyInvite 는 '초대 문구를 보냈다' 표시까지 남기므로 여기 쓰지 않는다 */
+async function copyText(text: string): Promise<boolean> {
+  try { if (!navigator.clipboard) return false; await navigator.clipboard.writeText(text); return true; } catch { return false; }
+}
+
 /* 사람별 1회용 초대 링크 만들기 + 복사 — 명부와 강사 화면이 같이 쓴다.
    토큰은 누를 때 새로 만들어진다(7일·1회용). 복사가 막히면 문구를 시트로 보여 준다 — 안 그러면 만든 토큰이 사라진다. */
 function usePersonalInvite() {
   const { data: myAcademy } = useLoad(academy);
   const [busy, setBusy] = useState('');
+  const academyName = myAcademy?.name ?? '우리 학원';
   async function copyFor(phone: string, who: string, key: string) {
     if (busy) return;
     setBusy(key);
@@ -33,7 +39,13 @@ function usePersonalInvite() {
     } catch (e) { errToast(e); }
     finally { setBusy(''); }
   }
-  return { busy, copyFor };
+  return { busy, copyFor, academyName };
+}
+
+/* 알림을 안 켠 사람에게 보낼 안내 — 화면의 실제 이름(더보기 → 알림 설정 → '이 기기로 알림 받기')을 그대로 쓴다.
+   아이폰은 홈 화면에 추가한 뒤에야 푸시를 켤 수 있어 한 줄 덧붙인다. */
+export function notifyHintText(academyName: string): string {
+  return `[${academyName}] 앱에서 더보기 → 알림 설정 → '이 기기로 알림 받기'를 켜 주세요 (아이폰은 홈 화면에 추가한 앱에서)`;
 }
 
 /* 명부: 반별 활성 학생 + 접힌 퇴원생. 행을 누르면 학생 상세, 편집은 작은 단추. 강사는 더보기 → 강사에서 따로 본다. */
@@ -45,10 +57,24 @@ export function Roster() {
   const { data: entryRows, err: entryErr } = useLoad(() => isDirector ? entryStatus() : Promise.resolve(null));
   useEffect(() => { if (entryErr) errToast(new Error(entryErr)); }, [entryErr]);
   const invite = usePersonalInvite();
+  const [hintBusy, setHintBusy] = useState('');
   const active = students?.filter(s => s.status === 'active') ?? [];
   const left = students?.filter(s => s.status === 'left') ?? [];
   const noClass = active.filter(s => !s.classes.length);
   const notEntered = entryRows?.filter(r => !r.entered) ?? [];
+  /* 들어왔는데 앱 밖으로는 아무것도 못 받는 사람. 푸시 구독이 없고, 문자 대행사도 아직 안 붙었다(kakao_ok=false).
+     대행사가 붙는 날 kakao_ok 가 true 로 뒤집히면서 이 접힘은 저절로 비게 된다. */
+  const noNotify = entryRows?.filter(r => r.entered && !r.push && !r.kakao_ok) ?? [];
+  async function copyNotifyHint(key: string) {
+    const text = notifyHintText(invite.academyName);
+    setHintBusy(key);
+    try {
+      if (await copyText(text)) { toast('안내 문구를 복사했어요. 카톡으로 보내세요'); return; }
+      if (await confirmSheet({ title: '복사가 막혔어요', body: text, okLabel: '다시 복사', cancelLabel: '닫기' })) {
+        toast(await copyText(text) ? '안내 문구를 복사했어요. 카톡으로 보내세요' : '문구를 길게 눌러 복사해 주세요');
+      }
+    } finally { setHintBusy(''); }
+  }
   const row = (s: { id: string; name: string; classes: Cls[] }) => (
     <div key={s.id} className="rw" style={{ cursor: 'pointer' }} onClick={() => nav.push('student', { id: s.id })}>
       <span className="nm">{s.name.charAt(0)}</span>
@@ -75,6 +101,27 @@ export function Roster() {
           </div>
         </details>
       ) : <p className="muted" style={{ padding: '0 20px', display: 'flex', alignItems: 'center', gap: 6 }}><IcCheck size={18} style={{ color: 'var(--ok-ink)', flex: '0 0 auto' }} />명부의 학부모·학생이 모두 들어왔어요</p>)}
+      {/* 들어왔지만 알림은 못 받는 사람 — 앱을 열어야만 소식을 본다. 문자 대행사가 붙기 전까지는 푸시가 유일한 길이다. */}
+      {isDirector && entryRows && (noNotify.length > 0 ? (
+        <details className="fold">
+          <summary>알림 못 받는 {noNotify.length}명</summary>
+          <div className="box">
+            {noNotify.map((r, i) => {
+              const key = `np-${r.role}-${r.phone}-${i}`;
+              return (
+                <div key={key} className="rw" style={{ cursor: 'default' }}>
+                  <span className="nm">{(r.student_name ?? r.name).charAt(0)}</span>
+                  <span className="bd">
+                    <span className="t">{r.student_name ?? r.name} {r.role === 'parent' ? '학부모' : '학생'}</span>
+                    <span className="s"><a href={'tel:' + r.phone} onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none', color: 'inherit' }}><IcPhone size={13} style={{ color: 'var(--brand)', verticalAlign: -1 }} />{formatPhone(r.phone)}</a> · 앱은 들어왔지만 알림을 안 켰어요</span>
+                  </span>
+                  <button className="btn sm line" onClick={() => copyNotifyHint(key)}>{hintBusy === key ? '복사 중…' : '안내 문구 복사'}</button>
+                </div>
+              );
+            })}
+          </div>
+        </details>
+      ) : <p className="muted" style={{ padding: '0 20px' }}>들어온 사람은 모두 알림을 받아요</p>)}
       {classes?.map(c => {
         const list = active.filter(s => s.classes.some(x => x.id === c.id));
         return <div key={c.id}><div className="lab">{c.name}<span className="r">{list.length}명</span></div>

@@ -1,8 +1,9 @@
 import { useState, type ComponentType, type CSSProperties } from 'react';
-import { studentDetail, monthAttendance, timeline, listNotes, addNote, deleteNote, listCalendar, monthGrid, kstToday, saveStudent, type AttStatus, type TimelineItem, type Note } from '../../lib/api';
+import { studentDetail, monthAttendance, timeline, listNotes, addNote, deleteNote, listCalendar, monthGrid, kstToday, saveStudent, entryStatus, type AttStatus, type TimelineItem, type Note } from '../../lib/api';
 import { formatPhone } from '../../lib/phone';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
+import { useSession } from '../../auth/session';
 import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
@@ -20,6 +21,11 @@ const when = (ts: string) => new Date(ts).toLocaleString('ko-KR', { month: 'nume
 export function StudentDetail() {
   const nav = useNav(); const id = nav.params.id;
   const { data: s, err, reload } = useLoad(() => studentDetail(id), [id]);
+  /* 번호별 알림 현황 — 명부와 같은 RPC 를 쓴다(번호가 나가므로 원장만). 강사가 열면 부르지 않는다.
+     학생 id 는 안 오지만 번호가 오니 번호로 맞춘다 — 같은 번호면 같은 사람, 곧 같은 알림 상태다. */
+  const { active: me } = useSession();
+  const { data: entryRows } = useLoad(() => me?.role === 'director' ? entryStatus() : Promise.resolve(null), [me?.role]);
+  const notify = new Map((entryRows ?? []).map(r => [r.phone, r]));
   const [tab, setTab] = useState<'att' | 'log' | 'note'>('att'); const [busy, setBusy] = useState(false);
   async function reenroll() {
     if (!s) return;
@@ -38,7 +44,13 @@ export function StudentDetail() {
         <p className="lede">
           {s.classes.map(c => c.name).join(' · ') || '반 없음'}
           {s.student_phone ? <> · <a href={'tel:' + s.student_phone} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none', color: 'inherit' }}><IcPhone size={13} style={{ color: 'var(--brand)', verticalAlign: -1 }} />학생 {formatPhone(s.student_phone)}</a></> : ''}
-          {s.parent_phones.length ? <> · {s.parent_phones.map(p => <a key={p} href={'tel:' + p} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none', color: 'inherit' }}><IcPhone size={13} style={{ color: 'var(--brand)', verticalAlign: -1 }} />학부모 {formatPhone(p)}</a>)}</> : ''}
+          {s.parent_phones.length ? <> · {s.parent_phones.map(p => {
+            const n = notify.get(p);   // 아직 안 들어온 사람에게는 붙이지 않는다 — 명부의 '아직 안 들어온' 접힘이 볼 자리다
+            return <span key={p}>
+              <a href={'tel:' + p} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none', color: 'inherit' }}><IcPhone size={13} style={{ color: 'var(--brand)', verticalAlign: -1 }} />학부모 {formatPhone(p)}</a>
+              {n?.entered && <span className={'tag ' + (n.push || n.kakao_ok ? 'ok' : 'warn')} style={{ marginLeft: 5, verticalAlign: 'middle' }}>{n.push || n.kakao_ok ? '알림 켜짐' : '알림 안 켬'}</span>}
+            </span>;
+          })}</> : ''}
         </p>
       </div>
       <div className="seg" style={{ marginBottom: 6 }}>

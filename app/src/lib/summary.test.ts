@@ -39,9 +39,9 @@ describe('summarizeToday', () => {
 
   it('답변 대기·결석 신청·학부모 들어옴 수를 센다', () => {
     const entry: EntryRow[] = [
-      { role: 'parent', name: '가 학부모', phone: '01011112222', student_name: '가', entered: true },
-      { role: 'parent', name: '나 학부모', phone: '01011113333', student_name: '나', entered: false },
-      { role: 'student', name: '다', phone: '01011114444', student_name: '다', entered: true },
+      { role: 'parent', name: '가 학부모', phone: '01011112222', student_name: '가', entered: true, push: true, kakao_ok: false },
+      { role: 'parent', name: '나 학부모', phone: '01011113333', student_name: '나', entered: false, push: false, kakao_ok: false },
+      { role: 'student', name: '다', phone: '01011114444', student_name: '다', entered: true, push: false, kakao_ok: false },
     ];
     const s = summarizeToday({
       ...base,
