@@ -3,7 +3,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, { auth: { persistSession: false } });
-const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%,slug.like.manage-%,slug.like.export-%,slug.like.hk-%,slug.like.onb-%,slug.like.files-%,slug.like.push-%,slug.like.inv-%,slug.like.bill-%,slug.like.seam-%,slug.like.hard-%,slug.like.rt-%,slug.like.ns-%,slug.like.attnote-%,slug.like.nt-%');
+const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%,slug.like.manage-%,slug.like.export-%,slug.like.hk-%,slug.like.onb-%,slug.like.files-%,slug.like.push-%,slug.like.inv-%,slug.like.bill-%,slug.like.seam-%,slug.like.hard-%,slug.like.rt-%,slug.like.ns-%,slug.like.attnote-%,slug.like.nt-%,slug.like.low-%');
 let users = 0;
 for (const a of acs ?? []) {
   const { data: ms } = await admin.from('memberships').select('user_id').eq('academy_id', a.id);

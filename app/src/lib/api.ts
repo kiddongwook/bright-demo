@@ -90,13 +90,11 @@ export async function deleteNote(id: string) { must(await supabase.from('notes')
 export async function listCalendar(fromDate: string): Promise<CalItem[]> {
   return must(await supabase.from('calendar').select('id, date, kind, note, class_id').gte('date', fromDate).order('date')) as CalItem[];
 }
+/** 하루 — 서버가 한 문장으로 넣거나 메모를 고친다(0022 upsert_calendar_day).
+ *  전에는 '먼저 찾고 없으면 넣기' 라 동시 두 번이면 한쪽이 23505 원문 오류를 봤다(INT-06).
+ *  같은 날 전체 휴원이 이미 있으면 반 휴원은 군더더기라 서버가 closed_by_all 로 막는다(INT-35). */
 export async function addCalendar(date: string, kind: CalItem['kind'], note: string, classId: string | null) {
-  // unique 에 class_id(null 가능)가 끼어 있어 전체 항목은 on conflict 가 안 잡힌다 → 먼저 찾고 있으면 고친다
-  let q = supabase.from('calendar').select('id').eq('date', date).eq('kind', kind);
-  q = classId ? q.eq('class_id', classId) : q.is('class_id', null);
-  const ex = must(await q.maybeSingle()) as { id: string } | null;
-  if (ex) must(await supabase.from('calendar').update({ note: note || null }).eq('id', ex.id));
-  else must(await supabase.from('calendar').insert({ academy_id: ctx.academyId, date, kind, note: note || null, class_id: classId }));
+  must(await supabase.rpc('upsert_calendar_day', { p_date: date, p_kind: kind, p_note: note || null, p_class: classId }));
 }
 export async function removeCalendar(id: string) { must(await supabase.from('calendar').delete().eq('id', id)); }
 /** 휴원일 — 오늘부터 60일. all = 전체 휴원, byClass = 반별 휴원. 다음 수업·결석 신청 후보에서 뺀다. */
@@ -109,7 +107,10 @@ export async function closedByClass(): Promise<Closed> {
 }
 /** 전체 휴원일만 (예전 호출부용) */
 export async function closedDays(): Promise<Set<string>> { return (await closedByClass()).all; }
-/** 한 반이 쉬는 날 = 전체 휴원 ∪ 그 반 휴원 */
+/** 한 반이 쉬는 날 = 전체 휴원 ∪ 그 반 휴원.
+ *  전체(class_id null)가 모든 반을 덮는다는 규칙은 0022 가 넣는 쪽에서도 지킨다 —
+ *  전체를 넣으면 그 날의 반 휴원을 치우고, 전체가 있는 날에는 반 휴원을 안 받는다(INT-35).
+ *  특강(special)은 휴원을 되돌리지 않는다: '다음 수업' 은 정규 수업 이야기라 closed 가 이긴다(INT-36). */
 export const closedFor = (c: Closed | undefined, classId: string): Set<string> => { const s = new Set(c?.all ?? []); for (const d of c?.byClass.get(classId) ?? []) s.add(d); return s; };
 /** 반마다 자기 휴원을 빼고 다음 수업일을 모아 정렬 (학부모·학생 화면) */
 export function nextClassDaysFor(classes: Cls[], count: number, closed?: Closed): string[] {

@@ -352,6 +352,10 @@ textarea.input{min-height:120px;padding:12px 14px;font-size:16px;font-weight:400
   .appbar .logo{content:url(assets/logo/yeongeo-jip-bold-white.png)}
   .gate-logo{content:url(assets/logo/yeongeo-jip-medium-white.png)}
 }
+/* ?a=<학원> 으로 열었을 때만 나오는 실제 앱 바로가기 — 그냥 연 데모(영어의 집)에는 없다 */
+.openapp{display:none;position:fixed;right:16px;bottom:calc(var(--tab-h) + 16px);z-index:60;background:var(--brand);color:#fff;text-decoration:none;font-size:13.5px;font-weight:700;padding:11px 16px;border-radius:999px;box-shadow:0 8px 20px rgba(0,0,0,.22)}
+body.acad .openapp{display:block}
+@media(min-width:641px){.openapp{bottom:52px}}
 </style>
 </head>
 <body>
@@ -682,9 +686,12 @@ textarea.input{min-height:120px;padding:12px 14px;font-size:16px;font-weight:400
 
 </div></div>
 <div class="credit">영어의 집 · 학원 앱 데모 — PC에서는 폰 화면으로 보여드립니다</div>
+<a class="openapp" id="openapp" href="pwa/">앱 열기 ›</a>
 <div class="toast" id="toast"></div>
 
 <script>
+/* ── 이 페이지가 보여 주는 학원 — 기본은 데모(영어의 집), ?a=<slug> 면 아래 loadAcademy 가 갈아 끼운다 ── */
+var ACADEMY={name:'영어의 집', icon:'assets/logo/yeongeo-jip-bold.png', color:'#2F5BEA'};
 /* ── 데모 명부: 번호 → 역할 ── */
 var PHONES={'010-1000-0001':'d','010-1234-0001':'p','010-1234-0104':'s'};
 var ME={p:{name:'박지훈 어머님',child:'박지훈',cls:'A'}, s:{name:'김민수',cls:'B'}};
@@ -1072,8 +1079,8 @@ function rOutbox(){
     var idx=DB.outbox.indexOf(m), mine=(m.to===ME.p.name);
     var btn = mine ? '<button class="kbtn" onclick="kakaoOpen('+idx+')">앱에서 보기</button>'
                    : '<span class="kbtn off">'+esc(m.to)+' 앱에서 열려요</span>';
-    h+='<div class="kmsg'+(idx===newestMine?' mine-last':'')+'"><span class="kav"><img src="assets/logo/yeongeo-jip-bold.png" alt=""></span>'
-      +'<div class="kcard"><div class="klab">알림톡 · '+esc(m.to)+'</div><div class="kb"><b>[영어의 집] '+esc(m.title)+'</b>'+esc(m.text)+'</div>'+btn+'</div>'
+    h+='<div class="kmsg'+(idx===newestMine?' mine-last':'')+'"><span class="kav"><img src="'+esc(ACADEMY.icon)+'" alt=""></span>'
+      +'<div class="kcard"><div class="klab">알림톡 · '+esc(m.to)+'</div><div class="kb"><b>['+esc(ACADEMY.name)+'] '+esc(m.title)+'</b>'+esc(m.text)+'</div>'+btn+'</div>'
       +'<span class="ktime">'+m.at+'</span></div>';
   });
   set('kk-list',h);
@@ -1168,6 +1175,61 @@ function setBrand(color,el){
   }
   render();
   if(h.indexOf('guide')===0){ guideStart(); var gn=parseInt(h.split('=')[1]||'1',10); while(GUIDE_ON && gi<gn-1) guideNext(); }
+})();
+
+/* ── 학원별 소개 페이지 ─────────────────────────────────────────────
+   ?a=<slug> 로 열면 그 학원의 이름·강조색·로고로 갈아 끼우고 「앱 열기」를 그 학원 앱으로 보낸다.
+   ?a= 가 없으면 아무것도 하지 않는다 — 지금까지의 영어의 집 데모 그대로.
+   앱과 같은 RPC(public_academy) 를 같은 anon 키로 부른다(이 키는 이미 앱 번들에 들어 있는 공개 키다).
+   한계: og:* 미리보기(카톡 링크 썸네일)는 정적 파일이라 계속 영어의 집으로 뜬다. */
+var SB_URL='https://wqkpwqasmkwpyalvdjfb.supabase.co';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indxa3B3cWFzbWt3cHlhbHZkamZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNzY0NzUsImV4cCI6MjEwMzk1MjQ3NX0._eUF-citWr55nqIY0HyoY_UgLqiCAjiJhRemj_0vE8A';
+
+function swapText(from,to){
+  if(!from || from===to) return;
+  var skip={SCRIPT:1,STYLE:1,TITLE:1,NOSCRIPT:1};
+  var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+    if(skip[n.parentNode&&n.parentNode.nodeName]) return NodeFilter.FILTER_REJECT;
+    return n.nodeValue.indexOf(from)>=0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+  }});
+  var list=[],n; while((n=w.nextNode())) list.push(n);
+  for(var i=0;i<list.length;i++) list[i].nodeValue=list[i].nodeValue.split(from).join(to);   // textContent 만 — innerHTML 로는 절대 넣지 않는다
+  var alt=document.querySelectorAll('img[alt]');
+  for(var j=0;j<alt.length;j++) if(alt[j].alt.indexOf(from)>=0) alt[j].alt=alt[j].alt.split(from).join(to);
+}
+
+function applyAcademy(a){
+  var was=ACADEMY.name;
+  ACADEMY.name=a.name||was;
+  if(/^#[0-9a-fA-F]{6}$/.test(a.brand_color||'')) ACADEMY.color=a.brand_color;
+  if(a.logo_path) ACADEMY.icon=SB_URL+'/storage/v1/object/public/logos/'+String(a.logo_path).split('/').map(encodeURIComponent).join('/');
+  /* 색 — 앱과 같은 두 변수 */
+  var r=document.documentElement.style; r.setProperty('--brand',ACADEMY.color); r.setProperty('--brand-soft',tint(ACADEMY.color,.9));
+  /* 로고 — .logo/.gate-logo 는 CSS content:url() 로 그려지므로(밝음·어두움 두 벌) 인라인 style 로 눌러 준다 */
+  if(a.logo_path){
+    var imgs=document.querySelectorAll('img[src*="yeongeo-jip"]');
+    for(var i=0;i<imgs.length;i++) imgs[i].src=ACADEMY.icon;
+    var cs=document.querySelectorAll('.logo,.gate-logo');
+    for(var j=0;j<cs.length;j++){ cs[j].style.content='url("'+ACADEMY.icon+'")'; cs[j].style.width='auto'; cs[j].style.height=cs[j].classList.contains('logo')?'30px':'92px'; }
+    var fav=document.querySelector('link[rel="icon"]'); if(fav) fav.href=ACADEMY.icon;
+  }
+  swapText(was,ACADEMY.name);
+  document.title=ACADEMY.name+' · 우리 학원 앱';
+  render();   // 알림톡 목록처럼 스크립트가 그리는 자리도 새 이름·아이콘으로
+}
+
+(function loadAcademy(){
+  var slug=(new URLSearchParams(location.search)).get('a')||'';
+  if(!/^[a-z0-9-]{2,40}$/.test(slug)) return;            // 주소에서 온 값 — 형식을 통과한 것만 쓴다
+  var link=document.getElementById('openapp');
+  link.href='pwa/?a='+encodeURIComponent(slug);
+  document.body.classList.add('acad');
+  fetch(SB_URL+'/rest/v1/rpc/public_academy',{method:'POST',
+    headers:{'apikey':SB_ANON,'Authorization':'Bearer '+SB_ANON,'Content-Type':'application/json'},
+    body:JSON.stringify({p_slug:slug})})
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(d){ if(d&&d.length) applyAcademy(d[0]); })   // 모르는 slug 면 데모 그대로 둔다
+    .catch(function(){});
 })();
 </script>
 </body>

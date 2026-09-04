@@ -130,6 +130,7 @@ export function Academy() {
             : <button className="btn sm line" disabled={busyLogo} onClick={() => fileRef.current?.click()}>올리기</button>}
           <input ref={fileRef} type="file" accept="image/png,image/jpeg" style={{ display: 'none' }} onChange={e => pickLogo(e.target.files?.[0])} />
         </div>
+        <p className="muted" style={{ padding: '2px 16px 12px' }}>이 로고가 앱 아이콘과 설치 이름에 쓰여요. 512×512 PNG가 가장 좋아요.</p>
       </div>}
       <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}>로고는 단색으로 두고, 강조색은 앱바·버튼·표시에 씁니다.</p>
     </section>

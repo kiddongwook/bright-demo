@@ -29,6 +29,7 @@ const SERVER_MSG: [RegExp, string][] = [
   [/has_payments/, '납부 기록이 있는 청구서는 면제할 수 없어요. 납부 기록을 먼저 지워 주세요'],
   [/bad_phone/, '휴대폰 번호 형식이 아니에요 (010-0000-0000)'],
   [/bad schedule/, '시간표 형식이 맞지 않아요. 시작·끝 시간을 다시 골라 주세요'],
+  [/closed_by_all/, '이미 전체 휴원일이에요. 그날은 모든 반이 쉬어요'],
   [/name too long|students_name/, '이름은 20자까지예요'],
   [/notices_title|title/, '제목은 1~80자예요'],
   [/attendance_note/, '사유는 100자까지예요'],

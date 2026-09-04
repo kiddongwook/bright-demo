@@ -10,6 +10,7 @@ import { Placeholder } from './screens/Placeholder';
 import { NavProvider, useNav, TABS, TABMETA, TITLE, ICON, WIDE_VIEWS, type Role } from './lib/nav';
 import { setContext, unreadCount, academy, type Academy } from './lib/api';
 import { logoUrl } from './lib/logo';
+import { applyInstallIdentity } from './lib/manifest';
 import { SCREENS } from './screens/registry';
 import { LinkEntry, type LinkTarget } from './screens/LinkEntry';
 import { InviteEntry } from './screens/InviteEntry';
@@ -82,7 +83,8 @@ function Frame() {
   const noTab = !nav.isTab && !nav.limited;
   useEffect(() => { document.body.classList.toggle('no-tab', noTab); return () => document.body.classList.remove('no-tab'); }, [noTab]);
   useEffect(() => { window.scrollTo(0, 0); }, [nav.view]);   // 화면이 바뀌면 맨 위부터
-  useEffect(() => { academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; }).catch(() => {}); }, [active!.academy_id]);
+  // 로그인 뒤의 학원 값이 최종본이다 — 설치 정체성(이름·아이콘·색)도 여기 값으로 굳힌다(?a= 나 기기에 남은 slug 는 낡을 수 있다)
+  useEffect(() => { academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; applyInstallIdentity({ name: active!.academy_name ?? a.name, brandColor: a.brand_color, logoUrl: logoUrl(a.logo_path), slug: a.slug }, true); }).catch(() => {}); }, [active!.academy_id]);
   const key = `${role}:${nav.view}`;
   // 큰 제목이 위로 지나가면 앱바에 작은 제목을 띄운다 (탭 루트에서만 — 진입 화면 앱바는 이미 제목이다)
   const { title: scrollTitle, scrolled } = useScrollTitle(key + JSON.stringify(nav.params));

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
+import { logoUrl } from './logo';
+import { applyInstallIdentity } from './manifest';
 
 /** 문(Gate) 을 포함해 로그인 전 화면이 "어느 학원이냐" 를 아는 유일한 방법 — 주소의 ?a=<slug>, 없으면 이 기기에 마지막으로 저장된 값. */
 export const DEFAULT_SLUG = 'yeongeo';
@@ -30,7 +32,13 @@ export function useAcademyPublic(): PublicAcademy | null | undefined {
   const [a, setA] = useState<PublicAcademy | null | undefined>(undefined);
   useEffect(() => {
     let alive = true;
-    publicAcademy(currentSlug()).then(r => { if (alive) setA(r); });
+    const slug = currentSlug();
+    publicAcademy(slug).then(r => {
+      if (!alive) return;
+      setA(r);
+      // 홈 화면에 놓일 이름·아이콘·색을 이 학원 것으로 — 로그인 전에도(설치는 대개 로그인 전에 한다)
+      if (r) applyInstallIdentity({ name: r.name, brandColor: r.brand_color, logoUrl: logoUrl(r.logo_path), slug });
+    });
     return () => { alive = false; };
   }, []);
   return a;

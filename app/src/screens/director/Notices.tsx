@@ -3,7 +3,7 @@ import { listNotices, listClasses, createNotice, updateNoticePhotos, noticeReade
 import { uploadNoticePhotos, MAX_PHOTOS } from '../../lib/files';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
-import { toast, errToast } from '../../lib/toast';
+import { toast, errToast, humanizeError } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
@@ -135,12 +135,14 @@ export function NoticeNew() {
       try {
         const already = day ? await listCalendar(day) : [];
         for (const cid of where) {
-          /* 같은 날·같은 갈래·같은 반이 이미 있으면 그대로 둔다 — 덮어쓰지 않고, 그렇다고 알린다 */
-          if (day && already.some(c => c.date === day && c.kind === kind && (c.class_id ?? null) === cid)) { dupWhat = what; continue; }
+          /* 같은 날·같은 갈래·같은 반이 이미 있으면 그대로 둔다 — 덮어쓰지 않고, 그렇다고 알린다.
+             전체 휴원일이 이미 있으면 반 휴원은 군더더기라 서버가 거절한다(0022 closed_by_all) — 여기서 먼저 걸러 낸다(INT-35) */
+          if (day && already.some(c => c.date === day && c.kind === kind
+                && ((c.class_id ?? null) === cid || (kind === 'closed' && c.class_id === null)))) { dupWhat = what; continue; }
           if (day) await addCalendar(day, kind, kind === 'closed' ? (why || '휴원') : title.trim(), cid);
         }
         for (const cid of where) if (mk) await addCalendar(mk, 'makeup', why ? `보강 · ${why}` : '보강', cid);
-      } catch (e) { calErr = `공지는 올렸지만 ${what} 등록은 실패했어요: ${e instanceof Error ? e.message : '까닭을 알 수 없어요'}`; }
+      } catch (e) { calErr = `공지는 올렸지만 ${what} 등록은 실패했어요: ${humanizeError(e)}`; }
     }
     const dupMsg = dupWhat && `공지를 올렸어요 · ${dupWhat}${dupWhat === '휴원일' ? '은' : '는'} 이미 있어서 그대로 뒀어요`;
     toast(calErr || dupMsg || '공지를 올리고 알렸어요', (calErr || dupMsg) ? { ms: 5000 } : {});
