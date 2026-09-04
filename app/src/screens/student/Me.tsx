@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { listTodos, listAbsences, setTodoDone, closedByClass, nextClassDaysFor, kstToday, type Closed, fmtMDW, fmtDayOrToday, dowOf, weekRange, type Todo, type Absence } from '../../lib/api';
 import { useChild, TodoList, WeekStrip, useWeekAtt } from '../parent/Child';
+import { givenName } from '../../lib/name';
 import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
@@ -23,7 +24,7 @@ export function Me() {
   }
   return (
     <section className="view on">
-      <div className="head"><h1 className="hello">{me.name.replace(/^[가-힣]/, '')}</h1><p className="lede">{fmtMDW(kstToday())} · {me.classes.map(c => c.name).join(' · ')}</p></div>
+      <div className="head"><h1 className="hello">{givenName(me.name)}</h1><p className="lede">{fmtMDW(kstToday())} · {me.classes.map(c => c.name).join(' · ')}</p></div>
       <div className="lab first">이번 주 할 것<span className="r">{left ? `${left}개 남음` : '다 했어요'}</span></div>
       <div className="box"><TodoList todos={todos} editable onToggle={toggle} /></div>
       <p className="muted" style={{ padding: '10px 20px 0' }}>했으면 동그라미를 눌러요.</p>

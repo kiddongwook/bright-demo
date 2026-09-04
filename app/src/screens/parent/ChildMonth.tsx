@@ -1,4 +1,5 @@
 import { useChild } from './Child';
+import { callName } from '../../lib/name';
 import { MonthCal } from '../director/StudentDetail';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
@@ -8,7 +9,7 @@ export function ChildMonth() {
   if (!child) return <section className="view on">{err ? <ErrorState onRetry={reload} /> : <Skeleton rows={4} />}</section>;
   return (
     <section className="view on">
-      <div className="head"><p className="lede">{child.name.replace(/^[가-힣]/, '')}이의 이번 달이에요. 휴원일은 빗금, 오늘은 테두리.</p></div>
+      <div className="head"><p className="lede">{callName(child.name)}의 이번 달이에요. 휴원일은 빗금, 오늘은 테두리.</p></div>
       <MonthCal sid={child.id} />
     </section>
   );
