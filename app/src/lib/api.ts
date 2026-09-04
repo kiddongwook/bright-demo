@@ -1,4 +1,5 @@
-import { supabase } from './supabase';
+import { fn, supabase } from './supabase';
+import type { Membership } from '../auth/session';
 
 export type Sched = { dow: number; start: string; end: string };
 export type Cls = { id: string; name: string; schedule: Sched[] };
@@ -174,6 +175,50 @@ export async function getPrefs(): Promise<Record<string, boolean>> {
   return r.prefs ?? {};
 }
 export async function setPrefs(p: Record<string, boolean>) { must(await supabase.from('users').update({ prefs: p }).eq('id', ctx.userId)); }
+/** 푸시를 켠 뒤에도 카톡을 같이 받을지 — 기본은 꺼짐(푸시만). 서버 트리거가 이 값을 본다. */
+export async function setKakaoAlso(on: boolean) { const p = await getPrefs(); await setPrefs({ ...p, kakao_also: on }); }
+
+/* ── 웹 푸시 구독 — 기기 하나에 endpoint 하나. 발송은 서버(outbox-send)가 한다. ── */
+export type PushRow = { endpoint: string; p256dh: string; auth: string };
+export async function savePushSubscription(s: PushRow) {
+  // endpoint 는 unique 다. 같은 기기를 다시 켜면 내 옛 행이 남아 있을 수 있어 지우고 넣는다(RLS 가 update 를 안 준다).
+  must(await supabase.from('push_subscriptions').delete().eq('endpoint', s.endpoint));
+  must(await supabase.from('push_subscriptions').insert({ user_id: ctx.userId, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth, ua: navigator.userAgent.slice(0, 300) }));
+}
+export async function removePushSubscription(endpoint: string) {
+  must(await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint));
+}
+/** 서버에 내 행이 있나 — 기기엔 구독이 남았는데 서버에선 지워진 경우를 가른다(RLS 라 남의 행은 안 보인다). */
+export async function hasPushSubscription(endpoint: string): Promise<boolean> {
+  const r = await supabase.from('push_subscriptions').select('endpoint').eq('endpoint', endpoint).maybeSingle();
+  if (r.error) throw new Error(r.error.message);
+  return !!r.data;
+}
+
+/* ── 초대 링크 — 원장이 명부에서 만들고, 받은 사람은 번호 없이 들어온다 ── */
+/** 명부에 있는 번호로 7일짜리 1회용 토큰을 만든다(원장만). 돌아오는 값은 원문 토큰 32자 hex. */
+export async function createInvite(phone: string): Promise<string> {
+  return must(await supabase.rpc('create_invite', { p_phone: phone })) as string;
+}
+export type InviteOk = { ok: true; user_id: string; session: { access_token: string; refresh_token: string }; memberships: Membership[] };
+export type InviteFail = { ok: false; error: 'expired' | 'used' | 'bad_token' | 'network' };
+/** 초대 토큰으로 정식 세션을 받는다 — otp-verify 와 같은 응답 형태. 실패는 던지지 않고 사유를 돌려준다. */
+export async function inviteLogin(token: string, academy: string): Promise<InviteOk | InviteFail> {
+  let r: Response;
+  try {
+    r = await fetch(fn('invite-login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_ANON_KEY },
+      body: JSON.stringify({ token, academy }),
+    });
+  } catch { return { ok: false, error: 'network' }; }
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({})) as { error?: string };
+    return { ok: false, error: j.error === 'expired' || j.error === 'used' ? j.error : 'bad_token' };
+  }
+  const j = await r.json() as { user_id: string; session: { access_token: string; refresh_token: string }; memberships: Membership[] };
+  return { ok: true, ...j };
+}
 
 /* ── 알림 ── */
 export async function listNotifications(): Promise<Noti[]> {

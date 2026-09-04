@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { listClasses, listStudents, studentDetail, saveStudent, leaveStudent, listTeachers, saveTeacher, removeTeacher, academy, entryStatus, type Cls } from '../../lib/api';
+import { listClasses, listStudents, studentDetail, saveStudent, leaveStudent, listTeachers, saveTeacher, removeTeacher, academy, entryStatus, createInvite, type Cls } from '../../lib/api';
 import { formatPhone, isValidMobile, normalizePhone } from '../../lib/phone';
-import { inviteText, copyInvite } from '../../lib/invite';
+import { copyInvite, personalInviteText } from '../../lib/invite';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
@@ -13,19 +13,36 @@ import { BottomCta } from '../../components/BottomCta';
 import { confirmSheet } from '../../components/Confirm';
 import { IcCheck, IcPhone } from '../../components/icons';
 
+/* 사람별 1회용 초대 링크 만들기 + 복사 — 명부와 강사 화면이 같이 쓴다.
+   토큰은 누를 때 새로 만들어진다(7일·1회용). 복사가 막히면 문구를 시트로 보여 준다 — 안 그러면 만든 토큰이 사라진다. */
+function usePersonalInvite() {
+  const { data: myAcademy } = useLoad(academy);
+  const [busy, setBusy] = useState('');
+  async function copyFor(phone: string, who: string, key: string) {
+    if (busy) return;
+    setBusy(key);
+    try {
+      const token = await createInvite(phone);
+      const text = personalInviteText(myAcademy?.name ?? '우리 학원', myAcademy?.slug ?? null, token, who);
+      if (await copyInvite(text)) { toast('초대 링크를 복사했어요. 카톡으로 보내세요'); return; }
+      if (await confirmSheet({ title: '복사가 막혔어요', body: text, okLabel: '다시 복사', cancelLabel: '닫기' })) {
+        toast(await copyInvite(text) ? '초대 링크를 복사했어요. 카톡으로 보내세요' : '주소를 길게 눌러 복사해 주세요');
+      }
+    } catch (e) { errToast(e); }
+    finally { setBusy(''); }
+  }
+  return { busy, copyFor };
+}
+
 /* 명부: 반별 활성 학생 + 접힌 퇴원생. 행을 누르면 학생 상세, 편집은 작은 단추. 강사는 더보기 → 강사에서 따로 본다. */
 export function Roster() {
   const nav = useNav(); const { active: me } = useSession();
   const isDirector = me?.role === 'director';
   const { data: classes } = useLoad(listClasses);
   const { data: students, err: studentsErr, reload: reloadStudents } = useLoad(() => listStudents(undefined, true));
-  const { data: myAcademy } = useLoad(academy);
   const { data: entryRows, err: entryErr } = useLoad(() => isDirector ? entryStatus() : Promise.resolve(null));
   useEffect(() => { if (entryErr) errToast(new Error(entryErr)); }, [entryErr]);
-  async function copyInviteFor() {
-    if (await copyInvite(inviteText(myAcademy?.name ?? '우리 학원', myAcademy?.slug ?? null))) toast('초대 문구를 복사했어요. 카톡으로 보내세요');
-    else toast('복사가 막혔어요. 더보기 → 학부모 초대 문구 복사에서 길게 눌러 복사해 주세요');
-  }
+  const invite = usePersonalInvite();
   const active = students?.filter(s => s.status === 'active') ?? [];
   const left = students?.filter(s => s.status === 'left') ?? [];
   const noClass = active.filter(s => !s.classes.length);
@@ -50,7 +67,7 @@ export function Roster() {
               <div key={`${r.role}-${r.phone}-${i}`} className="rw" style={{ cursor: 'default' }}>
                 <span className="nm">{(r.student_name ?? r.name).charAt(0)}</span>
                 <span className="bd"><span className="t">{r.student_name} {r.role === 'parent' ? '학부모' : '학생'}</span><span className="s"><a href={'tel:' + r.phone} onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none', color: 'inherit' }}><IcPhone size={13} style={{ color: 'var(--brand)', verticalAlign: -1 }} />{formatPhone(r.phone)}</a></span></span>
-                <button className="btn sm line" onClick={copyInviteFor}>초대 문구 복사</button>
+                <button className="btn sm line" onClick={() => invite.copyFor(r.phone, `${r.student_name ?? r.name} ${r.role === 'parent' ? '학부모' : '학생'}`, `${r.role}-${r.phone}-${i}`)}>{invite.busy === `${r.role}-${r.phone}-${i}` ? '만드는 중…' : '초대 링크 복사'}</button>
               </div>
             ))}
           </div>
@@ -128,6 +145,7 @@ export function StudentEdit() {
 /* 강사: 명부에 넣으면 번호로 들어온다. 담당 반 배정은 반·시간표에서. */
 export function Teachers() {
   const { data, err, reload } = useLoad(listTeachers);
+  const invite = usePersonalInvite();
   const [name, setName] = useState(''); const [phone, setPhone] = useState(''); const [busy, setBusy] = useState(false);
   async function add() {
     if (!name.trim() || !isValidMobile(phone)) { toast('이름과 휴대폰 번호를 확인해 주세요'); return; }
@@ -142,7 +160,7 @@ export function Teachers() {
     <section className="view on">
       <div className="head"><p className="lede">강사는 <b>담당 반</b>의 출결·공지·문의만 봅니다. 반 배정은 <b>반·시간표</b>에서 해요.</p></div>
       <div className="lab first">강사<span className="r">{data ? `${data.length}명` : ''}</span></div>
-      {!data ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={3} />) : (data.length ? <div className="box">{data.map(t => <div key={t.phone} className="rw" style={{ cursor: 'default' }}><span className="nm">{t.name.charAt(0)}</span><span className="bd"><span className="t">{t.name}</span><span className="s">{formatPhone(t.phone)}{t.user_id ? ' · 들어옴' : ' · 아직 안 들어옴'}</span></span><button className="btn sm line" onClick={() => remove(t.phone, t.name)}>빼기</button></div>)}</div>
+      {!data ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={3} />) : (data.length ? <div className="box">{data.map(t => <div key={t.phone} className="rw" style={{ cursor: 'default' }}><span className="nm">{t.name.charAt(0)}</span><span className="bd"><span className="t">{t.name}</span><span className="s">{formatPhone(t.phone)}{t.user_id ? ' · 들어옴' : ' · 아직 안 들어옴'}</span></span><span style={{ display: 'flex', gap: 6, flex: '0 0 auto' }}>{!t.user_id && <button className="btn sm line" onClick={() => invite.copyFor(t.phone, `${t.name} 강사`, t.phone)}>{invite.busy === t.phone ? '만드는 중…' : '초대 링크 복사'}</button>}<button className="btn sm line" onClick={() => remove(t.phone, t.name)}>빼기</button></span></div>)}</div>
         : <p className="muted" style={{ padding: '0 20px' }}>아직 강사가 없어요.</p>)}
       <div className="lab">강사 추가</div>
       <div style={{ padding: '0 20px', display: 'grid', gap: 8 }}>

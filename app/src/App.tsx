@@ -12,7 +12,9 @@ import { setContext, unreadCount, academy, type Academy } from './lib/api';
 import { logoUrl } from './lib/logo';
 import { SCREENS } from './screens/registry';
 import { LinkEntry, type LinkTarget } from './screens/LinkEntry';
-import { takeLinkToken } from './lib/link';
+import { InviteEntry } from './screens/InviteEntry';
+import { takeInviteToken, takeLinkToken, takeNavParam } from './lib/link';
+import { pushToNav } from './lib/push';
 import { setReportScreen } from './lib/report';
 import { UpdateBanner } from './components/UpdateBanner';
 import { ConfirmHost } from './components/Confirm';
@@ -21,21 +23,28 @@ import { useScrollTitle } from './lib/useScrollTitle';
 import { IcBack } from './components/icons';
 import './theme.css';
 
-// 알림톡 버튼(?l=토큰)으로 들어왔는지 — 모듈 로드 때 한 번 읽고 주소에서 지운다 (렌더 중에 history 를 만지지 않게)
-const LINK_TOKEN = takeLinkToken();
+// 주소로 들어온 것들 — 모듈 로드 때 한 번 읽고 주소에서 지운다 (렌더 중에 history 를 만지지 않게)
+const LINK_TOKEN = takeLinkToken();          // 알림톡 버튼 ?l=<토큰>
+const INVITE_TOKEN = takeInviteToken();      // 개인 초대 링크 ?i=<토큰> (?a= 는 남긴다)
+const PUSH_NAV = takeNavParam();             // 푸시 알림을 눌러 앱이 새로 열림 ?v=<화면>&r=<id>
 
 function Shell() {
   const { session, active, memberships, loading, limited } = useSession();
   const [phone, setPhone] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(LINK_TOKEN);
+  const [invite, setInvite] = useState<string | null>(INVITE_TOKEN);
   const [target, setTarget] = useState<LinkTarget | null>(null);
   useEffect(() => { if (active) setPhone(null); }, [active]); // 들어오면 번호 단계를 지운다 — 로그아웃 뒤 남의 인증 화면이 남지 않게
   if (loading) return null;
   if (link) return <div className="shell"><div className="app"><LinkEntry token={link} currentUserId={session && memberships.length ? session.user.id : null} onDone={t => { setLink(null); setTarget(t); }} /></div></div>;
+  if (invite) return <div className="shell"><div className="app"><InviteEntry token={invite} onDone={() => setInvite(null)} onGate={() => setInvite(null)} /></div></div>;
   if (!session || !memberships.length) return <div className="shell"><div className="app">{phone ? <Otp phone={phone} onBack={() => setPhone(null)} /> : <Gate onSent={setPhone} />}</div></div>;
   if (!active) return <div className="shell"><div className="app"><PickRole /></div></div>;
   setContext(active.academy_id, session.user.id);
-  const initial: { view: string; params: Record<string, string> } | undefined = target && target.academy_id === active.academy_id ? { view: target.view, params: target.ref_id ? { id: target.ref_id } : {} } : undefined;
+  // 첫 화면: 알림톡 링크가 정해 준 자리 > 푸시 알림이 정해 준 자리(?v=&r=) > 기본 탭
+  const initial: { view: string; params: Record<string, string> } | undefined = target && target.academy_id === active.academy_id
+    ? { view: target.view, params: target.ref_id ? { id: target.ref_id } : {} }
+    : (PUSH_NAV ? pushToNav(PUSH_NAV.view, PUSH_NAV.ref, active.role as Role) ?? undefined : undefined);
   return <NavProvider key={active.id} role={active.role as Role} initial={initial} limited={limited}><Frame /></NavProvider>;
 }
 
@@ -48,6 +57,21 @@ function Frame() {
   const refreshBadge = () => unreadCount().then(setBadge).catch(() => {});
   useEffect(() => { refreshBadge(); }, [nav.view]);
   useEffect(() => { setReportScreen(nav.view); }, [nav.view]);   // 오류 보고에 "어느 화면에서" 를 싣는다
+  // 앱이 열려 있을 때 푸시 알림을 누르면 서비스워커가 { type:'nav', view, ref } 를 보낸다 → 그 화면으로 민다.
+  // startMessages 없이 addEventListener 만 걸면 브라우저가 메시지를 계속 쟁여 두고 안 준다.
+  useEffect(() => {
+    const sw = navigator.serviceWorker;
+    if (!sw) return;
+    const h = (e: MessageEvent) => {
+      const d = e.data as { type?: string; view?: string; ref?: string } | null;
+      if (!d || d.type !== 'nav' || !d.view) return;
+      const t = pushToNav(d.view, d.ref || null, role);
+      if (t) nav.push(t.view, t.params);
+    };
+    sw.addEventListener('message', h);
+    sw.startMessages();
+    return () => sw.removeEventListener('message', h);
+  }, [role]);
   // 관리 화면은 넓은 화면에서 대시보드로 펼친다
   useEffect(() => { document.body.classList.toggle('wide', WIDE_VIEWS.has(nav.view)); return () => document.body.classList.remove('wide'); }, [nav.view]);
   // PC 관리 모드: 폭 1024px 이상 + 원장·강사 → 폰 틀을 벗고 좌측 내비. 학부모·학생은 PC 에서도 폰 틀 그대로.

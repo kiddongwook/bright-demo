@@ -9,6 +9,16 @@ ${url}
 홈 화면에 추가하면 앱처럼 쓸 수 있어요 (앱 안 더보기 → 홈 화면에 추가).`;
 }
 
+/** 사람별 1회용 초대 문구 — 원장이 명부에서 만들어 카톡으로 보낸다. 받은 사람은 번호 없이 바로 들어온다.
+    who 는 "지훈 학부모" · "지훈 학생" · "김영희 강사" 처럼 누구 앞으로 가는 링크인지. */
+export function personalInviteText(academyName: string, slug: string | null, token: string, who: string): string {
+  const url = `${location.origin}${import.meta.env.BASE_URL}?${slug ? 'a=' + slug + '&' : ''}i=${token}`;
+  return `[${academyName}] 앱 초대 — 링크를 누르면 바로 들어와요 (7일 안에)
+${who} 초대 링크예요. 아래 주소를 누르면 번호 없이 들어와요.
+${url}
+홈 화면에 추가하면 앱처럼 쓸 수 있어요.`;
+}
+
 /** 초대 문구를 복사한 적이 있나 — 첫걸음 카드의 ③ 단계를 체크한다 */
 export const inviteSentKey = (academyId: string) => `invite_sent_${academyId}`;
 export function inviteSent(academyId: string): boolean {
