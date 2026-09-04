@@ -53,6 +53,7 @@ export function Prefs() {
         if (r === 'ok') { setPush('on'); toast('이제 이 기기로 알림이 와요'); }
         else if (r === 'denied') { setPush('denied'); toast('브라우저가 알림을 막았어요'); }
         else if (r === 'unsupported') { setPush('none'); toast('이 브라우저는 알림을 지원하지 않아요'); }
+        else if (r === 'insecure') { setPush('none'); toast('이 브라우저는 푸시를 지원하지 않아요'); }
         else toast('알림을 켜지 못했어요. 잠시 뒤 다시 눌러 주세요');
       }
     } catch (e) { errToast(e); }

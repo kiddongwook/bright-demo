@@ -8,6 +8,8 @@ import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { confirmSheet } from '../../components/Confirm';
 import { IcPhone, IcCheck, IcCalendar, IcChat, IcNote } from '../../components/icons';
+import { Counter } from '../../components/Counter';
+import { LIMITS } from '../../lib/limits';
 
 const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
 const KIND: Record<TimelineItem['kind'], string> = { attendance: '출결', absence: '결석', inquiry: '문의', note: '메모' };
@@ -108,7 +110,10 @@ function Notes({ sid }: { sid: string }) {
     <>
       <div className="lab first">새 메모<span className="r">원장님·강사만 봐요</span></div>
       <div className="seg"><button className={kind === 'consult' ? 'on' : ''} onClick={() => setKind('consult')}>상담</button><button className={kind === 'memo' ? 'on' : ''} onClick={() => setKind('memo')}>메모</button></div>
-      <div style={{ padding: '10px 20px 0' }}><textarea className="input" style={{ minHeight: 80 }} value={body} onChange={e => setBody(e.target.value)} placeholder={kind === 'consult' ? '예) 어머님과 통화 — 단어 암기 계획 잡음' : '예) 수업 중 집중 잘함'} /></div>
+      <div style={{ padding: '10px 20px 0' }}>
+        <textarea className="input" style={{ minHeight: 80 }} value={body} maxLength={LIMITS.note} onChange={e => setBody(e.target.value)} placeholder={kind === 'consult' ? '예) 어머님과 통화 — 단어 암기 계획 잡음' : '예) 수업 중 집중 잘함'} />
+        <Counter n={body.length} max={LIMITS.note} />
+      </div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>남기기</button></div>
       <div className="lab">지난 메모<span className="r">{notes ? `${notes.length}개` : ''}</span></div>
       {!notes ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={2} />) : (notes.length ? <div className="list">{notes.map(n => <div key={n.id} className="tl"><span className={'k ' + (n.kind === 'consult' ? 'consult' : 'note')}><IcNote size={14} style={{ verticalAlign: -2, marginRight: 3 }} />{n.kind === 'consult' ? '상담' : '메모'}</span><span className="bd"><span className="t" style={{ whiteSpace: 'pre-wrap' }}>{n.body}</span><span className="d">{n.author_name} · {when(n.created_at)}</span></span><button className="btn sm line" onClick={() => del(n.id)}>지우기</button></div>)}</div>

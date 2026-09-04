@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseRosterCsv, splitCsv, groupRoster, toCsv } from './csv';
+import { parseRosterCsv, splitCsv, groupRoster, toCsv, planImport, matchStudent, mergePhones, type ExistingStudent } from './csv';
 const HEAD = '반,요일,시작,끝,학생,학생번호,보호자,보호자번호,관계';
 describe('splitCsv', () => {
   it('따옴표 안 쉼표·이중 따옴표·CRLF·BOM', () => {
@@ -39,5 +39,62 @@ describe('toCsv', () => {
   });
   it('빈 칸(null·undefined) 은 빈 문자열로', () => {
     expect(toCsv([['x', null, undefined]])).toBe('﻿x,,');
+  });
+});
+
+describe('CSV 시각 (INP-46/60)', () => {
+  const one = (start: string, end: string) => parseRosterCsv(HEAD + `
+고1 A,월,${start},${end},박지훈,010-1234-0101,어머님,010-1234-0001,어머니`);
+  it("앞의 0 이 빠진 '7:00' 은 받아서 '07:00' 으로 맞춘다", () => {
+    const { rows, errors } = one('7:00', '9:00');
+    expect(errors).toEqual([]); expect(rows[0].start).toBe('07:00'); expect(rows[0].end).toBe('09:00');
+  });
+  it('25:00·19:60 은 막는다', () => {
+    expect(one('25:00', '26:00').errors.some(e => e.msg.includes('19:00 처럼'))).toBe(true);
+    expect(one('19:60', '21:00').errors.some(e => e.msg.includes('19:00 처럼'))).toBe(true);
+  });
+  it('끝이 시작보다 늦어야 한다', () => {
+    expect(one('21:00', '19:00').errors.some(e => e.msg.includes('늦어야'))).toBe(true);
+    expect(one('19:00', '19:00').errors.some(e => e.msg.includes('늦어야'))).toBe(true);
+  });
+});
+
+describe('planImport — 동명이인 (INP-62)', () => {
+  const ex = (id: string, name: string, phone = '', parents: string[] = []): ExistingStudent =>
+    ({ id, name, student_phone: phone, parent_phones: parents, class_ids: [] });
+  const csvOne = (phone: string) => groupRoster(parseRosterCsv(HEAD + `
+고1 A,월,19:00,21:00,김민수,${phone},어머님,010-3333-0003,어머니`).rows).students;
+
+  it('학생번호가 비었고 동명이인이 둘이면 그 줄을 막는다', () => {
+    const plan = planImport(csvOne(''), [ex('A', '김민수', '01011110001'), ex('B', '김민수', '01011110002')]);
+    expect(plan.errors.length).toBe(1);
+    expect(plan.errors[0].msg).toBe('동명이인이 있어 학생 번호가 필요해요 (2줄)');
+    expect(plan.merges).toEqual([]);
+  });
+  it('같은 이름이 하나뿐이면 합치기 — 확인 문구를 돌려준다', () => {
+    const plan = planImport(csvOne(''), [ex('A', '김민수', '01011110001')]);
+    expect(plan.errors).toEqual([]);
+    expect(plan.merges).toEqual(['기존 학생 김민수에 합쳐요']);
+    expect(plan.by.get('김민수|')).toEqual({ kind: 'merge', id: 'A' });
+  });
+  it('학생번호가 딱 맞으면 그 학생만 갱신 (확인 필요 없음)', () => {
+    const plan = planImport(csvOne('010-1111-0002'), [ex('A', '김민수', '01011110001'), ex('B', '김민수', '01011110002')]);
+    expect(plan.errors).toEqual([]); expect(plan.merges).toEqual([]);
+    expect(plan.by.get('김민수|01011110002')).toEqual({ kind: 'update', id: 'B' });
+  });
+  it('같은 이름이 아예 없으면 새로 넣는다', () => {
+    const plan = planImport(csvOne('010-1111-0009'), [ex('A', '박지훈')]);
+    expect(plan.by.get('김민수|01011110009')).toEqual({ kind: 'new' });
+  });
+  it('번호가 맞는 후보가 없고 번호 빈 후보가 둘이면 막는다', () => {
+    expect(matchStudent({ student_phone: '01011110003' }, [ex('A', '김민수'), ex('B', '김민수')])).toEqual({ kind: 'ambiguous' });
+  });
+});
+
+describe('mergePhones', () => {
+  it('보호자 번호를 덮어쓰지 않고 합친다', () => {
+    expect(mergePhones(['01022220001'], ['01033330003'])).toEqual(['01022220001', '01033330003']);
+    expect(mergePhones(['01022220001'], ['01022220001'])).toEqual(['01022220001']);
+    expect(mergePhones([], ['01033330003'])).toEqual(['01033330003']);
   });
 });

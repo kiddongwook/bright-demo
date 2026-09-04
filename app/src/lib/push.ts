@@ -42,11 +42,15 @@ const toRow = (s: PushSubscription) => {
   return { endpoint: s.endpoint, p256dh: j.keys?.p256dh ?? '', auth: j.keys?.auth ?? '' };
 };
 
-export type PushResult = 'ok' | 'denied' | 'unsupported' | 'error';
+export type PushResult = 'ok' | 'denied' | 'unsupported' | 'insecure' | 'error';
+
+/** https(또는 localhost) 가 아니면 푸시를 만들 수 없다 — 만들어도 endpoint 가 https 가 아니면 서버가 못 보낸다. */
+const isSecure = (): boolean => typeof window === 'undefined' || window.isSecureContext !== false;
 
 /** 이 기기로 알림 받기 켜기. 권한 묻기가 먼저다 — 그 앞에 await 를 두면 iOS 가 "사용자가 누른 김" 을 잃는다. */
 export async function subscribe(): Promise<PushResult> {
   if (!isPushSupported()) return 'unsupported';
+  if (!isSecure()) return 'insecure';
   const perm = await Notification.requestPermission();
   if (perm !== 'granted') return 'denied';
   if (!VAPID_PUBLIC) return 'error';
@@ -58,6 +62,8 @@ export async function subscribe(): Promise<PushResult> {
     // (남의 행은 RLS 가 가려서 지우지도 못하므로 그대로 넣으면 unique 충돌이 난다).
     if (sub && !(await hasPushSubscription(sub.endpoint))) { await sub.unsubscribe(); sub = null; }
     if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC) });
+    // 서버는 https endpoint 로만 보낸다. 그 밖의 주소는 넣어 봐야 알림이 조용히 사라진다(INP-10/11).
+    if (!sub.endpoint.startsWith('https://')) { try { await sub.unsubscribe(); } catch { /* 이미 없으면 그만 */ } return 'insecure'; }
     await savePushSubscription(toRow(sub));
     return 'ok';
   } catch { return 'error'; }

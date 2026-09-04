@@ -14,6 +14,8 @@ import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { BottomCta } from '../../components/BottomCta';
 import { confirmSheet } from '../../components/Confirm';
+import { Counter } from '../../components/Counter';
+import { LIMITS } from '../../lib/limits';
 import '../ui.css';
 import '../billing.css';
 
@@ -287,8 +289,9 @@ export function BillingSettings() {
 
       <div className="lab">계좌 안내<span className="r">학부모 화면에 보여요</span></div>
       <div style={{ padding: '0 20px' }}>
-        <textarea className="input" style={{ minHeight: 84 }} value={form.bank_info}
+        <textarea className="input" style={{ minHeight: 84 }} value={form.bank_info} maxLength={LIMITS.bankInfo}
           onChange={e => set('bank_info', e.target.value)} placeholder="예) 국민 123456-01-234567 영어의집" />
+        <Counter n={(form.bank_info ?? '').length} max={LIMITS.bankInfo} />
         <p className="muted" style={{ paddingTop: 6 }}>미납 안내 알림에도 이 문구가 함께 갑니다.</p>
       </div>
       {err && <div style={{ paddingTop: 12 }}><ErrorState onRetry={reload} /></div>}

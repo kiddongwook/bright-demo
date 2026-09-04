@@ -83,3 +83,31 @@ VAPID 비밀값이 없고 `PUSH_DRY_RUN` 도 아니면 push 행은 `vapid_not_co
 
 ## 처리량
 `outbox-send` 는 한 번에 20건을 잡는다 → 분당 약 20건. 학원 하나면 충분하다. 공지 하나가 학부모 100명에게 가는 규모가 되면 `outbox_claim` 의 `n` 을 올리거나 `outbox-send` 안에서 줄이 빌 때까지 반복하게 바꾼다(대행사 초당 한도도 같이 본다).
+
+## 굳은 줄 (0018_hardening.sql, 2026-09-04)
+
+발송기가 잡히지 않은 예외(Edge 타임아웃 등)로 **catch 밖에서** 죽으면, `outbox_claim` 이 이미 커밋한 `attempts+1` 만 남고
+상태는 `queued` 그대로다. 예전 규칙(`attempts < 5`)에서는 이 줄이 다섯 번째에 영영 빠져 나가지도 죽지도 않았다(레드팀 INP-21).
+
+0018 이후 `outbox_claim` 은 잡기 전에 두 가지를 먼저 한다.
+
+1. **한 번 더 기회** — `status='queued'` 인데 `attempts >= 5` 이고 다시 잡을 때가 된 줄을
+   `status='failed'`, `next_attempt_at=now()`, `last_error='stuck: claimed but never reported'` 로 풀어 준다.
+   claim 조건이 `attempts < 6` 이라 이 줄은 한 번 더 잡히고, 발송기가 받는 `attempts` 는 6 이 되어
+   `outbox-send` 의 `isDead = o.attempts >= 5` 분기로 들어간다 → `dead` + (채널이 alimtalk 이면) 문자 대체 한 줄.
+2. **하드 스톱** — 그러고도 `queued`/`failed` 로 남은 `attempts >= 6` 줄은 `status='dead'`,
+   `last_error='stuck: gave up after 6 attempts'` 로 박는다. 더는 아무도 잡지 않는다.
+
+`outbox_tick()` 의 "보낼 게 있나" 검사도 같은 `attempts < 6` 을 본다 — 그러지 않으면 굳은 줄이 발송기를 못 깨운다.
+
+굳은 줄 찾기: `select id, channel, attempts, status, last_error from outbox where last_error like 'stuck:%' order by created_at desc;`
+정상 흐름의 재시도 횟수는 그대로 5회다(0→5 에서 dead). `attempts=6` 은 "한 번 죽었다 살아난 줄" 이라는 표시다.
+
+### 지워진 공지의 줄
+공지를 지우면 `after delete` 트리거가 그 공지를 가리키는 `notifications` 를 지우고,
+아직 안 나간(`queued`/`failed`) `outbox` 줄을 `status='dead'`, `last_error='notice deleted'` 로 박는다(레드팀 INT-38).
+이미 `sent` 인 줄은 역사라 그대로 둔다.
+
+### 받는 사람이 아직 그 학원 사람인가
+`outbox_recipient_active(p_outbox uuid) returns boolean` — `to_user_id` 가 그 `academy_id` 에 아직 소속이 있으면 true.
+service_role 만 부를 수 있다. 퇴원 직전에 줄에 선 알림이 퇴원 뒤에 나가는 자리(INT-39)를 `outbox-send` 가 보내기 전에 막는 데 쓴다.

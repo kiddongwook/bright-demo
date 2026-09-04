@@ -1,5 +1,5 @@
 import * as webpush from 'jsr:@negrel/webpush@0.5.0';
-import { TEMPLATES } from './alimtalk.ts';
+import { TEMPLATES, clampParams, cut, renderTemplate } from './alimtalk.ts';
 
 // 웹 푸시(RFC 8291/8292). 건당 비용이 없어 카톡보다 먼저 간다.
 // 라이브러리: npm:web-push 는 node:https · crypto.createECDH/createSign 에 기대어 Supabase Edge(Deno) 에서 못 쓴다.
@@ -9,7 +9,7 @@ import { TEMPLATES } from './alimtalk.ts';
 
 type P = Record<string, string>;
 export type PushSub = { id: string; endpoint: string; p256dh: string; auth: string };
-export type PushOne = { id: string; ok: boolean; gone: boolean; error?: string };
+export type PushOne = { id: string; ok: boolean; gone: boolean; fatal: boolean; status?: number; error?: string };
 export type PushPayload = { title: string; body: string; view: string; ref: string | null };
 
 export const pushDryRun = () => Deno.env.get('PUSH_DRY_RUN') === '1';
@@ -23,13 +23,18 @@ export const pushDryRun = () => Deno.env.get('PUSH_DRY_RUN') === '1';
  * 푸시 문구는 우리가 쓰는 것이라 뒤에 ' · <사유>' 로 붙인다 — 앱 알림과 같은 내용이 보이게.
  * 사유는 0016_attendance_reason_param.sql 이 채널 push 줄의 params['사유'] 에만 실어 준다.
  */
+export const PUSH_TITLE_MAX = 60, PUSH_BODY_MAX = 200;
 export function pushPayload(o: { template_code: string; params: P | null; link_view: string | null; link_ref: string | null }): PushPayload {
-  const p = (o.params ?? {}) as P;
-  const t = TEMPLATES[o.template_code];
-  let body = t ? t.text(p).replace(/^\[[^\]]*\]\s*/, '') : (p['알림'] ?? '새 알림이 있어요.');
+  const p = clampParams(o.params as P | null);
+  const academy = p['학원'] ?? '학원';
+  let body = TEMPLATES[o.template_code] ? renderTemplate(o.template_code, p) : (p['알림'] ?? '새 알림이 있어요.');
+  // 앞머리 [학원] 은 뗀다 — 제목에 이미 있다. 학원 이름에 ']' 가 있어도 끊기지 않게 이름으로 먼저 맞춰 본다(INP-04).
+  const head = `[${academy}] `;
+  body = body.startsWith(head) ? body.slice(head.length) : body.replace(/^\[[^\]]*\]\s*/, '');
   const why = (p['사유'] ?? '').trim();
   if (o.template_code === 'ATTENDANCE' && why) body = body.trim() + ' · ' + why;
-  return { title: p['학원'] ?? '학원', body: body.trim(), view: o.link_view ?? 'home', ref: o.link_ref ?? null };
+  // RFC 8291 aes128gcm 의 실효 평문 한도는 4KB — 제목·본문을 여기서 자른다(INP-01/02/71).
+  return { title: cut(academy, PUSH_TITLE_MAX), body: cut(body.trim(), PUSH_BODY_MAX), view: o.link_view ?? 'home', ref: o.link_ref ?? null };
 }
 
 const b64urlToBytes = (s: string) => {
@@ -72,7 +77,7 @@ function appServer(): Promise<webpush.ApplicationServer> {
 }
 
 export async function sendPush(subs: PushSub[], payload: PushPayload): Promise<PushOne[]> {
-  if (pushDryRun()) return subs.map((s) => ({ id: s.id, ok: true, gone: false }));
+  if (pushDryRun()) return subs.map((s) => ({ id: s.id, ok: true, gone: false, fatal: false }));
   const server = await appServer();
   const body = JSON.stringify(payload);
   const out: PushOne[] = [];
@@ -80,12 +85,15 @@ export async function sendPush(subs: PushSub[], payload: PushPayload): Promise<P
     try {
       await server.subscribe({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } })
         .pushTextMessage(body, { ttl: 86400 });
-      out.push({ id: s.id, ok: true, gone: false });
+      out.push({ id: s.id, ok: true, gone: false, fatal: false });
     } catch (e) {
       const res = (e as { response?: Response }).response;
       const st = res?.status;
+      // 404/410 = 지운 기기(구독을 지운다). 그 밖의 4xx(400·401·403·413…)는 다시 보내도 같은 답이 온다
+      // = 되풀이할 값어치가 없다(fatal) → 곧바로 문자 대체로 넘긴다. 429·5xx·그물망 오류는 재시도한다.
+      const fatal = !!st && st >= 400 && st < 500 && st !== 404 && st !== 410 && st !== 429;
       out.push({
-        id: s.id, ok: false, gone: st === 404 || st === 410,
+        id: s.id, ok: false, gone: st === 404 || st === 410, fatal, status: st,
         error: (st ? `push ${st} ${res!.statusText}` : String((e as Error)?.message ?? e)).slice(0, 200),
       });
     }

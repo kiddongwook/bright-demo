@@ -78,8 +78,16 @@ export async function teardown(ctx) {
 
 /* ───────── 앱 코드 사본 (순수 함수) ───────── */
 // app/src/lib/phone.ts · supabase/functions/_shared/sms.ts
-export const normalizePhone = (p) => (p ?? '').replace(/[^0-9]/g, '');
-export const isValidMobile = (p) => /^01[016789]\d{7,8}$/.test(normalizePhone(p));
+export const normalizePhone = (p) => {
+  const t = (p ?? '').replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+  const d = t.replace(/[^0-9+]/g, '').replace(/(?!^)\+/g, '');
+  const m = /^\+?82(\d+)$/.exec(d);
+  return m ? '0' + m[1].replace(/^0+/, '') : d.replace(/\+/g, '');
+};
+export const isValidMobile = (p) => {
+  const d = normalizePhone(p);
+  return /^01[016789]\d{7,8}$/.test(d) && !(d.startsWith('010') && d.length !== 11);
+};
 
 // supabase/functions/_shared/alimtalk.ts TEMPLATES
 export const TEMPLATES = {
@@ -89,26 +97,58 @@ export const TEMPLATES = {
   MAKEUP_CONFIRMED: { text: (p) => `[${p['학원'] ?? '학원'}] ${p['날짜'] ?? ''} 결석 보강이 정해졌어요. ${p['보강'] ?? ''}`, button: '확인하기' },
   ATTENDANCE: { text: (p) => `[${p['학원'] ?? '학원'}] ${p['학생'] ?? ''} 오늘 출결이 기록됐어요. ${p['상태'] ?? ''}`, button: '확인하기' },
 };
-export const renderSms = (code, params, url) => `${TEMPLATES[code]?.text(params) ?? `[${params['학원'] ?? '학원'}] 알림이 있어요.`} ${url}`;
+export const TEXT_MAX = 1000, SMS_MAX_BYTES = 2000;
+export const PARAM_MAX = { 학원: 40, 제목: 80, 보강: 80, 날짜: 20, 학생: 20, 상태: 20, 사유: 100, 알림: 200 };
+export const cut = (s, n) => (s.length > n ? s.slice(0, Math.max(0, n - 1)).trimEnd() + '…' : s);
+export function cutBytes(s, maxBytes) {
+  const enc = new TextEncoder();
+  if (enc.encode(s).length <= maxBytes) return s;
+  let out = s;
+  while (out.length > 0 && enc.encode(out + '…').length > maxBytes) out = out.slice(0, -1);
+  return out.trimEnd() + '…';
+}
+const oneLine = (s) => s.replace(/\s+/g, ' ').trim();
+export function clampParams(p) {
+  const out = {};
+  for (const [k, v] of Object.entries(p ?? {})) out[k] = cut(oneLine(String(v ?? '')), PARAM_MAX[k] ?? 200);
+  return out;
+}
+export function renderTemplate(code, params) {
+  const p = clampParams(params);
+  const t = TEMPLATES[code];
+  return cut(t ? t.text(p) : `[${p['학원'] ?? '학원'}] 알림이 있어요.`, TEXT_MAX);
+}
+export function renderSms(code, params, url) {
+  const room = SMS_MAX_BYTES - new TextEncoder().encode(' ' + url).length;
+  return `${cutBytes(renderTemplate(code, params), Math.max(0, room))} ${url}`;
+}
 
 // supabase/functions/_shared/push.ts pushPayload
+export const PUSH_TITLE_MAX = 60, PUSH_BODY_MAX = 200;
 export function pushPayload(o) {
-  const p = o.params ?? {};
-  const t = TEMPLATES[o.template_code];
-  let body = t ? t.text(p).replace(/^\[[^\]]*\]\s*/, '') : (p['알림'] ?? '새 알림이 있어요.');
+  const p = clampParams(o.params);
+  const academy = p['학원'] ?? '학원';
+  let body = TEMPLATES[o.template_code] ? renderTemplate(o.template_code, p) : (p['알림'] ?? '새 알림이 있어요.');
+  const head = `[${academy}] `;
+  body = body.startsWith(head) ? body.slice(head.length) : body.replace(/^\[[^\]]*\]\s*/, '');
   const why = (p['사유'] ?? '').trim();
   if (o.template_code === 'ATTENDANCE' && why) body = body.trim() + ' · ' + why;
-  return { title: p['학원'] ?? '학원', body: body.trim(), view: o.link_view ?? 'home', ref: o.link_ref ?? null };
+  return { title: cut(academy, PUSH_TITLE_MAX), body: cut(body.trim(), PUSH_BODY_MAX), view: o.link_view ?? 'home', ref: o.link_ref ?? null };
 }
 export const bytes = (s) => new TextEncoder().encode(s).length;
 
 // app/src/lib/attendance.ts
+export const HM_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+export const isValidHm = (s) => HM_RE.test((s ?? '').trim());
+export function normHm(s) {
+  const t = (s ?? '').trim();
+  const m = /^(\d{1,2}):(\d{1,2})$/.exec(t);
+  return m ? `${m[1].padStart(2, '0')}:${m[2].padStart(2, '0')}` : t;
+}
 export function hmToMin(hm) {
-  const m = /^(\d{1,2}):(\d{2})$/.exec((hm ?? '').trim());
-  if (!m) return null;
-  const h = +m[1], mm = +m[2];
-  if (h > 23 || mm > 59) return null;
-  return h * 60 + mm;
+  const t = (hm ?? '').trim();
+  if (!HM_RE.test(t)) return null;
+  return +t.slice(0, 2) * 60 + +t.slice(3, 5);
 }
 const todaySlots = (c, dow) => (c.schedule ?? []).filter((s) => s.dow === dow)
   .map((s) => ({ start: hmToMin(s.start), end: hmToMin(s.end) }))
@@ -125,17 +165,21 @@ export function pickInitialClass(classes, dow, nowMin) {
 // app/src/lib/dates.ts
 export const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 export const dowOf = (iso) => new Date(iso + 'T00:00:00Z').getUTCDay();
+export function isValidIso(iso) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso ?? '')) return false;
+  const t = Date.parse(iso + 'T00:00:00Z');
+  return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === iso;
+}
 export function fmtDateLong(iso) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  if (!isValidIso(iso)) return '';
   const [, m, d] = iso.split('-');
   return `${+m}월 ${+d}일 (${DOW[dowOf(iso)]})`;
 }
 export function fmtTime12(hm) {
-  const m = /^(\d{1,2}):(\d{2})$/.exec(hm.trim());
-  if (!m) return hm;
-  const h = +m[1];
-  if (h > 23) return hm;
-  return `${h < 12 ? '오전' : '오후'} ${h % 12 === 0 ? 12 : h % 12}:${m[2]}`;
+  const t = (hm ?? '').trim();
+  if (!HM_RE.test(t)) return '';
+  const h = +t.slice(0, 2);
+  return `${h < 12 ? '오전' : '오후'} ${h % 12 === 0 ? 12 : h % 12}:${t.slice(3, 5)}`;
 }
 
 // app/src/lib/name.ts
@@ -188,12 +232,14 @@ export function parseRosterCsv(text) {
   if (missing.length) return { rows, errors: [{ line: 1, msg: `머리글에 ${missing.join('·')} 이 없어요` }] };
   lines.slice(1).forEach((l, i) => {
     const line = i + 2; const g = (h) => (l[idx[h]] ?? '').trim();
-    const r = { line, cls: g('반'), dows: parseDows(g('요일')), start: g('시작'), end: g('끝'), student: g('학생'), student_phone: normalizePhone(g('학생번호')), parent: g('보호자'), parent_phone: normalizePhone(g('보호자번호')) };
+    const r = { line, cls: g('반'), dows: parseDows(g('요일')), start: normHm(g('시작')), end: normHm(g('끝')), student: g('학생'), student_phone: normalizePhone(g('학생번호')), parent: g('보호자'), parent_phone: normalizePhone(g('보호자번호')) };
     if (!r.cls) errors.push({ line, msg: '반이 비었어요' });
     if (!r.student) errors.push({ line, msg: '학생 이름이 비었어요' });
-    if (r.student_phone && !/^01[016789]\d{7,8}$/.test(r.student_phone)) errors.push({ line, msg: `학생번호 모양이 이상해요 (${g('학생번호')})` });
-    if (r.parent_phone && !/^01[016789]\d{7,8}$/.test(r.parent_phone)) errors.push({ line, msg: `보호자번호 모양이 이상해요 (${g('보호자번호')})` });
-    if (!/^\d{2}:\d{2}$/.test(r.start) || !/^\d{2}:\d{2}$/.test(r.end)) errors.push({ line, msg: '시작·끝은 19:00 처럼' });
+    if (r.student.length > 20) errors.push({ line, msg: '학생 이름은 20자까지예요' });
+    if (r.student_phone && !isValidMobile(r.student_phone)) errors.push({ line, msg: `학생번호 모양이 이상해요 (${g('학생번호')})` });
+    if (r.parent_phone && !isValidMobile(r.parent_phone)) errors.push({ line, msg: `보호자번호 모양이 이상해요 (${g('보호자번호')})` });
+    if (!isValidHm(r.start) || !isValidHm(r.end)) errors.push({ line, msg: '시작·끝은 19:00 처럼 (00:00~23:59)' });
+    else if (r.end <= r.start) errors.push({ line, msg: '끝나는 시간이 시작보다 늦어야 해요' });
     if (!r.dows.length) errors.push({ line, msg: '요일은 월수금 처럼' });
     rows.push(r);
   });
@@ -204,12 +250,44 @@ export function groupRoster(rows) {
   for (const r of rows) {
     if (!cls.has(r.cls)) cls.set(r.cls, { name: r.cls, dows: r.dows, start: r.start, end: r.end });
     const key = r.student + '|' + r.student_phone;
-    const s = st.get(key) ?? { key, name: r.student, student_phone: r.student_phone, classes: [], parent_phones: [] };
+    const s = st.get(key) ?? { key, name: r.student, student_phone: r.student_phone, classes: [], parent_phones: [], lines: [] };
     if (!s.classes.includes(r.cls)) s.classes.push(r.cls);
     if (r.parent_phone && !s.parent_phones.includes(r.parent_phone)) s.parent_phones.push(r.parent_phone);
+    if (!s.lines.includes(r.line)) s.lines.push(r.line);
     st.set(key, s);
   }
   return { students: [...st.values()], classes: [...cls.values()] };
+}
+
+// 동명이인 짝짓기 (INP-62) — cands 는 이름이 같은 활성 학생들
+export function matchStudent(s, cands) {
+  if (!cands.length) return { kind: 'new' };
+  if (s.student_phone) {
+    const exact = cands.filter((c) => c.student_phone === s.student_phone);
+    if (exact.length === 1) return { kind: 'update', id: exact[0].id };
+    if (exact.length > 1) return { kind: 'ambiguous' };
+    const blank = cands.filter((c) => !c.student_phone);
+    if (blank.length === 1) return { kind: 'merge', id: blank[0].id };
+    if (blank.length > 1) return { kind: 'ambiguous' };
+    return { kind: 'new' };
+  }
+  if (cands.length > 1) return { kind: 'ambiguous' };
+  return { kind: 'merge', id: cands[0].id };
+}
+export const mergePhones = (before, add) => {
+  const out = [...before];
+  for (const p of add) if (p && !out.includes(p)) out.push(p);
+  return out;
+};
+export function planImport(students, existing) {
+  const by = new Map(); const merges = []; const errors = [];
+  for (const s of students) {
+    const r = matchStudent(s, existing.filter((e) => e.name === s.name));
+    by.set(s.key, r);
+    if (r.kind === 'ambiguous') errors.push({ line: s.lines[0] ?? 1, msg: `동명이인이 있어 학생 번호가 필요해요 (${s.lines.join('·')}줄)` });
+    if (r.kind === 'merge') merges.push(`기존 학생 ${s.name}에 합쳐요`);
+  }
+  return { by, merges, errors };
 }
 
 export function report(title) {

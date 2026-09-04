@@ -1,8 +1,9 @@
-// 테스트가 남긴 학원(slug a-*, b-*, otp-*)과 그 auth 사용자를 지운다. 씨앗 학원(yeongeo)은 건드리지 않는다.
+// 테스트가 남긴 학원(slug a-*, b-*, otp-*, … 적대적 점검의 rt-*)과 그 auth 사용자를 지운다. 씨앗 학원(yeongeo)은 건드리지 않는다.
+// 접두어를 새로 쓰는 점검을 만들면 여기 목록에 같이 넣는다 — 뒷정리를 스크립트마다 따로 만들지 않게.
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, { auth: { persistSession: false } });
-const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%,slug.like.manage-%,slug.like.export-%,slug.like.hk-%,slug.like.onb-%,slug.like.files-%,slug.like.push-%,slug.like.inv-%');
+const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%,slug.like.manage-%,slug.like.export-%,slug.like.hk-%,slug.like.onb-%,slug.like.files-%,slug.like.push-%,slug.like.inv-%,slug.like.bill-%,slug.like.seam-%,slug.like.hard-%,slug.like.rt-%');
 let users = 0;
 for (const a of acs ?? []) {
   const { data: ms } = await admin.from('memberships').select('user_id').eq('academy_id', a.id);

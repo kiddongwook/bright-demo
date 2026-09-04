@@ -3,6 +3,7 @@
    note 한 칸만 더 싣는다(attendance.note 은 0001 스키마에 이미 있다). */
 import { supabase } from './supabase';
 import { getContext, listStudents, type AttRow, type AttStatus, type Cls } from './api';
+import { hmToMin } from './dates';
 
 /** 출석부 한 줄 + 사유. note 는 빈 문자열이 아니라 null 로 다룬다 (DB 도 null 이 "없음"). */
 export type AttNoteRow = AttRow & { note: string | null };
@@ -38,14 +39,8 @@ export const REASONS: Partial<Record<AttStatus, string[]>> = {
 
 /* ── "지금 수업 중인 반" 고르기 (순수 — 시험이 여기만 부른다) ── */
 
-/** 'HH:MM' → 자정부터 분. 모양이 아니면 null (시간표가 비어 있어도 터지지 않게). */
-export function hmToMin(hm: string | undefined | null): number | null {
-  const m = /^(\d{1,2}):(\d{2})$/.exec((hm ?? '').trim());
-  if (!m) return null;
-  const h = +m[1], mm = +m[2];
-  if (h > 23 || mm > 59) return null;
-  return h * 60 + mm;
-}
+/** 'HH:MM' → 자정부터 분 — 이제 dates.ts 에 산다(시각 문지기를 한 곳으로 모았다). 여기서 다시 내보낸다. */
+export { hmToMin } from './dates';
 
 /** 오늘 이 반이 하는 수업 시간대 — 시작이 이른 것부터 */
 const todaySlots = (c: Cls, dow: number) =>

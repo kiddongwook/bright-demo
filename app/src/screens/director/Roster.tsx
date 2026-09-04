@@ -12,6 +12,8 @@ import { ErrorState } from '../../components/ErrorState';
 import { BottomCta } from '../../components/BottomCta';
 import { confirmSheet } from '../../components/Confirm';
 import { IcCheck, IcPhone } from '../../components/icons';
+import { Counter } from '../../components/Counter';
+import { LIMITS } from '../../lib/limits';
 
 /* 사람별 1회용 초대 링크 만들기 + 복사 — 명부와 강사 화면이 같이 쓴다.
    토큰은 누를 때 새로 만들어진다(7일·1회용). 복사가 막히면 문구를 시트로 보여 준다 — 안 그러면 만든 토큰이 사라진다. */
@@ -126,7 +128,10 @@ export function StudentEdit() {
     <section className="view on">
       <div className="head"><p className="lede">{id ? '이름·반·번호를 고쳐요.' : '학생을 넣으면 번호로 바로 들어올 수 있어요.'} 학부모 번호는 여럿이어도 돼요.</p></div>
       <div className="lab first">이름</div>
-      <div style={{ padding: '0 20px' }}><input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="예) 박지훈" /></div>
+      <div style={{ padding: '0 20px' }}>
+        <input className="input" value={name} maxLength={LIMITS.personName} onChange={e => setName(e.target.value)} placeholder="예) 박지훈" />
+        <Counter n={name.length} max={LIMITS.personName} />
+      </div>
       <div className="lab">반<span className="r">여럿 가능</span></div>
       <div className="seg col">{classes?.map(c => <button key={c.id} className={cls.includes(c.id) ? 'on' : ''} onClick={() => toggle(c.id)}>{c.name}</button>)}</div>
       <div className="lab">학생 번호<span className="r">없으면 비워요</span></div>
@@ -164,7 +169,7 @@ export function Teachers() {
         : <p className="muted" style={{ padding: '0 20px' }}>아직 강사가 없어요.</p>)}
       <div className="lab">강사 추가</div>
       <div style={{ padding: '0 20px', display: 'grid', gap: 8 }}>
-        <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="이름" />
+        <div><input className="input" style={{ width: '100%' }} value={name} maxLength={LIMITS.personName} onChange={e => setName(e.target.value)} placeholder="이름" /><Counter n={name.length} max={LIMITS.personName} /></div>
         <input className="input" inputMode="tel" value={phone} onChange={e => setPhone(formatPhone(e.target.value))} placeholder="010-0000-0000" />
       </div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>넣기</button></div>

@@ -1,10 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { sendSms, normalizePhone, sha256, json, cors } from '../_shared/sms.ts';
+import { sendSms, normalizePhone, isValidMobile, sha256, json, cors } from '../_shared/sms.ts';
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return cors();
   const { phone: raw } = await req.json().catch(() => ({}));
   const phone = normalizePhone(raw);
-  if (phone.length < 10) return json(400, { error: 'bad_phone' });
+  // 휴대폰 모양이 아니면 명부를 보기 전에 400 — "명부에 없다"는 틀린 안내를 주지 않는다 (INP-30)
+  if (!isValidMobile(phone)) return json(400, { error: 'bad_phone' });
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   // 이름은 DB 에서만 온다 — 번호가 여러 학원에 있으면 첫 학원 (문자 앞머리 [학원])
   const { data: roster } = await admin.from('roster_phones').select('academy_id, academies(name)').eq('phone', phone);

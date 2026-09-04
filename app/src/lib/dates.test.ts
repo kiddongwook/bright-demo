@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { nextClassDays, nextClassDaysFor, monthGrid, dowOf, scheduleSummary } from './api';
-import { fmtDateLong, fmtTime12, addDays, hm, withEul } from './dates';
+import { fmtDateLong, fmtTime12, addDays, hm, withEul, hmToMin, normHm, isValidHm } from './dates';
 describe('nextClassDays + 휴원일', () => {
   it('휴원일은 건너뛴다', () => {
     const sched = [1, 2, 3, 4, 5, 6, 0].map(dow => ({ dow, start: '00:01', end: '23:59' })); // 매일 수업, 오늘은 시작이 지나 제외
@@ -53,7 +53,10 @@ describe('scheduleSummary', () => {
 describe('fmtDateLong', () => {
   it('9월 11일 (금)', () => { expect(fmtDateLong('2026-09-11')).toBe('9월 11일 (금)'); });
   it('앞의 0 은 떼고 쓴다', () => { expect(fmtDateLong('2026-03-03')).toBe('3월 3일 (화)'); });
-  it('날짜 꼴이 아니면 그대로', () => { expect(fmtDateLong('')).toBe(''); expect(fmtDateLong('내일')).toBe('내일'); });
+  it('날짜 꼴이 아니면 빈 글자', () => { expect(fmtDateLong('')).toBe(''); expect(fmtDateLong('내일')).toBe(''); });
+  it('없는 날짜를 그럴듯하게 보여 주지 않는다 (INP-47)', () => {
+    expect(fmtDateLong('2026-02-30')).toBe(''); expect(fmtDateLong('2026-13-01')).toBe('');
+  });
 });
 describe('addDays', () => {
   it('다음 주 같은 요일', () => { expect(addDays('2026-09-11', 7)).toBe('2026-09-18'); });
@@ -67,7 +70,13 @@ describe('fmtTime12', () => {
   it('정오는 오후 12시', () => { expect(fmtTime12('12:00')).toBe('오후 12:00'); });
   it('분은 두 자리 그대로', () => { expect(fmtTime12('13:05')).toBe('오후 1:05'); });
   it('오전', () => { expect(fmtTime12('09:30')).toBe('오전 9:30'); });
-  it('시간 꼴이 아니면 그대로', () => { expect(fmtTime12('')).toBe(''); expect(fmtTime12('저녁')).toBe('저녁'); });
+  it('시간 꼴이 아니면 빈 글자', () => { expect(fmtTime12('')).toBe(''); expect(fmtTime12('저녁')).toBe(''); });
+  it('없는 시각은 hmToMin 과 같은 잣대로 거른다 (INP-49)', () => {
+    for (const bad of ['19:60', '24:00', '25:00', '7:00', '99:99']) {
+      expect(fmtTime12(bad)).toBe('');
+      expect(hmToMin(bad)).toBeNull();
+    }
+  });
 });
 describe('hm', () => {
   it('두 자리로 맞춘다', () => { expect(hm(9, 0)).toBe('09:00'); expect(hm(21, 30)).toBe('21:30'); });
@@ -76,4 +85,15 @@ describe('withEul', () => {
   it('받침이 있으면 을', () => { expect(withEul('단어 시험')).toBe('단어 시험을'); });
   it('받침이 없으면 를', () => { expect(withEul('중간고사')).toBe('중간고사를'); });
   it('빈 말은 그대로', () => { expect(withEul('  ')).toBe(''); });
+});
+
+describe('normHm · isValidHm', () => {
+  it('앞의 0 이 빠진 시각을 맞춘다 (INP-46)', () => {
+    expect(normHm('7:00')).toBe('07:00'); expect(normHm('9:5')).toBe('09:05'); expect(normHm('19:00')).toBe('19:00');
+  });
+  it('시각이 아니면 손대지 않는다', () => { expect(normHm('저녁')).toBe('저녁'); expect(normHm('')).toBe(''); });
+  it('00:00~23:59 만 받는다', () => {
+    expect(isValidHm('00:00')).toBe(true); expect(isValidHm('23:59')).toBe(true);
+    expect(isValidHm('24:00')).toBe(false); expect(isValidHm('19:60')).toBe(false); expect(isValidHm('7:00')).toBe(false);
+  });
 });

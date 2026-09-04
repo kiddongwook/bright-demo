@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { listCalendar, addCalendar, addCalendarMany, removeCalendar, listClasses, listClassesFull, createClass, updateClass, assignClassTeacher, listTeachers, kstToday, kstDate, fmtMDW, DOW, dowOf, nextClassDaysFor, scheduleSummary, type CalItem, type Sched, type ClsFull, type Teacher } from '../../lib/api';
-import { addDays } from '../../lib/dates';
+import { addDays, isValidHm, normHm } from '../../lib/dates';
 import { groupCalendar, type CalGroup } from '../../lib/calendarGroups';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
@@ -62,10 +62,12 @@ export function CalendarScreen() {
         /* 이미 있는 날은 건너뛴다 — (날짜·종류·반) 이 겹치면 서버가 막고, 메모를 덮어쓰는 것도 원하는 바가 아니다 */
         const had = new Set((await listCalendar(days[0])).filter(x => x.kind === kind && x.class_id === cls).map(x => x.date));
         const fresh = days.filter(d => !had.has(d));
-        const skipped = days.length - fresh.length;
         if (!fresh.length) { toast('이미 다 들어가 있어요'); setBusy(false); return; }
-        await addCalendarMany(fresh, kind, note.trim(), cls);
-        toast(`${fresh.length}일을 넣었어요` + (skipped ? ` (이미 있던 ${skipped}일은 건너뜀)` : ''));
+        /* 서버가 겹치는 날을 건너뛰고 실제로 넣은 수를 돌려준다 — 다른 탭이 방금 넣은 날 때문에 전부 없던 일이 되지 않게(INT-05) */
+        const inserted = await addCalendarMany(fresh, kind, note.trim(), cls);
+        const skipped = days.length - inserted;
+        if (!inserted) toast('이미 다 들어가 있어요');
+        else toast(`${inserted}일을 넣었어요` + (skipped ? ` (이미 있던 ${skipped}일은 건너뜀)` : ''));
       }
       setDate(''); setEnd(''); setNote(''); setDowPick(null); reload();
     }
@@ -162,7 +164,9 @@ function ClassForm({ cls, teachers, onDone }: { cls: ClsFull | null; teachers: T
   async function save() {
     if (!name.trim()) { toast('반 이름을 적어주세요'); return; }
     const sorted = [...dows].sort((a, b) => DOW_ORDER.indexOf(a) - DOW_ORDER.indexOf(b));
-    const schedule: Sched[] = sorted.map(dow => { const t = perDowOn ? (perDow[dow] ?? { start, end }) : { start, end }; return { dow, start: t.start, end: t.end }; });
+    const schedule: Sched[] = sorted.map(dow => { const t = perDowOn ? (perDow[dow] ?? { start, end }) : { start, end }; return { dow, start: normHm(t.start), end: normHm(t.end) }; });
+    /* 24:00·19:60 같은 값은 저장돼도 오늘 수업·다음 수업에서 조용히 빠진다 — 여기서 막는다(INP-45) */
+    if (schedule.some(s => !isValidHm(s.start) || !isValidHm(s.end))) { toast('시간은 19:00 처럼 적어주세요 (00:00~23:59)'); return; }
     if (schedule.some(s => s.start >= s.end)) { toast('끝나는 시간이 시작보다 늦어야 해요'); return; }
     setBusy(true);
     try {

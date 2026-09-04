@@ -97,7 +97,8 @@ try {
 
   // ---- D. 연체 표시
   await admin.from('invoices').update({ due_date: '2020-01-05' }).eq('student_id', S3);
-  r = await d.rpc('refresh_overdue'); ok(!r.error && r.data === 1, `refresh_overdue → 1 (got ${r.error?.message ?? r.data})`);
+  // 0018: 부분 납부도 뒤집는다(INT-32) → 둘째 청구서의 납기가 지난 날에 돌리면 2장이 될 수 있다. "적어도 셋째 한 장" 으로 본다.
+  r = await d.rpc('refresh_overdue'); ok(!r.error && r.data >= 1, `refresh_overdue → 1 이상 (got ${r.error?.message ?? r.data})`);
   ok((await admin.from('invoices').select('status').eq('student_id', S3).single()).data?.status === 'overdue', '납기 지난 issued → overdue');
   r = await d.rpc('refresh_overdue'); ok(!r.error && r.data === 0, '두 번째는 0');
 
@@ -106,11 +107,19 @@ try {
   ok(!r.error, 'set_invoice_amount: ' + r.error?.message);
   got = (await admin.from('invoices').select('total, status').eq('id', inv2.id).single()).data;
   ok(got?.total === 155000 && got.status === 'partial', `총액 다시 계산 (got ${JSON.stringify(got)})`);
-  r = await d.rpc('void_invoice', { p_invoice: inv2.id, p_memo: '형편이 어려워 이번 달 면제' });
+  // 0018(INT-30): 이미 낸 돈(35,000)보다 낮은 총액은 거절 — 환불이 먼저다
+  r = await d.rpc('set_invoice_amount', { p_invoice: inv2.id, p_amount: 10000, p_discount: 0, p_textbook: 0 });
+  ok(!!r.error && /below_paid/.test(r.error.message), `낸 돈보다 낮은 총액 거절 (got ${r.error?.message})`);
+  // 0018(INT-34): 납부 기록이 있는 청구서는 면제할 수 없다 (돈 기록이 어긋난다)
+  r = await d.rpc('void_invoice', { p_invoice: inv2.id, p_memo: 'x' });
+  ok(!!r.error && /has_payments/.test(r.error.message), `납부가 있는 청구서 면제 거절 (got ${r.error?.message})`);
+  // 납부가 없는 청구서(셋째)는 그대로 면제된다
+  const inv3 = (await admin.from('invoices').select('id').eq('student_id', S3).single()).data;
+  r = await d.rpc('void_invoice', { p_invoice: inv3.id, p_memo: '형편이 어려워 이번 달 면제' });
   ok(!r.error, 'void_invoice: ' + r.error?.message);
-  got = (await admin.from('invoices').select('status, memo').eq('id', inv2.id).single()).data;
+  got = (await admin.from('invoices').select('status, memo').eq('id', inv3.id).single()).data;
   ok(got?.status === 'void' && got.memo === '형편이 어려워 이번 달 면제', `면제 (got ${JSON.stringify(got)})`);
-  r = await d.rpc('record_payment', { p_invoice: inv2.id, p_amount: 1000, p_method: 'cash' }); ok(!!r.error, '면제된 청구서에는 납부를 못 적는다');
+  r = await d.rpc('record_payment', { p_invoice: inv3.id, p_amount: 1000, p_method: 'cash' }); ok(!!r.error, '면제된 청구서에는 납부를 못 적는다');
 
   // ---- F. 학부모: 내 청구서 한 장만 (지금 보고 있는 자녀)
   const p = createClient(URL, ANON, { auth: { persistSession: false } });

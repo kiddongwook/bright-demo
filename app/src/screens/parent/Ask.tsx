@@ -4,6 +4,8 @@ import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
+import { Counter } from '../../components/Counter';
+import { LIMITS } from '../../lib/limits';
 
 const when = (iso: string) => new Date(iso).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
@@ -32,7 +34,10 @@ export function AskNew() {
     <section className="view on">
       <div className="head"><p className="lede">원장님만 봅니다. 답이 오면 <b>알림</b>으로 알려드려요.</p></div>
       <div className="lab first">문의 내용</div>
-      <div style={{ padding: '0 20px' }}><textarea className="input" value={body} onChange={e => setBody(e.target.value)} placeholder="예) 다음 주 수요일 결석 예정입니다." /></div>
+      <div style={{ padding: '0 20px' }}>
+        <textarea className="input" value={body} maxLength={LIMITS.inquiry} onChange={e => setBody(e.target.value)} placeholder="예) 다음 주 수요일 결석 예정입니다." />
+        <Counter n={body.length} max={LIMITS.inquiry} />
+      </div>
       <div className="btnrow"><button className="btn line" onClick={nav.back}>취소</button><button className="btn" disabled={busy} onClick={send}>보내기</button></div>
     </section>
   );

@@ -8,6 +8,8 @@ import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { usePop } from '../../lib/pop';
 import { DateField } from '../../components/DateField';
+import { Counter } from '../../components/Counter';
+import { LIMITS } from '../../lib/limits';
 
 const KIND_LABEL: Record<'homework' | 'exam', string> = { homework: '숙제', exam: '시험' };
 
@@ -129,7 +131,10 @@ export function Todos() {
         {recentShown.map(t => <button key={'r:' + t} type="button" className={title === t ? 'on' : ''} onClick={() => fillTitle(t)}>{t}</button>)}
         {PATTERNS.map(p => <button key={'p:' + p} type="button" className="pat" onClick={() => fillTitle(p)}>{p}</button>)}
       </div>
-      <div style={{ padding: '8px 20px 0' }}><input className="input" ref={titleRef} value={title} onChange={e => setTitle(e.target.value)} placeholder={kind === 'exam' ? '무엇을 볼까요 (예: 단어 시험 1~3과)' : '무엇을 할까요 (예: 워크북 p.32~35)'} /></div>
+      <div style={{ padding: '8px 20px 0' }}>
+        <input className="input" ref={titleRef} value={title} maxLength={LIMITS.todoTitle} onChange={e => setTitle(e.target.value)} placeholder={kind === 'exam' ? '무엇을 볼까요 (예: 단어 시험 1~3과)' : '무엇을 할까요 (예: 워크북 p.32~35)'} />
+        <Counter n={title.length} max={LIMITS.todoTitle} />
+      </div>
       <div style={{ padding: '8px 20px 0' }}><DateField value={pick} onChange={setDue} min={kstToday()} quick={quickDue} label="마감" /></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>넣기</button></div>
       <p className="muted" style={{ padding: '0 20px' }}>마감은 이 반 다음 수업일로 잡아 뒀어요. 원장님이 바꾸셔도 돼요.</p>

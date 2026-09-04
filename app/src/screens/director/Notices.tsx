@@ -14,6 +14,8 @@ import { NoticeBody } from '../shared/NoticeRead';
 import { TEMPLATES, templateOf, missingField, type Fields, type FieldKey } from '../../lib/noticeTemplates';
 import { withEul } from '../../lib/dates';
 import { DateField } from '../../components/DateField';
+import { Counter } from '../../components/Counter';
+import { LIMITS } from '../../lib/limits';
 import { TimeField } from '../../components/TimeField';
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
@@ -155,9 +157,15 @@ export function NoticeNew() {
           <input type="checkbox" checked={linkCal} onChange={e => setLinkCal(e.target.checked)} />{t.calendar.label}</label>}
       </>}
       <div className="lab">제목</div>
-      <div style={{ padding: '0 20px' }}><input className="input" value={title} onChange={e => { setTitle(e.target.value); setDirtyTitle(true); }} placeholder="예) 7월 수업 시간 변경 안내" /></div>
+      <div style={{ padding: '0 20px' }}>
+        <input className="input" value={title} maxLength={LIMITS.noticeTitle} onChange={e => { setTitle(e.target.value); setDirtyTitle(true); }} placeholder="예) 7월 수업 시간 변경 안내" />
+        <Counter n={title.length} max={LIMITS.noticeTitle} />
+      </div>
       <div className="lab">내용</div>
-      <div style={{ padding: '0 20px' }}><textarea className="input" value={body} onChange={e => { setBody(e.target.value); setDirtyBody(true); }} placeholder="본문은 앱 안에서만 보여요. 카톡에는 제목만 갑니다." /></div>
+      <div style={{ padding: '0 20px' }}>
+        <textarea className="input" value={body} maxLength={LIMITS.noticeBody} onChange={e => { setBody(e.target.value); setDirtyBody(true); }} placeholder="본문은 앱 안에서만 보여요. 카톡에는 제목만 갑니다." />
+        <Counter n={body.length} max={LIMITS.noticeBody} />
+      </div>
       {t && t.fields.length > 0 && (dirtyTitle || dirtyBody) && <div className="tpl-refill"><button type="button" onClick={refill}>템플릿으로 다시 채우기</button></div>}
       <details className="fold"><summary>미리보기 — 학부모 화면</summary>
         <div className="notice-preview">

@@ -1,5 +1,5 @@
 import { fn, supabase } from './supabase';
-import { DOW, dowOf, kstToday, kstDate } from './dates';
+import { DOW, dowOf, hmToMin, kstToday, kstDate } from './dates';
 import type { Membership } from '../auth/session';
 
 export type Sched = { dow: number; start: string; end: string };
@@ -328,12 +328,13 @@ export function scheduleSummary(s: Sched[]): string {
 /* ── 달력 도우미 ── */
 export function nextClassDays(schedule: Sched[], count: number, closed?: Set<string>): string[] {
   // 오늘도 수업 시작 전이면 후보에 넣는다 — 낮에 보면 "다음 수업 오늘 20:00". 휴원일(closed)은 건너뛴다.
-  const nowK = new Date(Date.now() + 9 * 3600e3); const hm = `${String(nowK.getUTCHours()).padStart(2, '0')}:${String(nowK.getUTCMinutes()).padStart(2, '0')}`;
+  // 시각은 분으로 견준다 — 글자로 견주면 '7:00'·'25:00' 이 밤 11시에도 "오늘" 로 잡혔다(INP-80).
+  const nowK = new Date(Date.now() + 9 * 3600e3); const nowMin = nowK.getUTCHours() * 60 + nowK.getUTCMinutes();
   const out: string[] = [];
   for (let i = 0; out.length < count && i < 60; i++) {
     const iso = kstDate(i); const dow = dowOf(iso);
     if (closed?.has(iso)) continue;
-    if (schedule.some(s => s.dow === dow && (i > 0 || s.start > hm))) out.push(iso);
+    if (schedule.some(s => s.dow === dow && (i > 0 || ((hmToMin(s.start) ?? -1) > nowMin)))) out.push(iso);
   }
   return out;
 }
@@ -435,7 +436,9 @@ export async function recentTodoTitles(limit = 6): Promise<string[]> {
   return out;
 }
 /** 휴원일·특강 여러 날을 한 번에 — 부르는 쪽이 이미 있는 날을 걸러 낸 뒤에 쓴다 */
-export async function addCalendarMany(dates: string[], kind: CalItem['kind'], note: string, classId: string | null) {
-  if (!dates.length) return;
-  must(await supabase.from('calendar').insert(dates.map(date => ({ academy_id: ctx.academyId, date, kind, note: note || null, class_id: classId }))));
+/** 여러 날을 한 번에 — 이미 있는 날은 건너뛰고 실제로 들어간 수를 돌려준다(0018 add_calendar_many).
+ *  예전처럼 한 statement 로 넣으면 겹치는 날 하나 때문에 새 날짜까지 통째로 없던 일이 됐다(INT-05). */
+export async function addCalendarMany(dates: string[], kind: CalItem['kind'], note: string, classId: string | null): Promise<number> {
+  if (!dates.length) return 0;
+  return (must(await supabase.rpc('add_calendar_many', { p_dates: dates, p_kind: kind, p_note: note || null, p_class: classId })) as number) ?? 0;
 }

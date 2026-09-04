@@ -11,7 +11,7 @@ describe('hmToMin', () => {
   it('HH:MM 을 분으로 바꾼다', () => {
     expect(hmToMin('00:00')).toBe(0);
     expect(hmToMin('19:30')).toBe(19 * 60 + 30);
-    expect(hmToMin('9:05')).toBe(545);
+    expect(hmToMin('09:05')).toBe(545);
   });
   it('모양이 아니면 null', () => {
     expect(hmToMin('')).toBeNull();
@@ -19,6 +19,8 @@ describe('hmToMin', () => {
     expect(hmToMin('24:00')).toBeNull();
     expect(hmToMin('19:60')).toBeNull();
     expect(hmToMin('19시')).toBeNull();
+    expect(hmToMin('25:00')).toBeNull();
+    expect(hmToMin('9:05')).toBeNull();   // 앞의 0 이 없으면 시각이 아니다 — 들어올 때 normHm 이 맞춰 준다
   });
 });
 

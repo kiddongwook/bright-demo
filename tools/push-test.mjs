@@ -1,11 +1,12 @@
-// 웹 푸시: 알림 → outbox 채널 push 매핑(트리거) + 구독 RLS + (배포 뒤) PUSH_DRY_RUN 발송.
-// A~G 절은 DB 만 있으면 돈다 — Edge 배포 전에도 PASS 해야 한다. H 절(발송)은 새 outbox-send 배포 + PUSH_DRY_RUN=1 이 있어야 돈다.
+// 웹 푸시: 알림 → outbox 채널 push 매핑(트리거) + 구독 RLS + (배포 뒤) 발송.
+// A~G 절은 DB 만 있으면 돈다 — Edge 배포 전에도 PASS 해야 한다.
+// H 절(발송)은 두 갈래다: PUSH_DRY_RUN=1 이면 문구·last_ok_at 까지, 없으면 '키 해독·서명 OK + 주소에 못 닿음' 까지 본다.
 // node --env-file=../.env.local push-test.mjs
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 const URL = process.env.SUPABASE_URL, SVC = process.env.SUPABASE_SERVICE_KEY, ANON = process.env.SUPABASE_ANON_KEY, KEY = process.env.OUTBOX_KEY;
 const admin = createClient(URL, SVC, { auth: { persistSession: false } });
-const fails = []; const notes = []; const ok = (c, m) => { if (!c) fails.push(m); };
+const fails = []; const notes = []; let sendChecked = false; const ok = (c, m) => { if (!c) fails.push(m); };
 const rnd = Math.random().toString(36).slice(2, 8); const num = () => String(Math.floor(Math.random() * 1e6)).padStart(6, '0');
 const kst = (off = 0) => new Date(Date.now() + 9 * 3600e3 + off * 86400e3).toISOString().slice(0, 10);
 const PW = 'push-' + rnd;
@@ -36,10 +37,21 @@ try {
   const par = await person('parent', '이서준 어머님', P_PAR, st.id);
   const stu = await person('student', '이서준', P_STU, st.id);
 
-  const sub = (uid, tag) => admin.from('push_subscriptions').insert({
-    user_id: uid, endpoint: `https://fcm.example.invalid/push/${rnd}-${tag}`,
-    p256dh: 'BJxc' + 'A'.repeat(83), auth: 'Zm9vYmFyYmF6cXV4MTIz', ua: 'test',
-  }).select().single();
+  // 진짜 P-256 키를 만든다 — 가짜 키면 발송기가 그물망에 닿기도 전에 "키를 못 읽었다"로 죽어
+  // 암호화·서명 단계를 확인할 수 없다. endpoint 는 .invalid 라 그물망에서 막힌다(그게 H 절의 PASS 조건).
+  const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  async function subKeys() {
+    const kp = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+    const raw = await crypto.subtle.exportKey('raw', kp.publicKey);          // 65바이트 uncompressed
+    return { p256dh: b64url(raw), auth: b64url(crypto.getRandomValues(new Uint8Array(16))) };
+  }
+  const sub = async (uid, tag) => {
+    const k = await subKeys();
+    return admin.from('push_subscriptions').insert({
+      user_id: uid, endpoint: `https://fcm.example.invalid/push/${rnd}-${tag}`,
+      p256dh: k.p256dh, auth: k.auth, ua: 'test',
+    }).select().single();
+  };
 
   const all = async () => (await admin.from('outbox').select('*').eq('academy_id', A)).data ?? [];
   const pick = (rows, channel, user, code) => rows.filter(o => o.channel === channel && o.to_user_id === user && o.template_code === code);
@@ -119,7 +131,6 @@ try {
 
   // ---- H. 발송 (새 outbox-send 배포 + PUSH_DRY_RUN=1 필요)
   const phones = [P_DIR, P_PAR, P_STU];
-  let sendChecked = false;
   try {
     const r = await fetch(`${URL}/functions/v1/outbox-send`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Outbox-Key': KEY }, body: '{}' });
     if (!r.ok) notes.push(`발송 절 건너뜀 — outbox-send ${r.status}. 배포 뒤 다시 실행하세요.`);
@@ -127,21 +138,35 @@ try {
       const b = await r.json();
       const mineDebug = (b.debug ?? []).filter(d => phones.includes(d.to) && d.channel === 'push');
       const { data: after } = await admin.from('outbox').select('*').eq('academy_id', A).eq('channel', 'push');
+      const err = (o) => o.last_error ?? '';
+      // DB 행을 먼저 본다 — 진짜로 보내는 판에서는 성공 debug 가 아예 안 나온다(그물망에서 막히니까).
       const stuck = after.filter(o => o.status !== 'sent');
+      const vapid = stuck.filter(o => err(o).includes('vapid_not_configured'));
       // 비밀값이 없어 막힌 것만 "건너뜀" 이다. 다른 last_error 는 진짜 실패라 FAIL 로 낸다 —
       // 예전에는 이것까지 "옛 함수가 깔려 있다" 로 읽어 배포 담당이 엉뚱한 곳을 뒤졌다.
-      const vapid = stuck.filter(o => (o.last_error ?? '').includes('vapid_not_configured'));
-      const other = stuck.filter(o => !(o.last_error ?? '').includes('vapid_not_configured'));
+      // 다만 PUSH_DRY_RUN 이 없으면 .invalid 주소는 원래 못 닿는다 = 여기까지 왔다는 것이
+      //   "키를 읽고 · 암호화하고 · 서명해서 · 보내려 했다" 는 증거다 → PASS.
+      const unreachable = stuck.filter(o => /dns error|\.invalid|error sending request|error trying to connect|dns_error/i.test(err(o)));
+      const other = stuck.filter(o => !vapid.includes(o) && !unreachable.includes(o));
       if (other.length) {
-        ok(false, `push 발송 실패 ${other.length}건: ${other.map(o => o.last_error ?? `status=${o.status} (last_error 없음)`).join(' | ').slice(0, 400)}`);
+        ok(false, `push 발송 실패 ${other.length}건: ${other.map(o => err(o) || `status=${o.status} (last_error 없음)`).join(' | ').slice(0, 400)}`);
       } else if (vapid.length) {
         notes.push('발송 절 건너뜀 — PUSH_DRY_RUN=1 (또는 VAPID 비밀값) 이 없습니다: npx supabase secrets set PUSH_DRY_RUN=1');
+      } else if (unreachable.length) {
+        // 진짜 발송(PUSH_DRY_RUN 없음): 주소가 .invalid 라 그물망에서만 막혔다
+        sendChecked = true;
+        ok(unreachable.length === after.length, `push 행이 모두 "주소에 못 닿음" 으로 끝났다 (전체 ${after.length} / 그 중 ${unreachable.length})`);
+        ok(after.every(o => o.status === 'failed' || o.status === 'dead'), `못 간 행은 failed·dead 로 끝난다 — queued 로 굳지 않는다 (got ${after.map(o => o.status).join(',')})`);
+        ok(after.every(o => !!err(o)), '못 간 행에는 last_error 가 남는다');
+        notes.push('H 절: PUSH_DRY_RUN 이 없어 실제 발송을 시도했습니다 — 키 해독·서명까지 OK, endpoint(.invalid) 에 못 닿는 것까지 확인했습니다. 문구(제목·본문)까지 보려면 PUSH_DRY_RUN=1 로 다시 실행하세요.');
       } else if (!mineDebug.length || mineDebug[0].title === undefined) {
         notes.push('발송 절 건너뜀 — 배포된 outbox-send 가 아직 채널 push 를 모릅니다. `npx supabase functions deploy outbox-send --no-verify-jwt` 뒤 다시 실행하세요.');
       } else {
+        // PUSH_DRY_RUN=1: 실제로 보내지 않고 성공으로 친다 → 문구·last_ok_at 까지 본다
         sendChecked = true;
-        ok(stuck.length === 0, `push 행이 모두 sent (막힌 것 ${stuck.length}건: ${stuck.map(o => o.last_error).join(' | ').slice(0, 200)})`);
+        ok(stuck.length === 0, `push 행이 모두 sent (막힌 것 ${stuck.length}건: ${stuck.map(o => err(o)).join(' | ').slice(0, 200)})`);
         ok(mineDebug.every(d => d.title === '푸시 테스트' && typeof d.body === 'string' && d.body.length > 0), `푸시 페이로드 제목=학원 이름·본문 있음 (got ${JSON.stringify(mineDebug[0]).slice(0, 160)})`);
+        ok(mineDebug.every(d => d.title.length <= 60 && d.body.length <= 200), `푸시 문구 길이 상한 (제목 60·본문 200) (got ${mineDebug.map(d => `${d.title.length}/${d.body.length}`).join(' ')})`);
         const noticePush = mineDebug.find(d => d.template_code === 'NOTICE_NEW');
         ok(!noticePush || !noticePush.body.startsWith('['), `본문에서 앞머리 [학원] 은 뗀다 (got ${noticePush?.body})`);
         const { data: subsNow } = await admin.from('push_subscriptions').select('last_ok_at').eq('user_id', par);
@@ -160,4 +185,4 @@ try {
 
 for (const n of notes) console.log('NOTE: ' + n);
 if (fails.length) { console.error('FAIL\n- ' + fails.join('\n- ')); process.exitCode = 1; }
-else console.log('PASS: push A~G' + (notes.length ? ' (H 절은 위 NOTE 참고)' : ' + H'));
+else console.log('PASS: push A~G' + (sendChecked ? ' + H' : '') + (notes.length ? ' (위 NOTE 참고)' : ''));

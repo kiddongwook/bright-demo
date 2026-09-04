@@ -7,6 +7,8 @@ import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
+import { Counter } from '../../components/Counter';
+import { LIMITS } from '../../lib/limits';
 import '../ux.css';
 
 const when = (iso: string) => new Date(iso).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -80,7 +82,10 @@ export function Answer() {
       <div className="lab">답변{i.answered_at && <span className="r">{when(i.answered_at)} 답함</span>}</div>
       <div className="chips-row wrap">{templates.map(t => (
         <button key={t} onClick={() => insert(t)} title={t}>{t}</button>))}</div>
-      <div style={{ padding: '10px 20px 0' }}><textarea className="input" value={val} onChange={e => setText(e.target.value)} placeholder="답변을 적어주세요" /></div>
+      <div style={{ padding: '10px 20px 0' }}>
+        <textarea className="input" value={val} maxLength={LIMITS.inquiry} onChange={e => setText(e.target.value)} placeholder="답변을 적어주세요" />
+        <Counter n={val.length} max={LIMITS.inquiry} />
+      </div>
       <label className="chk-row"><input type="checkbox" checked={toFaq} onChange={e => setToFaq(e.target.checked)} />이 답을 자주 묻는 질문에도 올리기</label>
       {sid && <label className="chk-row"><input type="checkbox" checked={toNote} onChange={e => setToNote(e.target.checked)} />메모로도 남기기</label>}
       <div className="btnrow"><button className="btn line" onClick={nav.back}>나중에</button><button className="btn" disabled={busy} onClick={send}>{i.answer ? '답변 고치기' : '답하고 알리기'}</button></div>

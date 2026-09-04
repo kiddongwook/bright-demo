@@ -13,6 +13,8 @@ import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { BottomCta } from '../../components/BottomCta';
 import { usePop } from '../../lib/pop';
+import { Counter } from '../../components/Counter';
+import { LIMITS } from '../../lib/limits';
 import '../ui.css';
 import '../ux.css';
 
@@ -216,8 +218,9 @@ export function Today() {
                 onClick={() => setSheet(s => s && ({ ...s, note: s.note.trim() === x ? '' : x }))}>{x}</button>))}</div>
           </>}
           <p className="rs-lab">사유 (직접 적어도 돼요)</p>
-          <input className="input" value={sheet.note} placeholder="예: 병원 다녀와요"
+          <input className="input" value={sheet.note} placeholder="예: 병원 다녀와요" maxLength={LIMITS.attendanceNote}
             onChange={e => setSheet(s => s && ({ ...s, note: e.target.value }))} />
+          <Counter n={sheet.note.length} max={LIMITS.attendanceNote} />
           <div className="sa">
             <button className="btn line" onClick={closeSheet}>취소</button>
             <button className="btn" onClick={applySheet}>확인</button>

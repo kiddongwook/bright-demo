@@ -9,7 +9,19 @@ export async function sendSms(to: string, text: string): Promise<void> {
   }
   throw new Error('unknown SMS_PROVIDER ' + provider);
 }
-export const normalizePhone = (p: string) => (p ?? '').replace(/[^0-9]/g, '');
+/** 전화번호를 숫자만 남긴 꼴로. 전각 숫자·공백·대시를 지우고 국가번호(+82 10…)는 0 으로 되돌린다.
+ *  app/src/lib/phone.ts 의 같은 함수와 글자 하나까지 같아야 한다 (INP-30/31). */
+export const normalizePhone = (p: string) => {
+  const s = (p ?? '').replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+  const d = s.replace(/[^0-9+]/g, '').replace(/(?!^)\+/g, '');
+  const m = /^\+?82(\d+)$/.exec(d);
+  return m ? '0' + m[1].replace(/^0+/, '') : d.replace(/\+/g, '');
+};
+/** 우리가 문자를 보낼 수 있는 휴대폰 모양인가. 010 은 11자리뿐이다(10자리는 011·016 등 옛 번호 — INP-36). */
+export const isValidMobile = (p: string) => {
+  const d = normalizePhone(p);
+  return /^01[016789]\d{7,8}$/.test(d) && !(d.startsWith('010') && d.length !== 11);
+};
 export async function sha256(s: string) { const b = new TextEncoder().encode(s); const h = await crypto.subtle.digest('SHA-256', b); return [...new Uint8Array(h)].map(x => x.toString(16).padStart(2, '0')).join(''); }
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 export const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...CORS } });
