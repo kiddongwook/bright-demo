@@ -137,3 +137,9 @@ select status, channel, count(*) from outbox group by 1,2;
 | `tools/seed-roster.mjs <csv> <slug> "<이름>"` | 명부 CSV → 반·학생·명부 행 적재(있으면 갱신) |
 | `SEED_DEMO_WIPE=1 tools/pilot-reset.mjs <slug> [--yes <slug>]` | 학원 하나의 데이터를 전부 지움(학원·원장만 남김). 확인 문구를 slug 로 두 번 받는다 |
 | `tools/onboard-test.mjs` | 위 세 스크립트가 맞물려 도는지 확인하는 통합 테스트 |
+
+## 개발용 고정 인증번호 (대행사 연결 전)
+
+- `otp-verify` 는 `SMS_PROVIDER` 가 `console`(기본) 일 때만, Edge 비밀값 `DEV_OTP_PHONES`(쉼표 구분 번호) 에 적힌 번호에 대해 `DEV_OTP_CODE` 를 인증번호로 받아 준다. 대행사를 켜면(`SMS_PROVIDER=http`) 자동으로 꺼진다.
+- 설정: `npx supabase secrets set DEV_OTP_CODE=<6자리> DEV_OTP_PHONES=<번호>` → `npx supabase functions deploy otp-verify --no-verify-jwt`. 끄기: `npx supabase secrets unset DEV_OTP_CODE DEV_OTP_PHONES`.
+- 코드 값은 저장소·문서에 적지 않는다. 현재는 원장 번호 1개만 등록.

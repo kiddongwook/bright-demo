@@ -6,11 +6,17 @@ Deno.serve(async (req) => {
   const phone = normalizePhone(raw);
   if (!phone || !/^\d{6}$/.test(code ?? '')) return json(400, { error: 'bad_input' });
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-  const { data: rows } = await admin.from('otp_codes').select('*').eq('phone', phone).is('used_at', null).gt('expires_at', new Date().toISOString()).order('created_at', { ascending: false }).limit(1);
-  const otp = rows?.[0];
-  if (!otp || otp.attempts >= 5) return json(401, { error: 'no_code' });
-  if (otp.code_hash !== await sha256(code + phone)) { await admin.from('otp_codes').update({ attempts: otp.attempts + 1 }).eq('id', otp.id); return json(401, { error: 'wrong_code' }); }
-  await admin.from('otp_codes').update({ used_at: new Date().toISOString() }).eq('id', otp.id);
+  // 개발용 고정 인증번호: 문자 대행사가 붙기 전(콘솔 모드)에만, DEV_OTP_PHONES 에 적힌 번호에만 통한다. 대행사를 켜면(SMS_PROVIDER≠console) 자동으로 꺼진다.
+  const devCode = Deno.env.get('DEV_OTP_CODE');
+  const devPhones = (Deno.env.get('DEV_OTP_PHONES') ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+  const devOk = (Deno.env.get('SMS_PROVIDER') ?? 'console') === 'console' && !!devCode && devPhones.includes(phone) && code === devCode;
+  if (!devOk) {
+    const { data: rows } = await admin.from('otp_codes').select('*').eq('phone', phone).is('used_at', null).gt('expires_at', new Date().toISOString()).order('created_at', { ascending: false }).limit(1);
+    const otp = rows?.[0];
+    if (!otp || otp.attempts >= 5) return json(401, { error: 'no_code' });
+    if (otp.code_hash !== await sha256(code + phone)) { await admin.from('otp_codes').update({ attempts: otp.attempts + 1 }).eq('id', otp.id); return json(401, { error: 'wrong_code' }); }
+    await admin.from('otp_codes').update({ used_at: new Date().toISOString() }).eq('id', otp.id);
+  }
 
   // auth 사용자 보장 (이메일 프로바이더로 전화번호 사용자 관리)
   const email = `${phone}@auth.yeongeo.local`, password = crypto.randomUUID() + crypto.randomUUID();
