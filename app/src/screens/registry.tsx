@@ -8,6 +8,7 @@ import { Roster, StudentEdit, Teachers } from './director/Roster';
 import { StudentDetail } from './director/StudentDetail';
 import { CalendarScreen, Classes } from './director/Calendar';
 import { Stats } from './director/Stats';
+import { Billing, BillingSettings } from './director/Billing';
 import { Import } from './director/Import';
 import { Todos } from './director/Todos';
 import { ChildMonth } from './parent/ChildMonth';
@@ -31,6 +32,7 @@ export const SCREENS: Record<string, ComponentType<any>> = {
   'director:more': More, 'director:roster': Roster, 'director:academy': Academy, 'director:student-edit': StudentEdit, 'director:teachers': Teachers,
   'director:student': StudentDetail, 'director:calendar': CalendarScreen, 'director:classes': Classes, 'director:stats': Stats, 'director:import': Import,
   'director:todos': Todos, 'teacher:todos': Todos,
+  'director:billing': Billing, 'director:billing-settings': BillingSettings,
   'parent:child-month': ChildMonth,
   'teacher:student': StudentDetail, 'teacher:calendar': CalendarScreen, 'teacher:classes': Classes,
   'teacher:today': Today, 'teacher:makeup': Makeup, 'teacher:notice': NoticeList, 'teacher:notice-new': NoticeNew, 'teacher:readers': Readers,

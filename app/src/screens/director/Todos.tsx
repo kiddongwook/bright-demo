@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { listClassesFull, listClassTodos, listStudents, createTodo, deleteTodo, todoDoneList, setTodoDoneBy, nextClassDays, kstToday, fmtMDW, type Cls, type TodoFull } from '../../lib/api';
+import { listClassesFull, listClassTodos, listStudents, createTodo, deleteTodo, todoDoneList, setTodoDoneBy, recentTodoTitles, nextClassDays, kstToday, kstDate, DOW, dowOf, fmtMDW, type Cls, type TodoFull } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useSession } from '../../auth/session';
 import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
@@ -7,8 +7,14 @@ import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { usePop } from '../../lib/pop';
+import { DateField } from '../../components/DateField';
 
 const KIND_LABEL: Record<'homework' | 'exam', string> = { homework: '숙제', exam: '시험' };
+
+/* 자주 쓰는 꼴 — 누르면 칸에 들어오고 첫 밑줄(__)이 잡혀 있어 숫자만 덮어 쓰면 된다 */
+const PATTERNS = ['단어장 __~__ 외우기', '워크북 p.__~__', '영작 1편 — ____'];
+/** 첫 밑줄 덩이의 자리 — 없으면 null */
+const blankAt = (s: string) => { const m = /_+/.exec(s); return m ? { at: m.index, len: m[0].length } : null; };
 
 /* 이번 주 할 것 관리: 반별로 숙제·시험을 넣고 지운다. 넣는 즉시 학생·학부모 화면에 보인다. */
 export function Todos() {
@@ -25,6 +31,7 @@ export function Todos() {
   const [open, setOpen] = useState<string | null>(null);
   const [ready, setReady] = useState(false); const [loadErr, setLoadErr] = useState(false);
   const [doneList, setDoneList] = useState<{ student_id: string; name: string; done: boolean }[]>([]);
+  const [recent, setRecent] = useState<string[]>([]);   // 이 학원에서 최근에 쓴 제목 (넉넉히 받아 이 반에 이미 걸린 것을 뺀다)
   const addRef = useRef<HTMLDivElement>(null); const titleRef = useRef<HTMLInputElement>(null);
   const focusAdd = () => { addRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => titleRef.current?.focus(), 350); };
   function loadClasses() {
@@ -46,7 +53,16 @@ export function Todos() {
     listClassTodos(id, kstToday()).then(setTodos).catch(errToast);
     listStudents(id).then(l => setTotal(l.length)).catch(errToast);
   }
-  useEffect(() => { setTodos([]); setTotal(0); setDue(''); setOpen(null); setDoneList([]); load(cid); }, [cid]);
+  const loadRecent = () => { recentTodoTitles(30).then(setRecent).catch(() => setRecent([])); };   /* 거들기라서 실패해도 조용히 — 칩만 안 뜬다 */
+  useEffect(() => { setTodos([]); setTotal(0); setDue(''); setOpen(null); setDoneList([]); load(cid); loadRecent(); }, [cid]);
+  /* 이 반에 이미 걸린 제목은 다시 넣을 일이 없다 — 빼고 여섯 개까지 */
+  const recentShown = recent.filter(t => !todos.some(x => x.title === t)).slice(0, 6);
+  /* 꼴을 넣고 첫 밑줄을 잡아 준다 — 칸에 값이 들어간 뒤라야 자리를 잡을 수 있어 한 박자 뒤에 */
+  function fillTitle(text: string) {
+    setTitle(text);
+    const b = blankAt(text);
+    setTimeout(() => { const el = titleRef.current; if (!el) return; el.focus(); if (b) el.setSelectionRange(b.at, b.at + b.len); }, 0);
+  }
   function loadDone(todoId: string) { todoDoneList(todoId, cid).then(setDoneList).catch(errToast); }
   function toggleOpen(t: TodoFull) {
     if (open === t.id) { setOpen(null); setDoneList([]); return; }
@@ -62,12 +78,16 @@ export function Todos() {
       loadDone(open); load();
     } catch (e) { errToast(e); }
   }
-  const pick = due || nextClassDays(cls?.schedule ?? [], 1)[0] || kstToday();
+  const nextDay = nextClassDays(cls?.schedule ?? [], 1)[0];
+  const pick = due || nextDay || kstToday();
+  /* 빠른 마감 — 이 반 다음 수업일(기본값) · 내일 · 다음 주 같은 요일 */
+  const weekLater = kstDate(7);
+  const quickDue = [...(nextDay ? [{ label: '다음 수업일', date: nextDay }] : []), { label: '내일', date: kstDate(1) }, { label: `다음 주 ${DOW[dowOf(weekLater)]}`, date: weekLater }];
   async function add() {
     if (!cid) { toast('반을 먼저 골라주세요'); return; }
     if (!title.trim()) { toast('무엇을 할지 적어주세요'); return; }
     setBusy(true);
-    try { await createTodo(cid, kind, title.trim(), pick); toast('넣었어요. 학생 화면에 바로 보여요'); setTitle(''); setDue(''); load(); }
+    try { await createTodo(cid, kind, title.trim(), pick); toast('넣었어요. 학생 화면에 바로 보여요'); setTitle(''); setDue(''); load(); loadRecent(); }
     catch (e) { errToast(e); } finally { setBusy(false); }
   }
   /* 지우기는 5초 뒤에 진짜로 — 그 사이 되돌리기를 누르면 없던 일이 된다 (화면을 떠나도 삭제는 돈다) */
@@ -105,8 +125,12 @@ export function Todos() {
         : <div className="box"><Empty icon="check" title="다가오는 할 것이 없어요" hint="숙제·시험을 넣으면 학생·학부모 화면에 바로 보여요." action={{ label: '할 것 넣기', onClick: focusAdd }} /></div>}
       <div className="lab" ref={addRef}>넣기<span className="r">{cls?.name ?? ''}</span></div>
       <div className="seg">{(['homework', 'exam'] as const).map(k => <button key={k} className={kind === k ? 'on' : ''} onClick={() => setKind(k)}>{KIND_LABEL[k]}</button>)}</div>
+      <div className="chips-row" style={{ paddingTop: 8 }}>
+        {recentShown.map(t => <button key={'r:' + t} type="button" className={title === t ? 'on' : ''} onClick={() => fillTitle(t)}>{t}</button>)}
+        {PATTERNS.map(p => <button key={'p:' + p} type="button" className="pat" onClick={() => fillTitle(p)}>{p}</button>)}
+      </div>
       <div style={{ padding: '8px 20px 0' }}><input className="input" ref={titleRef} value={title} onChange={e => setTitle(e.target.value)} placeholder={kind === 'exam' ? '무엇을 볼까요 (예: 단어 시험 1~3과)' : '무엇을 할까요 (예: 워크북 p.32~35)'} /></div>
-      <div style={{ padding: '8px 20px 0' }}><input className="input" type="date" value={pick} min={kstToday()} onChange={e => setDue(e.target.value)} /></div>
+      <div style={{ padding: '8px 20px 0' }}><DateField value={pick} onChange={setDue} min={kstToday()} quick={quickDue} label="마감" /></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>넣기</button></div>
       <p className="muted" style={{ padding: '0 20px' }}>마감은 이 반 다음 수업일로 잡아 뒀어요. 원장님이 바꾸셔도 돼요.</p>
       </>}

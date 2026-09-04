@@ -82,6 +82,8 @@
   color:var(--ink2);font-size:13px;font-weight:600;letter-spacing:-.01em;transition:transform .1s ease,opacity .15s}
 .chips-row button:active{transform:scale(.98)}
 .chips-row button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+/* 빈칸이 있는 꼴 칩 — 누르면 첫 밑줄이 잡혀 숫자만 덮어 쓴다. 점선이 "채울 곳이 있다"를 말해 준다 */
+.chips-row button.pat{border-style:dashed;border-color:var(--rule);background:transparent;color:var(--ink2)}
 /* 미리보기: 학부모가 여는 화면 그대로를 카드 안에 담는다 */
 .notice-preview{margin-top:6px;border:1px solid var(--rule);border-radius:var(--r-card);background:var(--ground);
   padding:0 0 18px;overflow:hidden}
@@ -130,3 +132,34 @@
 /* 더보기 목록 줄 앞의 아이콘 자리 */
 .rw .ic{width:36px;height:36px;border-radius:12px;background:var(--avatar);color:var(--avatar-ink);display:grid;place-items:center;flex:0 0 auto}
 .rw.soon .ic{background:var(--rule2);color:var(--ink3)}
+
+/* ── 날짜·시간 칸 (DateField / TimeField) ── */
+/* 칸 자체는 .input 을 그대로 입고, 안에 "9월 11일 (금)" 같은 사람 말을 담는다.
+   날짜 칸은 진짜 <input type=date> 를 투명하게 덮어 둬서 누르기·포커스·키보드가 모두 네이티브 그대로다. */
+.pickwrap{display:grid;gap:8px}
+.pickfield{position:relative;display:flex;align-items:center;gap:8px;text-align:left;color:var(--ink)}
+.pickfield .pf-v{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pickfield.ph .pf-v{color:var(--ink3);font-weight:400}
+.pf-native{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;background:none;
+  font:inherit;color:transparent;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none}
+.pickfield:focus-within{outline:2px solid var(--brand);outline-offset:0;border-color:var(--brand)}
+.pf-clear{position:relative;z-index:1;flex:0 0 auto;width:28px;height:28px;margin-right:-4px;border-radius:50%;
+  background:var(--track);color:var(--ink2);font-size:12px;line-height:1}
+/* 빠른 날짜 칩 — 부르는 쪽이 이미 20px 을 두르고 있어 여백을 겹치지 않는다 */
+.pf-quick{padding:0}
+/* 시간 시트: 흔한 수업 시각 칩 + 시·분 두 줄 목록 */
+.tf-quick{padding:0;margin-top:14px}
+.tf-wheels{display:flex;gap:8px;margin-top:10px}
+/* position:relative — 고른 줄을 가운데로 굴릴 때 offsetTop 이 이 목록을 기준으로 재도록 */
+.tf-wheel{position:relative;flex:1;min-width:0;max-height:212px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.tf-wheel::-webkit-scrollbar{display:none}
+/* flex:0 0 auto — .seg button 의 flex:1 을 끈다. 세로 목록에서 늘어나면 스크롤 대신 눌려 버린다 */
+.tf-wheel button{flex:0 0 auto;text-align:center;padding:11px 6px}
+
+/* ── 공지 쓰기: 틀이 묻는 칸 ── */
+.tpl-fields{display:grid;gap:12px;padding:0 20px}
+.tpl-fields .tf-lab{font-size:var(--t-label);font-weight:700;letter-spacing:.02em;color:var(--ink2);margin-bottom:7px;display:block}
+.tpl-refill{padding:8px 20px 0}
+.tpl-refill button{font-size:13px;font-weight:600;color:var(--brand);text-decoration:underline;text-underline-offset:3px}
+.tpl-link{display:flex;align-items:center;gap:9px;padding:2px 20px 0;font-size:13.5px;color:var(--ink2);line-height:1.6}
+.tpl-link input{width:19px;height:19px;flex:0 0 auto;accent-color:var(--brand)}

@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import { asset } from '../lib/asset';
 import { useNav, TABS, TABMETA, ICON, type Role } from '../lib/nav';
-import { IcCalendar, IcClock, IcHouse, IcPeople, IcPerson, IcTable } from './icons';
+import { IcCalendar, IcClock, IcHouse, IcPeople, IcPerson, IcReceipt, IcTable } from './icons';
 import { SCREENS } from '../screens/registry';
 
 /* PC 관리 모드의 좌측 내비 — 폭 1024px 이상, 원장·강사만. 하단 탭바 대신 쓴다.
@@ -14,6 +14,7 @@ const MANAGE: Item[] = [
   { view: 'stats', label: '반별 출결표', Icon: IcTable },
   { view: 'calendar', label: '휴원일·특강', Icon: IcCalendar },
   { view: 'teachers', label: '강사', Icon: IcPerson },
+  { view: 'billing', label: '수강료', Icon: IcReceipt },
   { view: 'academy', label: '우리 학원', Icon: IcHouse },
 ];
 

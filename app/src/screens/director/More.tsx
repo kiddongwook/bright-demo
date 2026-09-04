@@ -60,6 +60,7 @@ export function More() {
       </div>
       <div className="lab">설정</div>
       <div className="box">
+        <button className="rw" onClick={() => nav.push('billing')}><span className="ic"><IcReceipt size={20} /></span><span className="bd"><span className="t">수강료</span><span className="s">청구서 · 납부 확인 · 미납 안내</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('teachers')}><span className="ic"><IcPerson size={20} /></span><span className="bd"><span className="t">강사</span><span className="s">담당 반을 지정하면 그 반만 봐요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('academy')}><span className="ic"><IcPalette size={20} /></span><span className="bd"><span className="t">우리 학원</span><span className="s">이름 · 강조색 · 앱 아이콘</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('faq')}><span className="ic"><IcHelp size={20} /></span><span className="bd"><span className="t">자주 묻는 질문 관리</span><span className="s">학부모 문의 화면 맨 위에 보여요</span></span><span className="go">›</span></button>
@@ -72,7 +73,7 @@ export function More() {
       </div>
       <div className="lab">준비 중<span className="r">필요할 때 켭니다</span></div>
       <div className="box soft">
-        {([['수강료', '청구서 발송 · 납부 확인 · 미납 안내', IcReceipt], ['첨삭', 'AI가 짚고 원장님이 확정', IcSparkle], ['편지', '채점 결과를 원장님 말투로', IcMail], ['성장 기록', '틀리던 것이 줄어드는 추이', IcTrendingUp]] as const).map(([t, s, Icon]) => (
+        {([['첨삭', 'AI가 짚고 원장님이 확정', IcSparkle], ['편지', '채점 결과를 원장님 말투로', IcMail], ['성장 기록', '틀리던 것이 줄어드는 추이', IcTrendingUp]] as const).map(([t, s, Icon]) => (
           <button key={t} className="rw soon" onClick={() => toast('준비 중인 기능이에요')}><span className="ic"><Icon size={20} /></span><span className="bd"><span className="t">{t}</span><span className="s">{s}</span></span><span className="tag muted">준비 중</span></button>))}
       </div>
       <div className="btnrow"><button className="btn line" onClick={logout}>로그아웃</button></div>

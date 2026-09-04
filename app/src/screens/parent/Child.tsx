@@ -11,6 +11,7 @@ import { ErrorState } from '../../components/ErrorState';
 import { BottomCta } from '../../components/BottomCta';
 import { usePop } from '../../lib/pop';
 import { IcBook, IcTarget } from '../../components/icons';
+import { TuitionCard } from './TuitionCard';
 import '../ui.css';
 
 const WK: Record<AttStatus, string> = { present: 'p', late: 'l', absent: 'a', makeup: 'm' };
@@ -71,6 +72,7 @@ export function Child() {
       <div className="box">{nextCls
         ? <div className="rw nextrow" style={{ cursor: 'default' }}><span className="big">{fmtDayOrToday(next)} <em>{nextStart}</em></span><span className="s">{nextCls.name}</span></div>
         : <Empty icon="calendar" title="다음 수업이 아직 없어요" hint="시간표가 정해지면 여기에 보여요." />}</div>
+      <TuitionCard />
       {todayAtt && <p className="summaryline" style={{ marginTop: 10 }}><b>{ATT_TODAY[todayAtt]}</b></p>}
       <div className="lab">이번 주<span className="r">{fmtMDW(weekRange().from)} – {fmtMDW(weekRange().to)}</span></div>
       <div className="box"><WeekStrip studentId={child.id} absences={absences} att={att} /></div>

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { listInquiries, answerInquiry, listFaqs, type Inquiry, saveFaq, deleteFaq } from '../../lib/api';
+import { recentAnswers, FIXED_REPLIES, faqQuestion } from '../../lib/inbox';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
+import '../ux.css';
 
 const when = (iso: string) => new Date(iso).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
@@ -35,11 +37,26 @@ export function Answer() {
   const nav = useNav(); const id = nav.params.id;
   const { data: i, err, reload } = useLoad(() => listInquiries().then(l => l.find(x => x.id === id) ?? null), [id]);
   const [text, setText] = useState<string | null>(null); const [busy, setBusy] = useState(false);
+  const [toFaq, setToFaq] = useState(false);
+  const { data: recent } = useLoad(() => recentAnswers(5).catch(() => [] as string[]), []);
   const val = text ?? i?.answer ?? '';
+  /* 답변 틀 — 최근에 보낸 답 다섯 개 + 늘 쓰는 세 개. 누르면 넣는다(이미 쓴 게 있으면 뒤에 붙인다). */
+  const templates = [...(recent ?? []), ...FIXED_REPLIES];
+  function insert(t: string) {
+    const cur = val.trim();
+    setText(cur ? cur + (cur.endsWith('\n') ? '' : '\n') + t : t);
+  }
   async function send() {
     if (!val.trim()) { toast('답변을 적어주세요'); return; }
     setBusy(true);
-    try { await answerInquiry(id, val.trim()); toast(`${i?.asker_name}께 답변을 보냈어요`); nav.back(); } catch (e) { errToast(e); setBusy(false); }
+    try {
+      await answerInquiry(id, val.trim());
+      if (toFaq && i) {
+        try { await saveFaq(null, faqQuestion(i.body), val.trim(), (await listFaqs()).length + 1); }
+        catch (e) { errToast(e); }   // 답변은 이미 나갔다 — FAQ 만 실패한 것은 알리고 넘어간다
+      }
+      toast(`${i?.asker_name}께 답변을 보냈어요${toFaq ? ' · 자주 묻는 질문에도 올렸어요' : ''}`); nav.back();
+    } catch (e) { errToast(e); setBusy(false); }
   }
   if (!i) return <section className="view on">{err ? <ErrorState onRetry={reload} /> : <Skeleton rows={3} />}</section>;
   return (
@@ -47,7 +64,10 @@ export function Answer() {
       <div className="head"><p className="lede">{i.student_name ? i.student_name + ' · ' : ''}{i.asker_name} · {when(i.created_at)}</p></div>
       <div className="bubble"><div className="who">{i.asker_name}</div>{i.body}</div>
       <div className="lab">답변{i.answered_at && <span className="r">{when(i.answered_at)} 답함</span>}</div>
-      <div style={{ padding: '0 20px' }}><textarea className="input" value={val} onChange={e => setText(e.target.value)} placeholder="답변을 적어주세요" /></div>
+      <div className="chips-row wrap">{templates.map(t => (
+        <button key={t} onClick={() => insert(t)} title={t}>{t}</button>))}</div>
+      <div style={{ padding: '10px 20px 0' }}><textarea className="input" value={val} onChange={e => setText(e.target.value)} placeholder="답변을 적어주세요" /></div>
+      <label className="chk-row"><input type="checkbox" checked={toFaq} onChange={e => setToFaq(e.target.checked)} />이 답을 자주 묻는 질문에도 올리기</label>
       <div className="btnrow"><button className="btn line" onClick={nav.back}>나중에</button><button className="btn" disabled={busy} onClick={send}>{i.answer ? '답변 고치기' : '답하고 알리기'}</button></div>
     </section>
   );

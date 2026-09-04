@@ -1,0 +1,37 @@
+/* 수강료 — 청구서 시트·요금제 편집·학부모 계좌 안내. 색은 전부 theme.css 토큰. */
+
+/* 확인 시트(ConfirmHost)는 .app 안 앞자리에 있고 이 시트는 뒷자리에 포털된다 → 같은 z-index 면 이 시트가 위를 덮는다.
+   면제처럼 시트 안에서 확인을 띄우는 자리가 있어 한 칸 아래로 둔다 (.sheet-dim 은 80). */
+.bdim { z-index: 79; }
+
+/* 시트 안에서는 .btnrow 의 바깥 여백(20px)이 시트 여백과 겹친다 → 0 으로 */
+.bsheet { max-height: 82vh; overflow-y: auto; text-align: left; }
+.bsheet .btnrow { padding: 10px 0 0; }
+.bsheet .blab { font-size: var(--t-label); font-weight: 700; letter-spacing: .02em; color: var(--ink2); margin: 18px 0 8px; }
+.bsheet .input { background: var(--paper); }
+
+/* 남은 금액 — 시트를 열면 제일 먼저 읽는 줄 */
+.bmoney { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; padding: 14px 15px; border-radius: var(--r-card); background: var(--paper); }
+.bmoney b { font-size: 26px; font-weight: 700; letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.bmoney span { font-size: var(--t-sub); color: var(--ink3); }
+.bmoney.done b { color: var(--ok-ink); }
+
+/* 부분 금액 · 금액 수정 — 입력 한 칸과 버튼 하나 */
+.brow { display: flex; gap: 8px; align-items: center; }
+.brow .input { flex: 1; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.brow .btn { flex: 0 0 auto; }
+.bfield { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.bfield label { flex: 0 0 72px; font-size: var(--t-sub); color: var(--ink2); font-weight: 600; }
+.bfield .input { flex: 1; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* 전액 납부 확인 — 계좌이체 · 현금 · 카드 */
+.methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.methods .btn { width: auto; min-height: 46px; font-size: 14px; }
+
+/* 학부모 카드의 계좌 안내 */
+.bank { padding: 0 16px 14px; }
+.bank .bt { font-size: var(--t-sub); color: var(--ink2); line-height: 1.65; white-space: pre-wrap; word-break: break-all; }
+.bank .btnrow { padding: 10px 0 0; }
+
+/* 요금제 줄의 금액 */
+.feeamt { font-size: var(--t-body); font-weight: 700; letter-spacing: -.02em; color: var(--ink); font-variant-numeric: tabular-nums; flex: 0 0 auto; }

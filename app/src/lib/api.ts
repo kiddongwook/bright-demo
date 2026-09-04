@@ -1,4 +1,5 @@
 import { fn, supabase } from './supabase';
+import { DOW, dowOf, kstToday, kstDate } from './dates';
 import type { Membership } from '../auth/session';
 
 export type Sched = { dow: number; start: string; end: string };
@@ -27,17 +28,9 @@ export const setContext = (academyId: string, userId: string) => { ctx = { acade
 /** 지금 누가 어느 학원으로 보고 있나 — 오류 보고가 읽어 간다 (읽기 전용 사본) */
 export const getContext = () => ({ ...ctx });
 
-export function kstToday(): string {
-  const d = new Date(Date.now() + 9 * 3600e3);
-  return d.toISOString().slice(0, 10);
-}
-export function kstDate(offsetDays: number): string {
-  const d = new Date(Date.now() + 9 * 3600e3 + offsetDays * 86400e3);
-  return d.toISOString().slice(0, 10);
-}
 export const fmtMD = (iso: string) => { const [, m, d] = iso.split('-'); return `${+m}월 ${+d}일`; };
-export const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-export const dowOf = (iso: string) => new Date(iso + 'T09:00:00Z').getUTCDay();   // 09:00Z = 18:00 KST, 같은 날짜
+/* 요일·오늘 셈은 dates.ts 한 곳에서 — 여기서 다시 내보내 옛 호출부를 그대로 둔다 */
+export { DOW, dowOf, kstToday, kstDate };
 export const fmtMDW = (iso: string) => `${fmtMD(iso)} ${DOW[dowOf(iso)]}`;
 /** timestamptz → 한국 날짜(YYYY-MM-DD). UTC 로 slice 하면 밤 시간대가 하루 밀린다. */
 export const kstDay = (ts: string) => new Date(ts).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
@@ -431,4 +424,18 @@ export function countRecipients(studentNames: string[], rows: EntryRow[]): numbe
 export async function recipientCount(classId: string | null): Promise<number> {
   const [students, rows] = await Promise.all([listStudents(classId ?? undefined), entryStatus()]);
   return countRecipients(students.map(s => s.name), rows);
+}
+
+/* ── 넣기 거들기 ── */
+/** 이 학원에서 최근에 쓴 할 것 제목 — 새 것부터, 같은 제목은 하나만. 부르는 쪽이 지금 반에 이미 걸린 것을 더 걸러 낸다. */
+export async function recentTodoTitles(limit = 6): Promise<string[]> {
+  const rows = must(await supabase.from('todos').select('title').order('created_at', { ascending: false }).limit(120)) as { title: string }[];
+  const out: string[] = [];
+  for (const r of rows) { const t = (r.title ?? '').trim(); if (t && !out.includes(t)) out.push(t); if (out.length >= limit) break; }
+  return out;
+}
+/** 휴원일·특강 여러 날을 한 번에 — 부르는 쪽이 이미 있는 날을 걸러 낸 뒤에 쓴다 */
+export async function addCalendarMany(dates: string[], kind: CalItem['kind'], note: string, classId: string | null) {
+  if (!dates.length) return;
+  must(await supabase.from('calendar').insert(dates.map(date => ({ academy_id: ctx.academyId, date, kind, note: note || null, class_id: classId }))));
 }

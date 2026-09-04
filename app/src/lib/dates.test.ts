@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { nextClassDays, nextClassDaysFor, monthGrid, dowOf, scheduleSummary } from './api';
+import { fmtDateLong, fmtTime12, addDays, hm, withEul } from './dates';
 describe('nextClassDays + 휴원일', () => {
   it('휴원일은 건너뛴다', () => {
     const sched = [1, 2, 3, 4, 5, 6, 0].map(dow => ({ dow, start: '00:01', end: '23:59' })); // 매일 수업, 오늘은 시작이 지나 제외
@@ -46,4 +47,33 @@ describe('scheduleSummary', () => {
     const s = [{ dow: 1, start: '19:00', end: '21:00' }, { dow: 6, start: '10:00', end: '12:00' }];
     expect(scheduleSummary(s)).toBe('월 19:00–21:00 · 토 10:00–12:00');
   });
+});
+
+/* ── 날짜·시간 글자 (dates.ts) ── */
+describe('fmtDateLong', () => {
+  it('9월 11일 (금)', () => { expect(fmtDateLong('2026-09-11')).toBe('9월 11일 (금)'); });
+  it('앞의 0 은 떼고 쓴다', () => { expect(fmtDateLong('2026-03-03')).toBe('3월 3일 (화)'); });
+  it('날짜 꼴이 아니면 그대로', () => { expect(fmtDateLong('')).toBe(''); expect(fmtDateLong('내일')).toBe('내일'); });
+});
+describe('addDays', () => {
+  it('다음 주 같은 요일', () => { expect(addDays('2026-09-11', 7)).toBe('2026-09-18'); });
+  it('달을 넘어간다', () => { expect(addDays('2026-09-30', 2)).toBe('2026-10-02'); });
+  it('뒤로도 간다', () => { expect(addDays('2026-01-01', -1)).toBe('2025-12-31'); });
+  it('날짜가 아니면 그대로', () => { expect(addDays('', 3)).toBe(''); });
+});
+describe('fmtTime12', () => {
+  it('오후', () => { expect(fmtTime12('19:00')).toBe('오후 7:00'); });
+  it('자정은 오전 12시', () => { expect(fmtTime12('00:00')).toBe('오전 12:00'); });
+  it('정오는 오후 12시', () => { expect(fmtTime12('12:00')).toBe('오후 12:00'); });
+  it('분은 두 자리 그대로', () => { expect(fmtTime12('13:05')).toBe('오후 1:05'); });
+  it('오전', () => { expect(fmtTime12('09:30')).toBe('오전 9:30'); });
+  it('시간 꼴이 아니면 그대로', () => { expect(fmtTime12('')).toBe(''); expect(fmtTime12('저녁')).toBe('저녁'); });
+});
+describe('hm', () => {
+  it('두 자리로 맞춘다', () => { expect(hm(9, 0)).toBe('09:00'); expect(hm(21, 30)).toBe('21:30'); });
+});
+describe('withEul', () => {
+  it('받침이 있으면 을', () => { expect(withEul('단어 시험')).toBe('단어 시험을'); });
+  it('받침이 없으면 를', () => { expect(withEul('중간고사')).toBe('중간고사를'); });
+  it('빈 말은 그대로', () => { expect(withEul('  ')).toBe(''); });
 });

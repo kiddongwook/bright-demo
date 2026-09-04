@@ -1,0 +1,32 @@
+/* 쓰기 편하게 — 출결 사유 시트 · 보강 후보 칩 · 답변 틀 칩.
+   색·간격은 theme.css 토큰만 쓴다. 있는 클래스(.sheet, .chips-row, .seg, .input)는 ui.css 것을 그대로 쓰고
+   여기서는 모자란 것만 더한다. */
+
+/* 출석부 타일: 길게 누르기 — 글자가 잡히거나 브라우저 메뉴가 뜨면 길게 누르기가 안 된다 */
+.att .stu{position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.att .stu .st{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* 마우스로 쓰는 사람을 위한 "…" — 길게 누르기와 같은 자리를 연다 */
+.att .stu .more{position:absolute;top:2px;right:4px;width:22px;height:22px;border-radius:50%;
+  display:grid;place-items:center;font-size:13px;line-height:1;font-weight:700;color:var(--ink3)}
+.att .stu .more:active{background:var(--rule)}
+
+/* 사유 시트 */
+.rsheet .rs-name{font-size:var(--t-title);font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.rsheet .rs-lab{font-size:var(--t-label);font-weight:600;color:var(--ink2);margin:16px 0 8px}
+.rsheet .chips-row{padding:0}
+.rsheet .seg{margin:0}
+.rsheet .input{width:100%}
+.rsheet .sa{display:flex;gap:9px;margin-top:20px}
+.rsheet .sa .btn{flex:1}
+
+/* 보강 후보 칩 · 답변 틀 칩 — 여러 줄로 접히는 칩, 긴 글은 한 줄로 자른다 */
+.chips-row.wrap{margin-bottom:2px}
+.chips-row.wrap button{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;text-align:left}
+
+/* 보강 날짜·시각 손입력 */
+.mk-manual{padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mk-manual .input{width:100%}
+
+/* FAQ 에도 올리기 체크 */
+.chk-row{display:flex;align-items:center;gap:9px;padding:12px 20px 0;font-size:var(--t-sub);color:var(--ink2);line-height:1.5}
+.chk-row input{width:18px;height:18px;flex:0 0 auto;accent-color:var(--brand)}
