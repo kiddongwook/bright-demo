@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { atBase, backSnap, curEntry, hasNavEntry, pushHistory, pushSnap, replaceHistory, replaceSnap, rootSnap, sameSnap, setLive, startHistory, tabSnap, type NavEntry, type NavSnap } from './nav-history';
 
 export type Role = 'director' | 'teacher' | 'parent' | 'student';
 export const TABS: Record<Role, string[]> = {
@@ -24,8 +25,7 @@ export const TITLE: Record<string, [string, string]> = {
 /* 넓은 화면에서 폰 틀을 벗고 대시보드로 펼칠 관리 화면들 — App 이 body.wide 를 붙였다 뗀다 */
 export const WIDE_VIEWS = new Set(['stats', 'roster', 'student', 'student-edit', 'import', 'todos', 'calendar', 'classes', 'teachers', 'readers', 'inbox', 'answer']);
 
-type Entry = { view: string; params: Record<string, string> };
-type Nav = { view: string; params: Record<string, string>; isTab: boolean; tabBase: string; limited: boolean; tab: (n: string) => void; push: (n: string, p?: Record<string, string>) => void; back: () => void; replace: (n: string, p?: Record<string, string>) => void };
+type Nav ={ view: string; params: Record<string, string>; isTab: boolean; tabBase: string; limited: boolean; tab: (n: string) => void; push: (n: string, p?: Record<string, string>) => void; back: () => void; replace: (n: string, p?: Record<string, string>) => void };
 const C = createContext<Nav>(null!);
 
 /* 진입 화면이 속한 탭 — 링크로 바로 열었을 때 뒤로가기·탭 표시에 쓴다 */
@@ -36,15 +36,48 @@ export function NavProvider({ role, initial: init, limited = false, children }: 
   const h = typeof location !== 'undefined' ? location.hash.replace('#', '') : '';
   const initial = init?.view ?? (h && (TABS[role].includes(h) || TITLE[h]) ? h : first);
   const home = TABS[role].includes(initial) ? initial : (PARENT_TAB[initial] && TABS[role].includes(PARENT_TAB[initial]) ? PARENT_TAB[initial] : first);
-  const [cur, setCur] = useState<Entry>({ view: initial, params: init?.params ?? {} });
-  const [hist, setHist] = useState<Entry[]>(TABS[role].includes(initial) ? [] : [{ view: home, params: {} }]);
+  // 화면 스택 전체를 한 덩어리(스냅숏)로 들고 다닌다 — 그대로 history 항목에 실어 두려고
+  const [snap, setSnap] = useState<NavSnap>(() => TABS[role].includes(initial)
+    ? tabSnap(initial)
+    : { tab: home, stack: [{ view: initial, params: init?.params ?? {} }] });
+  // ref 로도 들고 있는다: 한 틱에 두 번 옮겨도(저장 → 뒤로) 앞의 결과 위에서 움직이게, popstate 가 최신 값을 보게.
+  // 옮기는 자리마다 ref 를 먼저 고쳐 두므로, 아래 effect 는 뒤늦게 맞춰 두는 안전장치다.
+  const snapRef = useRef(snap);
+  const cfg = useRef({ role, home, limited });
+  useEffect(() => { snapRef.current = snap; cfg.current = { role, home, limited }; });
+
+  const go = (next: NavSnap, mode: 'push' | 'replace') => {
+    if (sameSnap(snapRef.current, next)) return;   // 같은 자리로 또 가면 항목을 늘리지 않는다 (탭바에서 지금 탭 누르기)
+    snapRef.current = next; setSnap(next);
+    (mode === 'push' ? pushHistory : replaceHistory)(next);
+  };
+
+  // 마운트에 지금 스냅숏을 history 에 깔고 뒤로가기를 듣는다. NavProvider 는 세션·역할이 바뀌면 key 로 새로 뜨므로
+  // 이 replaceState 가 곧 "지난 세션의 항목이 이 자리에 남지 않게" 하는 손질이기도 하다.
+  useEffect(() => startHistory(snapRef.current, s => {
+    const c = cfg.current;
+    // 남의 역할·지난 세션이 남긴 스냅숏은 받지 않는다. 제한 세션은 들어온 탭 밖으로 나가지 않는다.
+    const ok = s && TABS[c.role].includes(s.tab) && (!c.limited || s.tab === c.home) ? s : null;
+    const next = ok ?? rootSnap(snapRef.current);   // 우리 항목 밖으로 나갔다 → 탭 뿌리
+    setLive(next);
+    if (sameSnap(snapRef.current, next)) return;
+    snapRef.current = next; setSnap(next);
+  }), []);
+
+  const cur: NavEntry = curEntry(snap);
   const isTab = TABS[role].includes(cur.view);
-  const tabBase = hist.length ? hist[0].view : cur.view;
+  const tabBase = snap.tab;
   // 제한 세션(링크로 열림)은 들어온 탭 밖으로 나가지 않는다 — 전체 기능은 번호로 들어와서
-  const tab = (n: string) => { if (limited && n !== home) return; setHist([]); setCur({ view: n, params: {} }); };
-  const push = (n: string, p: Record<string, string> = {}) => { setHist(x => [...x, cur]); setCur({ view: n, params: p }); };
-  const replace = (n: string, p: Record<string, string> = {}) => setCur({ view: n, params: p });
-  const back = () => { const prev = hist[hist.length - 1]; setHist(x => x.slice(0, -1)); setCur(prev ?? { view: home, params: {} }); };
+  const tab = (n: string) => { if (cfg.current.limited && n !== cfg.current.home) return; go(tabSnap(n), 'push'); };
+  const push = (n: string, p: Record<string, string> = {}) => go(pushSnap(snapRef.current, n, p), 'push');
+  const replace = (n: string, p: Record<string, string> = {}) => go(replaceSnap(snapRef.current, n, p), 'replace');
+  // 앱 안의 뒤로(앱바 꺾쇠·취소·저장 뒤)도 history 를 되돌린다 — 제스처 뒤로가기와 같은 길로 가야 항목이 어긋나지 않는다.
+  // 링크로 바로 열린 화면은 우리 첫 항목에 앉아 있어서, 여기서 history.back() 하면 앱이 꺼진다 → 그때만 제자리에서 되돌린다.
+  const back = () => {
+    if (!snapRef.current.stack.length) return;
+    if (hasNavEntry() && !atBase()) { history.back(); return; }
+    go(backSnap(snapRef.current), 'replace');
+  };
   return <C.Provider value={{ view: cur.view, params: cur.params, isTab, tabBase, limited, tab, push, back, replace }}>{children}</C.Provider>;
 }
 export const useNav = () => useContext(C);

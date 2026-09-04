@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ComponentType, type CSSProperties } from 'react';
 import { studentDetail, monthAttendance, timeline, listNotes, addNote, deleteNote, listCalendar, monthGrid, kstToday, saveStudent, type AttStatus, type TimelineItem, type Note } from '../../lib/api';
 import { formatPhone } from '../../lib/phone';
 import { useNav } from '../../lib/nav';
@@ -7,10 +7,11 @@ import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { confirmSheet } from '../../components/Confirm';
-import { IcPhone } from '../../components/icons';
+import { IcPhone, IcCheck, IcCalendar, IcChat, IcNote } from '../../components/icons';
 
 const MARK: Record<AttStatus, string> = { present: '○', late: '△', absent: '✕', makeup: '◌' };
 const KIND: Record<TimelineItem['kind'], string> = { attendance: '출결', absence: '결석', inquiry: '문의', note: '메모' };
+const KIND_IC: Record<TimelineItem['kind'], ComponentType<{ size?: number; style?: CSSProperties }>> = { attendance: IcCheck, absence: IcCalendar, inquiry: IcChat, note: IcNote };
 const when = (ts: string) => new Date(ts).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Seoul' });
 
 /* 학생 상세: 출결 달력 · 기록(타임라인) · 메모 */
@@ -81,7 +82,7 @@ function Timeline({ sid }: { sid: string }) {
   return (
     <>
       <div className="lab first">기록<span className="r">출결 · 결석 · 문의 · 메모</span></div>
-      {data && (data.length ? <div className="list">{data.map(t => <div key={t.kind + t.ref + t.ts} className="tl"><span className={'k ' + t.kind}>{KIND[t.kind]}</span><span className="bd"><span className="t">{t.title}</span>{t.body && <span className="s">{t.body}</span>}<span className="d">{when(t.ts)}</span></span></div>)}</div>
+      {data && (data.length ? <div className="list">{data.map(t => { const Icon = KIND_IC[t.kind]; return <div key={t.kind + t.ref + t.ts} className="tl"><span className={'k ' + t.kind}><Icon size={14} style={{ verticalAlign: -2, marginRight: 3 }} />{KIND[t.kind]}</span><span className="bd"><span className="t">{t.title}</span>{t.body && <span className="s">{t.body}</span>}<span className="d">{when(t.ts)}</span></span></div>; })}</div>
         : <p className="muted" style={{ padding: '0 20px' }}>아직 기록이 없어요. 출석은 지각·결석·보강만 여기에 남아요.</p>)}
     </>
   );
@@ -109,7 +110,7 @@ function Notes({ sid }: { sid: string }) {
       <div style={{ padding: '10px 20px 0' }}><textarea className="input" style={{ minHeight: 80 }} value={body} onChange={e => setBody(e.target.value)} placeholder={kind === 'consult' ? '예) 어머님과 통화 — 단어 암기 계획 잡음' : '예) 수업 중 집중 잘함'} /></div>
       <div className="btnrow"><button className="btn" disabled={busy} onClick={add}>남기기</button></div>
       <div className="lab">지난 메모<span className="r">{notes ? `${notes.length}개` : ''}</span></div>
-      {!notes ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={2} />) : (notes.length ? <div className="list">{notes.map(n => <div key={n.id} className="tl"><span className={'k ' + (n.kind === 'consult' ? 'consult' : 'note')}>{n.kind === 'consult' ? '상담' : '메모'}</span><span className="bd"><span className="t" style={{ whiteSpace: 'pre-wrap' }}>{n.body}</span><span className="d">{n.author_name} · {when(n.created_at)}</span></span><button className="btn sm line" onClick={() => del(n.id)}>지우기</button></div>)}</div>
+      {!notes ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={2} />) : (notes.length ? <div className="list">{notes.map(n => <div key={n.id} className="tl"><span className={'k ' + (n.kind === 'consult' ? 'consult' : 'note')}><IcNote size={14} style={{ verticalAlign: -2, marginRight: 3 }} />{n.kind === 'consult' ? '상담' : '메모'}</span><span className="bd"><span className="t" style={{ whiteSpace: 'pre-wrap' }}>{n.body}</span><span className="d">{n.author_name} · {when(n.created_at)}</span></span><button className="btn sm line" onClick={() => del(n.id)}>지우기</button></div>)}</div>
         : <p className="muted" style={{ padding: '0 20px' }}>아직 메모가 없어요.</p>)}
     </>
   );

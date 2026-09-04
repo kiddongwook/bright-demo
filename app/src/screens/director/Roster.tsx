@@ -11,7 +11,7 @@ import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { BottomCta } from '../../components/BottomCta';
 import { confirmSheet } from '../../components/Confirm';
-import { IcCheck } from '../../components/icons';
+import { IcCheck, IcPhone } from '../../components/icons';
 
 /* 명부: 반별 활성 학생 + 접힌 퇴원생. 행을 누르면 학생 상세, 편집은 작은 단추. 강사는 더보기 → 강사에서 따로 본다. */
 export function Roster() {
@@ -49,7 +49,7 @@ export function Roster() {
             {notEntered.map((r, i) => (
               <div key={`${r.role}-${r.phone}-${i}`} className="rw" style={{ cursor: 'default' }}>
                 <span className="nm">{(r.student_name ?? r.name).charAt(0)}</span>
-                <span className="bd"><span className="t">{r.student_name} {r.role === 'parent' ? '학부모' : '학생'}</span><span className="s">{formatPhone(r.phone)}</span></span>
+                <span className="bd"><span className="t">{r.student_name} {r.role === 'parent' ? '학부모' : '학생'}</span><span className="s"><a href={'tel:' + r.phone} onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none', color: 'inherit' }}><IcPhone size={13} style={{ color: 'var(--brand)', verticalAlign: -1 }} />{formatPhone(r.phone)}</a></span></span>
                 <button className="btn sm line" onClick={copyInviteFor}>초대 문구 복사</button>
               </div>
             ))}

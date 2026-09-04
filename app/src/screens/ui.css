@@ -126,3 +126,7 @@
 .summary button.st .k{display:flex;align-items:center;gap:3px}
 .summary button.st .k::after{content:"›";color:var(--ink3);font-weight:700;line-height:1}
 .summary button.st:active{transform:scale(.98)}
+
+/* 더보기 목록 줄 앞의 아이콘 자리 */
+.rw .ic{width:36px;height:36px;border-radius:12px;background:var(--avatar);color:var(--avatar-ink);display:grid;place-items:center;flex:0 0 auto}
+.rw.soon .ic{background:var(--rule2);color:var(--ink3)}
