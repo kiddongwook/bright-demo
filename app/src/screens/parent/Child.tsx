@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { myChildren, weekAttendance, listTodos, listAbsences, listNotices, requestAbsence, closedByClass, nextClassDaysFor, weekRange, kstToday, type Closed, fmtMDW, fmtDT, fmtDayOrToday, kstDay, DOW, dowOf, type Student, type Todo, type Absence, type AttStatus } from '../../lib/api';
 import { useNav } from '../../lib/nav';
+import { callName, withSubject } from '../../lib/name';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
@@ -60,12 +61,12 @@ export function Child() {
   const nextCls = next ? child.classes.find(c => (c.schedule ?? []).some(s => s.dow === dowOf(next))) : undefined;
   const nextStart = nextCls?.schedule.find(s => s.dow === dowOf(next))?.start ?? '';
   const mine = absences.filter(a => a.student_id === child.id);
-  const short = child.name.replace(/^[가-힣]/, '');
+  const call = callName(child.name);
   const todayAtt = att[kstToday()];
   const recent = notices?.[0];
   return (
     <section className="view on">
-      <div className="head"><h1 className="hello">{short}이</h1><p className="lede">{fmtMDW(kstToday())} · {child.classes.map(c => c.name).join(' · ')}</p></div>
+      <div className="head"><h1 className="hello">{call}</h1><p className="lede">{fmtMDW(kstToday())} · {child.classes.map(c => c.name).join(' · ')}</p></div>
       <div className="lab first">다음 수업</div>
       <div className="box">{nextCls
         ? <div className="rw nextrow" style={{ cursor: 'default' }}><span className="big">{fmtDayOrToday(next)} <em>{nextStart}</em></span><span className="s">{nextCls.name}</span></div>
@@ -74,7 +75,7 @@ export function Child() {
       <div className="lab">이번 주<span className="r">{fmtMDW(weekRange().from)} – {fmtMDW(weekRange().to)}</span></div>
       <div className="box"><WeekStrip studentId={child.id} absences={absences} att={att} /></div>
       <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span><span><b>◌</b>보강</span><button className="more" onClick={() => nav.push('child-month')}>이번 달 달력 ›</button></div>
-      <div className="lab">이번 주 할 것<span className="r">{short}이가 체크해요</span></div>
+      <div className="lab">이번 주 할 것<span className="r">{withSubject(child.name)} 체크해요</span></div>
       <div className="box soft"><TodoList todos={todos} editable={false} /></div>
       {recent && <><div className="lab">최근 공지</div>
         <div className="box"><button className="rw" onClick={() => nav.push('notice-view', { id: recent.id })}>
