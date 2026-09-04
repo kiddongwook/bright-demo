@@ -6,6 +6,7 @@ import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
 import { toast, errToast } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
+import { AutoTextarea } from '../../components/AutoTextarea';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { BottomCta } from '../../components/BottomCta';
@@ -29,6 +30,21 @@ export function TodoList({ todos, editable, onToggle }: { todos: Todo[]; editabl
       {editable ? <button className={'cb' + pop.cls(t.id)} onClick={async () => { await onToggle?.(t); if (!t.done) pop.fire(t.id); }} onAnimationEnd={pop.end} aria-label="했어요">{t.done ? '✓' : ''}</button> : <span className="cb">{t.done ? '✓' : ''}</span>}
       <div className="bd"><div className={'k' + (t.kind === 'exam' ? ' exam' : '')}>{t.kind === 'exam' ? <><IcTarget size={13} style={{ verticalAlign: -2, marginRight: 3 }} />시험</> : <><IcBook size={13} style={{ verticalAlign: -2, marginRight: 3 }} />숙제</>}</div><div className="t">{t.title}</div><div className="s">{fmtMDW(t.due_date)}까지</div></div>
     </div>))}</>;
+}
+/** 할 것 진행률 고리 — 라벨 줄 오른쪽 끝에 선다. 할 것이 없으면 아무것도 그리지 않는다. */
+export function ProgressRing({ done, total, size = 36 }: { done: number; total: number; size?: number }) {
+  if (!total) return null;
+  const pct = Math.max(0, Math.min(100, Math.round((done / total) * 100)));
+  const r = (size - 4) / 2, c = 2 * Math.PI * r, half = size / 2;
+  return (
+    <span className="ring" role="img" aria-label={`${total}개 중 ${done}개 했어요`}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+        <circle className="rt" cx={half} cy={half} r={r} />
+        <circle className="rv" cx={half} cy={half} r={r} strokeDasharray={`${(c * pct) / 100} ${c}`} transform={`rotate(-90 ${half} ${half})`} />
+      </svg>
+      <i>{pct}%</i>
+    </span>
+  );
 }
 /** 이번 주 출결 — 주 스트립과 "오늘 출결" 줄이 같이 쓴다 (홈에서 한 번만 읽는다) */
 export function useWeekAtt(studentId: string) {
@@ -65,20 +81,31 @@ export function Child() {
   const call = callName(child.name);
   const todayAtt = att[kstToday()];
   const recent = notices?.[0];
+  const wk = weekRange();
+  const doneCount = todos.filter(t => t.done).length;
+  const nextCard = <>
+    <div className={'lab' + (todayAtt ? '' : ' first')}>다음 수업</div>
+    <div className="box">{nextCls
+      ? <div className="rw nextrow" style={{ cursor: 'default' }}><span className="big">{fmtDayOrToday(next)} <em>{nextStart}</em></span><span className="s">{nextCls.name}</span></div>
+      : <Empty icon="calendar" title="다음 수업이 아직 없어요" hint="시간표가 정해지면 여기에 보여요." />}</div>
+  </>;
+  const attCard = <>
+    <div className={'lab' + (todayAtt ? ' first' : '')}>{todayAtt ? '오늘 출결' : '이번 주 출결'}<span className="r">{fmtMDW(wk.from)} – {fmtMDW(wk.to)}</span></div>
+    <div className={'box attcard' + (todayAtt ? ' ' + WK[todayAtt] : '')}>
+      {todayAtt && <p className="attbig">{ATT_TODAY[todayAtt]}</p>}
+      <WeekStrip studentId={child.id} absences={absences} att={att} />
+    </div>
+    <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span><span><b>◌</b>보강</span><button className="more" onClick={() => nav.push('child-month')}>이번 달 달력 ›</button></div>
+  </>;
   return (
     <section className="view on">
       <div className="head"><h1 className="hello">{call}</h1><p className="lede">{fmtMDW(kstToday())} · {child.classes.map(c => c.name).join(' · ')}</p></div>
-      <div className="lab first">다음 수업</div>
-      <div className="box">{nextCls
-        ? <div className="rw nextrow" style={{ cursor: 'default' }}><span className="big">{fmtDayOrToday(next)} <em>{nextStart}</em></span><span className="s">{nextCls.name}</span></div>
-        : <Empty icon="calendar" title="다음 수업이 아직 없어요" hint="시간표가 정해지면 여기에 보여요." />}</div>
-      <TuitionCard />
-      {todayAtt && <p className="summaryline" style={{ marginTop: 10 }}><b>{ATT_TODAY[todayAtt]}</b></p>}
-      <div className="lab">이번 주<span className="r">{fmtMDW(weekRange().from)} – {fmtMDW(weekRange().to)}</span></div>
-      <div className="box"><WeekStrip studentId={child.id} absences={absences} att={att} /></div>
-      <div className="legend"><span><b>○</b>출석</span><span><b>△</b>지각</span><span><b>✕</b>결석</span><span><b>◌</b>보강</span><button className="more" onClick={() => nav.push('child-month')}>이번 달 달력 ›</button></div>
-      <div className="lab">이번 주 할 것<span className="r">{withSubject(child.name)} 체크해요</span></div>
+      {/* 두 장 원칙 — 홈에서 먼저 읽히는 것은 "다음 수업"과 "오늘 출결" 두 장뿐이다.
+          오늘 기록이 있으면 출결이 첫 장으로 올라오고(B7), 없으면 다음 수업이 첫 장이고 둘째 장은 이번 주 출결이 된다. */}
+      {todayAtt ? <>{attCard}{nextCard}</> : <>{nextCard}{attCard}</>}
+      <div className="lab ringlab">이번 주 할 것<span className="r">{todos.length ? (todos.length - doneCount ? `${todos.length - doneCount}개 남음` : '다 했어요') : withSubject(child.name) + ' 체크해요'}</span><ProgressRing done={doneCount} total={todos.length} /></div>
       <div className="box soft"><TodoList todos={todos} editable={false} /></div>
+      <TuitionCard />
       {recent && <><div className="lab">최근 공지</div>
         <div className="box"><button className="rw" onClick={() => nav.push('notice-view', { id: recent.id })}>
           <span className="bd"><span className="t">{recent.title}</span><span className="s">{fmtMDW(kstDay(recent.created_at))}</span></span>
@@ -112,7 +139,7 @@ export function Absence() {
       <div className="lab first">결석할 날<span className="r">수업일</span></div>
       <div className="seg col">{opts.map(d => <button key={d} className={d === pick ? 'on' : ''} onClick={() => setDate(d)}>{fmtMDW(d)}</button>)}</div>
       <div className="lab">사유</div>
-      <div style={{ padding: '0 20px' }}><textarea className="input" style={{ minHeight: 90 }} value={reason} onChange={e => setReason(e.target.value)} placeholder="예) 병원 진료" /></div>
+      <div style={{ padding: '0 20px' }}><AutoTextarea value={reason} onChange={e => setReason(e.target.value)} placeholder="예) 병원 진료" /></div>
       <BottomCta primary={{ label: '원장님께 알리기', onClick: send, disabled: busy }} secondary={{ label: '취소', onClick: nav.back }} />
     </section>
   );

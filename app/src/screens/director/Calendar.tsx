@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { listCalendar, addCalendar, addCalendarMany, removeCalendar, listClasses, listClassesFull, createClass, updateClass, assignClassTeacher, listTeachers, kstToday, kstDate, fmtMDW, DOW, dowOf, nextClassDaysFor, scheduleSummary, type CalItem, type Sched, type ClsFull, type Teacher } from '../../lib/api';
-import { addDays, isValidHm, normHm } from '../../lib/dates';
+import { listCalendar, addCalendar, addCalendarMany, removeCalendar, listClasses, listClassesFull, createClass, updateClass, assignClassTeacher, listTeachers, listStudents, listNotices, kstToday, kstDate, fmtMDW, DOW, dowOf, nextClassDaysFor, scheduleSummary, type CalItem, type Sched, type ClsFull, type Teacher } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
+import { addDays, withEul } from '../../lib/dates';
 import { groupCalendar, type CalGroup } from '../../lib/calendarGroups';
+import { DOW_ORDER, DEFAULT_START, DEFAULT_END, toGroups, fromGroups, validateGroups, unassignedDows, toggleDow, dowsLabel, type Group } from '../../lib/schedule';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast, deferDelete, isPending } from '../../lib/toast';
 import { confirmSheet } from '../../components/Confirm';
@@ -10,6 +12,7 @@ import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import { DateField } from '../../components/DateField';
 import { TimeField } from '../../components/TimeField';
+import '../classes.css';
 
 const KIND_LABEL: Record<CalItem['kind'], string> = { closed: '휴원', special: '특강', makeup: '보강' };
 /* 한 번에 넣는 방법 — 하루 / 시작~끝 / 그 요일로 몇 주 */
@@ -133,7 +136,21 @@ export function Classes() {
   );
 }
 
-const DOW_ORDER = [1, 2, 3, 4, 5, 6, 0];
+/* 반을 지우는 길 — api.ts 는 다른 손이 잡고 있어 여기 둔다(다음 정리 때 api.ts 로 옮길 것).
+   딸린 것은 서버가 정리한다: 휴원일·특강·요금제·할 것·출석 기록은 함께 지워지고(0004·0018 cascade),
+   반 대상 공지와 등록된 학생은 서버가 막는다(restrict) — 그래서 부르기 전에 먼저 세어 본다. */
+async function deleteClass(id: string) {
+  const { error } = await supabase.from('classes').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+/* 이 반을 붙잡고 있는 공지 수 — 옛 꼴(notices.target_class_id)과 여러 반 꼴(notice_targets, 0021)을 합쳐 한 번만 센다.
+   notice_targets 가 아직 안 올라간 서버에서는 조용히 넘어간다(없는 표를 물어도 삭제를 막지 않게). */
+async function countBlockingNotices(classId: string, notices: { id: string; target_class_id: string | null }[]) {
+  const ids = new Set(notices.filter(n => n.target_class_id === classId).map(n => n.id));
+  const { data } = await supabase.from('notice_targets').select('notice_id').eq('class_id', classId);
+  for (const r of (data ?? []) as { notice_id: string }[]) ids.add(r.notice_id);
+  return ids.size;
+}
 
 /* 담당 강사 이름: 번호로 맞춰 보고, 옛 데이터를 위해 user_id 로도 맞춰 본다 */
 const tname = (c: ClsFull, teachers: Teacher[] | null) =>
@@ -141,33 +158,21 @@ const tname = (c: ClsFull, teachers: Teacher[] | null) =>
 
 function ClassForm({ cls, teachers, onDone }: { cls: ClsFull | null; teachers: Teacher[]; onDone: () => void }) {
   const [name, setName] = useState(cls?.name ?? '');
-  const [dows, setDows] = useState<number[]>(cls ? [...new Set(cls.schedule.map(s => s.dow))] : []);
-  const [start, setStart] = useState(cls?.schedule[0]?.start ?? '19:00'); const [end, setEnd] = useState(cls?.schedule[0]?.end ?? '21:00');
-  const [perDowOn, setPerDowOn] = useState(() => !!cls && new Set(cls.schedule.map(s => `${s.start}-${s.end}`)).size > 1);
-  const [perDow, setPerDow] = useState<Record<number, { start: string; end: string }>>(() => {
-    const m: Record<number, { start: string; end: string }> = {};
-    for (const s of cls?.schedule ?? []) m[s.dow] = { start: s.start, end: s.end };
-    return m;
+  /* 시간표는 "요일 시간 묶음" 으로 고친다 — 월·수·금 7시 / 토 10시 = 묶음 둘. 저장 직전에 요일 줄로 편다. */
+  const [groups, setGroups] = useState<Group[]>(() => {
+    const g = toGroups(cls?.schedule);
+    return g.length ? g : [{ dows: [], start: DEFAULT_START, end: DEFAULT_END }];
   });
   const [teacher, setTeacher] = useState(cls?.teacher_phone ?? '');
   const [busy, setBusy] = useState(false);
-  function togglePerDowOn() {
-    setPerDowOn(v => {
-      const next = !v;
-      if (next) setPerDow(p => { const np = { ...p }; for (const d of dows) if (!np[d]) np[d] = { start, end }; return np; });
-      return next;
-    });
-  }
-  function setPerDowField(d: number, field: 'start' | 'end', value: string) {
-    setPerDow(p => ({ ...p, [d]: { ...(p[d] ?? { start, end }), [field]: value } }));
-  }
+  const setTime = (i: number, field: 'start' | 'end', v: string) => setGroups(l => l.map((g, gi) => gi === i ? { ...g, [field]: v } : g));
+  const addGroup = () => setGroups(l => [...l, { dows: unassignedDows(l), start: DEFAULT_START, end: DEFAULT_END }]);
+  const peek = scheduleSummary(fromGroups(groups));   /* 지금 고른 대로면 반 목록에 이렇게 보인다 */
   async function save() {
     if (!name.trim()) { toast('반 이름을 적어주세요'); return; }
-    const sorted = [...dows].sort((a, b) => DOW_ORDER.indexOf(a) - DOW_ORDER.indexOf(b));
-    const schedule: Sched[] = sorted.map(dow => { const t = perDowOn ? (perDow[dow] ?? { start, end }) : { start, end }; return { dow, start: normHm(t.start), end: normHm(t.end) }; });
-    /* 24:00·19:60 같은 값은 저장돼도 오늘 수업·다음 수업에서 조용히 빠진다 — 여기서 막는다(INP-45) */
-    if (schedule.some(s => !isValidHm(s.start) || !isValidHm(s.end))) { toast('시간은 19:00 처럼 적어주세요 (00:00~23:59)'); return; }
-    if (schedule.some(s => s.start >= s.end)) { toast('끝나는 시간이 시작보다 늦어야 해요'); return; }
+    const bad = validateGroups(groups);
+    if (bad) { toast(bad); return; }
+    const schedule: Sched[] = fromGroups(groups);
     setBusy(true);
     try {
       let id = cls?.id;
@@ -177,27 +182,72 @@ function ClassForm({ cls, teachers, onDone }: { cls: ClsFull | null; teachers: T
     }
     catch (e) { errToast(e); setBusy(false); }
   }
+  /* 반 없애기 — 학생·공지가 걸려 있으면 서버가 막는다. 막힐 걸 먼저 세어 이유부터 말해 준다. */
+  async function removeClassFlow() {
+    if (!cls) return;
+    setBusy(true);
+    let stuCount = 0, noticeCount = 0;
+    try {
+      const [students, notices] = await Promise.all([listStudents(cls.id), listNotices()]);
+      stuCount = students.length;
+      noticeCount = await countBlockingNotices(cls.id, notices);
+    } catch (e) { errToast(e); setBusy(false); return; }
+    setBusy(false);
+    if (stuCount || noticeCount) {
+      const why = [stuCount ? `이 반에 학생 ${stuCount}명이 있어요` : '', noticeCount ? `이 반 대상 공지 ${noticeCount}건이 있어요` : ''].filter(Boolean).join('. ');
+      await confirmSheet({
+        title: `${cls.name} 반은 아직 없앨 수 없어요`,
+        body: `${why}. 학생은 명부에서 다른 반으로 옮기고, 공지는 지운 뒤에 반을 없앨 수 있어요.`,
+        okLabel: '알겠어요', cancelLabel: '닫기',
+      });
+      return;
+    }
+    if (!(await confirmSheet({
+      title: `${withEul(cls.name)} 없앨까요?`,
+      body: '이 반의 휴원일·특강, 수강료 기준, 할 것, 출석 기록이 함께 지워져요. 되돌릴 수 없어요.',
+      okLabel: '없애기', danger: true,
+    }))) return;
+    setBusy(true);
+    try { await deleteClass(cls.id); toast('반을 없앴어요'); onDone(); }
+    catch (e) { errToast(e); setBusy(false); }
+  }
   return (
     <div style={{ padding: '12px 16px', display: 'grid', gap: 10 }}>
       <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="반 이름 (예: 고1 A)" />
-      <div className="seg" style={{ padding: 0 }}>{DOW_ORDER.map(d => <button key={d} className={dows.includes(d) ? 'on' : ''} onClick={() => setDows(l => l.includes(d) ? l.filter(x => x !== d) : [...l, d])}>{DOW[d]}</button>)}</div>
-      <label className="muted"><input type="checkbox" checked={perDowOn} onChange={togglePerDowOn} /> 요일마다 시간이 달라요</label>
-      {perDowOn
-        ? <div style={{ display: 'grid', gap: 8 }}>{DOW_ORDER.filter(d => dows.includes(d)).map(d => { const t = perDow[d] ?? { start, end }; return (
-            <div key={d} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span style={{ width: 20 }}>{DOW[d]}</span>
-              <TimeField value={t.start} onChange={v => setPerDowField(d, 'start', v)} label={`${DOW[d]}요일 시작`} />
-              <span className="muted">–</span>
-              <TimeField value={t.end} onChange={v => setPerDowField(d, 'end', v)} label={`${DOW[d]}요일 끝`} />
+      <div className="sgrp">
+        {groups.map((g, i) => (
+          <div key={i} className="grp">
+            <div className="grp-dows">
+              <div className="dows">{DOW_ORDER.map(d => {
+                const on = g.dows.includes(d);
+                const taken = !on && groups.some((o, oi) => oi !== i && o.dows.includes(d));
+                return <button key={d} type="button" className={on ? 'on' : taken ? 'taken' : ''} aria-pressed={on}
+                  aria-label={`${DOW[d]}요일${taken ? ' · 다른 묶음에 있어요' : ''}`}
+                  onClick={() => setGroups(l => toggleDow(l, i, d))}>{DOW[d]}</button>;
+              })}</div>
+              {groups.length > 1 && <button type="button" className="grp-x" aria-label="이 시간 묶음 지우기"
+                onClick={() => setGroups(l => l.filter((_, gi) => gi !== i))}>✕</button>}
             </div>
-          ); })}</div>
-        : <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><TimeField value={start} onChange={setStart} label="시작 시간" /><span className="muted">–</span><TimeField value={end} onChange={setEnd} label="끝나는 시간" /></div>}
+            <div className="grp-time">
+              <TimeField value={g.start} onChange={v => setTime(i, 'start', v)} label={`${dowsLabel(g.dows) || `${i + 1}번째 묶음`} 시작`} />
+              <span className="muted">–</span>
+              <TimeField value={g.end} onChange={v => setTime(i, 'end', v)} label={`${dowsLabel(g.dows) || `${i + 1}번째 묶음`} 끝`} />
+            </div>
+          </div>
+        ))}
+        <button type="button" className="grp-add" onClick={addGroup}>+ 다른 시간 묶음</button>
+      </div>
+      <p className="sched-peek">요일마다 시간이 다르면 묶음을 더 만들어요 · 지금: {peek}</p>
       <select className="input" value={teacher} onChange={e => setTeacher(e.target.value)}>
         <option value="">담당 강사 없음 (원장님)</option>
         {teachers.map(t => <option key={t.phone} value={t.phone}>{t.name}{t.user_id ? '' : ' · 아직 안 들어옴'}</option>)}
       </select>
       <p className="muted" style={{ padding: 0 }}>강사가 앱에 들어오면 자동으로 연결돼 담당 반만 보게 돼요.</p>
       <div className="btnrow" style={{ padding: 0 }}><button className="btn line" onClick={onDone}>취소</button><button className="btn" disabled={busy} onClick={save}>저장</button></div>
+      {cls && <div className="cls-danger">
+        <button className="btn line danger" disabled={busy} onClick={removeClassFlow}>반 없애기</button>
+        <p>학생이 있거나 이 반 대상 공지가 있으면 없앨 수 없어요. 먼저 옮기고 지워 주세요.</p>
+      </div>}
     </div>
   );
 }

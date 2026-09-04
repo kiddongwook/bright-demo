@@ -15,6 +15,7 @@ import {
   IcCopy, IcDownload, IcPeople, IcTable, IcClock, IcCalendar, IcPerson, IcPalette, IcHelp,
   IcList, IcHouse, IcNote, IcReceipt, IcSparkle, IcMail, IcTrendingUp,
 } from '../../components/icons';
+import { AutoTextarea } from '../../components/AutoTextarea';
 
 export function More() {
   const nav = useNav(); const { logout, active, session } = useSession();
@@ -67,7 +68,7 @@ export function More() {
         <button className="rw" onClick={() => nav.push('import')}><span className="ic"><IcList size={20} /></span><span className="bd"><span className="t">명부 CSV 올리기</span><span className="s">엑셀에서 저장한 표로 한 번에</span></span><span className="go">›</span></button>
         <button className="rw" disabled={busy} onClick={download}><span className="ic"><IcDownload size={20} /></span><span className="bd"><span className="t">학원 데이터 내려받기</span><span className="s">학생·출결·공지·문의 전부 한 파일로 (JSON)</span></span><span className="go">›</span></button>
         <button className="rw" onClick={doCopyInvite}><span className="ic"><IcCopy size={20} /></span><span className="bd"><span className="t">학부모 초대 문구 복사</span><span className="s">카톡에 붙여 보내요</span></span><span className="go">›</span></button>
-        {invite && <div style={{ padding: '0 16px 14px' }}><textarea className="input" readOnly value={invite} /><p className="muted" style={{ paddingTop: 6 }}>길게 눌러 복사해 주세요</p></div>}
+        {invite && <div style={{ padding: '0 16px 14px' }}><AutoTextarea readOnly value={invite} /><p className="muted" style={{ paddingTop: 6 }}>길게 눌러 복사해 주세요</p></div>}
         <button className="rw" onClick={() => nav.push('install')}><span className="ic"><IcHouse size={20} /></span><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('about')}><span className="ic"><IcNote size={20} /></span><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
       </div>

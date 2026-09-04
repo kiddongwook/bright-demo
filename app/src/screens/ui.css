@@ -4,6 +4,10 @@
 .empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:var(--s3) 20px}
 .empty .ico{width:40px;height:40px;border-radius:50%;background:var(--rule);color:var(--ink3);display:grid;place-items:center;flex:0 0 auto}
 .empty .ico svg{width:20px;height:20px}
+/* 손으로 그은 결의 일러스트가 들어가는 큰 자리 — 56px 그림에 옅은 동그라미 한 겹.
+   오류 상태(.ico.warn)는 24px 아이콘 그대로라 작은 자리를 쓴다 */
+.empty .ico.big{width:88px;height:88px;margin-bottom:2px}
+.empty .ico svg.il{width:56px;height:56px}
 .empty .et{font-size:var(--t-body);font-weight:600;color:var(--ink);letter-spacing:-.01em}
 .empty .eh{font-size:var(--t-sub);color:var(--ink3);line-height:1.6;max-width:26em}
 .empty .btn.line{display:inline-flex;width:auto;min-height:44px;padding:0 18px;margin-top:4px}
@@ -165,3 +169,24 @@
 .tpl-refill button{font-size:13px;font-weight:600;color:var(--brand);text-decoration:underline;text-underline-offset:3px}
 .tpl-link{display:flex;align-items:center;gap:9px;padding:2px 20px 0;font-size:13.5px;color:var(--ink2);line-height:1.6}
 .tpl-link input{width:19px;height:19px;flex:0 0 auto;accent-color:var(--brand)}
+
+/* ── 학부모·학생 홈: 두 장 원칙 ── */
+/* 둘째 장 = 오늘 출결. 오늘 기록이 있으면 카드 전체가 의미색으로 물들고 큰 한 줄이 먼저 읽힌다.
+   기록이 없으면 색 없는 카드에 이번 주 스트립만 남는다. 색은 --att-* (원장이 강조색을 바꿔도 출결은 그대로). */
+.attcard .attbig{padding:16px 16px 2px;font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.35;color:var(--ink)}
+.attcard.p{background:var(--att-ok-soft)}
+.attcard.p .attbig{color:var(--att-ok-ink)}
+.attcard.l{background:var(--att-late-soft)}
+.attcard.l .attbig{color:var(--att-late-ink)}
+.attcard.a{background:var(--att-abs-soft)}
+.attcard.a .attbig{color:var(--att-abs-ink)}
+.attcard.m{background:var(--brand-soft)}
+.attcard.m .attbig{color:var(--brand)}
+
+/* 할 것 진행률 고리 — 라벨 줄 오른쪽 끝. 가운데 숫자까지 한 덩어리라 라벨 줄만 가운데 맞춤으로 바꾼다 */
+.lab.ringlab{align-items:center}
+.ring{position:relative;flex:0 0 auto;margin-left:8px;display:inline-grid;place-items:center}
+.ring svg{display:block}
+.ring .rt{fill:none;stroke:var(--rule);stroke-width:3}
+.ring .rv{fill:none;stroke:var(--brand);stroke-width:3;stroke-linecap:round;transition:stroke-dasharray .35s ease}
+.ring i{position:absolute;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:-.02em;color:var(--ink2);font-variant-numeric:tabular-nums}

@@ -36,6 +36,11 @@ const SERVER_MSG: [RegExp, string][] = [
   [/period_ym/, '달 형식이 맞지 않아요'],
   [/rate limit/, '잠시 뒤 다시 시도해 주세요'],
   [/duplicate key|23505/, '이미 있는 항목이에요'],
+  /* 반을 없앨 때 서버가 막는 두 자리 — 화면이 먼저 세어 보고 막지만, 그 사이에 다른 손이 넣었을 수 있다 */
+  [/notices_target_class_id_fkey|notice_targets_class_id_fkey/, '이 반을 대상으로 한 공지가 있어 없앨 수 없어요. 공지를 먼저 지워 주세요'],
+  [/enrollments_class_id_fkey/, '이 반에 다니는 학생이 있어 없앨 수 없어요. 학생을 다른 반으로 먼저 옮겨 주세요'],
+  /* 나머지 걸림은 두루뭉술하게 — 맨 뒤에 둬서 위의 또렷한 안내를 가리지 않는다 */
+  [/violates foreign key|23503/, '연결된 기록이 있어 지울 수 없어요. 먼저 정리해 주세요'],
 ];
 export function humanizeError(e: unknown): string {
   const m = e instanceof Error ? e.message : '';

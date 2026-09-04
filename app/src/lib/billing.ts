@@ -19,8 +19,8 @@ export type MyInvoice = {
 };
 
 export const DEFAULT_RULES: BillingRules = { billing_day: 1, due_day: 5, sibling_discount_pct: 0, bank_info: '' };
-/** 150000 → "150,000원" */
-export const fmtWon = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`;
+/* 금액 꼴은 lib/money.ts 한 곳에서 온다 — 여기서 다시 정의하면 두 벌이 갈라진다 */
+export { fmtWon, fmtComma, parseWon } from './money';
 /** 'YYYY-MM-DD' → "9/5" */
 export const fmtDue = (iso: string) => { const [, m, d] = iso.split('-'); return `${+m}/${+d}`; };
 /** 'YYYY-MM' → 9 */

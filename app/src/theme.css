@@ -149,6 +149,8 @@ body.has-cta .view{padding-bottom:calc(var(--tab-h) + var(--cta-h) + 28px + env(
   width:100%;min-height:48px;border:1px solid transparent;border-radius:var(--r-el);padding:0 14px;
   font-size:17px;font-weight:500;letter-spacing:.02em;background:var(--paper)}
 textarea.input{min-height:120px;padding:12px 14px;font-size:16px;font-weight:400;line-height:1.6;resize:none}
+/* 스스로 늘어나는 칸(AutoTextarea) — 높이는 자바스크립트가 정하니 최소 높이를 풀어 준다 */
+textarea.input.auto{min-height:0;overflow-y:hidden}
 select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
   background-image:linear-gradient(45deg,transparent 50%,var(--ink3) 50%),linear-gradient(135deg,var(--ink3) 50%,transparent 50%);
   background-position:calc(100% - 18px) 22px,calc(100% - 13px) 22px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
@@ -183,13 +185,15 @@ select.input{-webkit-appearance:none;appearance:none;padding-right:34px;
 .rw:last-child{border-bottom:0}
 .rw:active{background:var(--rule)}
 .rw .bd{flex:1;min-width:0;display:block}
-.rw .t{display:block;font-size:var(--t-body);font-weight:600;letter-spacing:-.02em}
-.rw .s{display:block;font-size:var(--t-sub);color:var(--ink3);margin-top:3px;line-height:1.45}
+/* 줄 규격 — 제목 16/600, 부제 14/400 --ink2. 토큰(--t-body 15 · --t-sub 13)은 본문·설명 글에 그대로 두고
+   목록 줄만 한 단계 크게 잡는다(B9). 여기서 벗어나는 줄은 없어야 한다 — 화면에서 크기를 덮어쓰지 않는다. */
+.rw .t{display:block;font-size:16px;font-weight:600;letter-spacing:-.02em;line-height:1.4}
+.rw .s{display:block;font-size:14px;font-weight:400;color:var(--ink2);margin-top:3px;line-height:1.45}
 .rw .go{color:var(--ink3);font-size:18px;flex:0 0 auto}
-.rw.soon .t{color:var(--ink2)}
+.rw.soon .t,.rw.soon .s{color:var(--ink3)}
 .rw .cb{width:24px;height:24px;border-radius:50%;border:1px solid var(--brand);flex:0 0 auto;display:grid;place-items:center;font-size:13px;background:var(--paper);color:var(--brand)}
 .rw .cb.on{background:var(--brand);color:#fff}
-.nm{width:34px;height:34px;border-radius:50%;background:var(--avatar);color:var(--avatar-ink);display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto}
+.nm{width:36px;height:36px;border-radius:50%;background:var(--avatar);color:var(--avatar-ink);display:grid;place-items:center;font-size:14px;font-weight:700;flex:0 0 auto}
 .tag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:4px 9px;border-radius:var(--r-tag);flex:0 0 auto;
   background:var(--tag);color:var(--tag-ink)}
 .tag.ok{color:var(--ok-ink);background:var(--ok-soft)}
@@ -267,8 +271,8 @@ body.wide .bottom-cta{padding-left:var(--s4);padding-right:var(--s4)}
 .todo .bd{flex:1;min-width:0}
 .todo .k{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:var(--ink3);margin-bottom:3px}
 .todo .k.exam{color:var(--danger)}
-.todo .t{font-size:15px;font-weight:600;letter-spacing:-.02em;line-height:1.4}
-.todo .s{font-size:12.5px;color:var(--ink3);margin-top:3px}
+.todo .t{font-size:16px;font-weight:600;letter-spacing:-.02em;line-height:1.4}
+.todo .s{font-size:14px;font-weight:400;color:var(--ink2);margin-top:3px}
 .todo.done .t{text-decoration:line-through;color:var(--ink3)}
 /* 카톡 미리보기 */
 .kchat{margin:0 20px;background:#B2C7DA;border-radius:14px;overflow:hidden}

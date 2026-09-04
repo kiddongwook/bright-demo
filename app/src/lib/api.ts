@@ -7,7 +7,9 @@ export type Cls = { id: string; name: string; schedule: Sched[] };
 export type Student = { id: string; name: string; classes: Cls[] };
 export type AttStatus = 'present' | 'late' | 'absent' | 'makeup';
 export type AttRow = { student_id: string; name: string; status: AttStatus | null };
-export type Notice = { id: string; title: string; body: string; target_class_id: string | null; created_at: string; reminded_at: string | null; photos: string[]; read: boolean; read_count: number };
+/** class_ids: 이 공지가 걸린 반들. 빈 배열이면 전체 공지.
+ *  (DB 는 notice_targets 줄이 있으면 그것, 없으면 옛 target_class_id 를 본다 — 0021) */
+export type Notice = { id: string; title: string; body: string; target_class_id: string | null; class_ids: string[]; created_at: string; reminded_at: string | null; photos: string[]; read: boolean; read_count: number };
 export type Reader = { user_id: string; name: string; read_at: string | null };
 export type Inquiry = { id: string; student_id: string | null; asked_by: string; asker_name: string; student_name: string | null; topic: string; body: string; answer: string | null; answered_at: string | null; created_at: string };
 export type Faq = { id: string; q: string; a: string; sort: number };
@@ -242,13 +244,27 @@ export async function weekAttendance(studentId: string, from: string, to: string
 }
 
 /* ── 공지 ── */
+/** 공지 한 줄의 대상 반 — 대상 줄이 있으면 그것, 없으면 옛 한 반, 그것도 없으면 전체(빈 배열) */
+const noticeClassIds = (r: any): string[] => {
+  const t = (r.notice_targets ?? []).map((x: any) => x.class_id).filter(Boolean) as string[];
+  return t.length ? t : (r.target_class_id ? [r.target_class_id] : []);
+};
+const NOTICE_COLS = 'id, title, body, target_class_id, created_at, reminded_at, photos, notice_targets(class_id)';
 export async function listNotices(): Promise<Notice[]> {
-  const rows = must(await supabase.from('notices').select('id, title, body, target_class_id, created_at, reminded_at, photos, notice_reads(user_id)').order('created_at', { ascending: false })) as any[];
-  return rows.map(r => ({ ...r, photos: (r.photos ?? []) as string[], read: (r.notice_reads ?? []).some((x: any) => x.user_id === ctx.userId), read_count: (r.notice_reads ?? []).length }));
+  const rows = must(await supabase.from('notices').select(NOTICE_COLS + ', notice_reads(user_id)').order('created_at', { ascending: false })) as any[];
+  return rows.map(r => ({ ...r, class_ids: noticeClassIds(r), photos: (r.photos ?? []) as string[], read: (r.notice_reads ?? []).some((x: any) => x.user_id === ctx.userId), read_count: (r.notice_reads ?? []).length }));
 }
-export async function createNotice(title: string, body: string, targetClassId: string | null, photos: string[] = []): Promise<Notice> {
-  const r = must(await supabase.from('notices').insert({ academy_id: ctx.academyId, author_id: ctx.userId, title, body, target_class_id: targetClassId, photos }).select('id, title, body, target_class_id, created_at, reminded_at, photos').single()) as any;
-  return { ...r, photos: (r.photos ?? []) as string[], read: false, read_count: 0 };
+/** classIds 를 주면 공지와 대상 반을 한 트랜잭션에 넣는 RPC(create_notice_v2)로 간다.
+ *  빈 배열이면 전체 공지. 안 주면 예전처럼 한 반(targetClassId)만 걸린다. */
+export async function createNotice(title: string, body: string, targetClassId: string | null, photos: string[] = [], classIds?: string[]): Promise<Notice> {
+  if (classIds) {
+    const id = must(await supabase.rpc('create_notice_v2', { p_title: title, p_body: body, p_class_ids: classIds })) as string;
+    if (photos.length) must(await supabase.from('notices').update({ photos }).eq('id', id));
+    const n = must(await supabase.from('notices').select(NOTICE_COLS).eq('id', id).single()) as any;
+    return { ...n, class_ids: noticeClassIds(n), photos: (n.photos ?? []) as string[], read: false, read_count: 0 };
+  }
+  const r = must(await supabase.from('notices').insert({ academy_id: ctx.academyId, author_id: ctx.userId, title, body, target_class_id: targetClassId, photos }).select(NOTICE_COLS).single()) as any;
+  return { ...r, class_ids: noticeClassIds(r), photos: (r.photos ?? []) as string[], read: false, read_count: 0 };
 }
 /** 사진은 공지를 만든 뒤에 올린다(경로에 notice_id 가 들어가서). 다 올린 뒤 경로를 붙인다. */
 export async function updateNoticePhotos(id: string, photos: string[]) {
@@ -423,11 +439,13 @@ export function countRecipients(studentNames: string[], rows: EntryRow[]): numbe
   }
   return phones.size;
 }
-/** 이 공지로 알림이 갈 사람 수. classId 가 null 이면 전체(활성 학생 모두).
+/** 이 공지로 알림이 갈 사람 수. null 이나 빈 배열이면 전체(활성 학생 모두), 반이 여럿이면 합집합.
  *  entryStatus 는 원장만 읽을 수 있어서 강사는 오류가 그대로 올라간다(화면이 문구를 감춘다). */
-export async function recipientCount(classId: string | null): Promise<number> {
-  const [students, rows] = await Promise.all([listStudents(classId ?? undefined), entryStatus()]);
-  return countRecipients(students.map(s => s.name), rows);
+export async function recipientCount(target: string | string[] | null): Promise<number> {
+  const ids = target === null ? null : (Array.isArray(target) ? (target.length ? target : null) : [target]);
+  const [students, rows] = await Promise.all([listStudents(), entryStatus()]);
+  const list = ids ? students.filter(s => s.classes.some((c: Cls) => ids.includes(c.id))) : students;
+  return countRecipients(list.map(s => s.name), rows);
 }
 
 /* ── 넣기 거들기 ── */

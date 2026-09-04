@@ -10,6 +10,7 @@ import { ErrorState } from '../../components/ErrorState';
 import { Counter } from '../../components/Counter';
 import { LIMITS } from '../../lib/limits';
 import '../ux.css';
+import { AutoTextarea } from '../../components/AutoTextarea';
 
 const when = (iso: string) => new Date(iso).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
@@ -83,7 +84,7 @@ export function Answer() {
       <div className="chips-row wrap">{templates.map(t => (
         <button key={t} onClick={() => insert(t)} title={t}>{t}</button>))}</div>
       <div style={{ padding: '10px 20px 0' }}>
-        <textarea className="input" value={val} maxLength={LIMITS.inquiry} onChange={e => setText(e.target.value)} placeholder="답변을 적어주세요" />
+        <AutoTextarea value={val} maxLength={LIMITS.inquiry} onChange={e => setText(e.target.value)} placeholder="답변을 적어주세요" />
         <Counter n={val.length} max={LIMITS.inquiry} />
       </div>
       <label className="chk-row"><input type="checkbox" checked={toFaq} onChange={e => setToFaq(e.target.checked)} />이 답을 자주 묻는 질문에도 올리기</label>
@@ -124,7 +125,7 @@ export function FaqManage() {
         <div className="lab">{edit.id ? '질문 고치기' : '새 질문'}</div>
         <div style={{ padding: '0 20px', display: 'grid', gap: 8 }}>
           <input className="input" value={edit.q} onChange={e => setEdit({ ...edit, q: e.target.value })} placeholder="질문 (예: 결석하면 보강이 되나요?)" />
-          <textarea className="input" style={{ minHeight: 90 }} value={edit.a} onChange={e => setEdit({ ...edit, a: e.target.value })} placeholder="답" />
+          <AutoTextarea value={edit.a} onChange={e => setEdit({ ...edit, a: e.target.value })} placeholder="답" />
         </div>
         <div className="btnrow"><button className="btn line" onClick={() => setEdit(null)}>취소</button><button className="btn" disabled={busy} onClick={save}>저장</button></div>
       </> : <div className="btnrow"><button className="btn line" onClick={() => setEdit({ id: null, q: '', a: '' })}>질문 추가</button></div>}

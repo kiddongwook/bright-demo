@@ -1,0 +1,24 @@
+/* 공지 — 대상 여러 반 칩, 읽음률 도넛.
+   색·간격은 theme.css 토큰만 쓴다. 있는 클래스(.chips-row, .box, .btnrow)는 ui.css 것을 그대로 쓰고
+   여기서는 모자란 것만 더한다. */
+
+/* ── 대상 칩 ── */
+/* 여러 반을 고르는 칩줄. "전체" 는 반 칩들과 한 줄에 있지만 뜻이 달라서 옆에 금을 하나 그어 나눈다. */
+.tgt-chips{align-items:center}
+.tgt-chips .all{position:relative;margin-right:9px}
+.tgt-chips .all::after{content:"";position:absolute;top:8px;bottom:8px;right:-5px;width:1px;background:var(--rule)}
+.tgt-pick{padding:6px 20px 0;font-size:13px;color:var(--ink2)}
+.tgt-pick b{color:var(--ink);font-weight:600}
+
+/* ── 읽음률 도넛 ── */
+.donut-card{display:flex;align-items:center;gap:16px;padding:16px 18px}
+.donut{flex:0 0 auto;display:block}
+.donut .tr{fill:none;stroke:var(--rule);stroke-width:8}
+.donut .ar{fill:none;stroke:var(--brand);stroke-width:8;transition:stroke-dasharray .45s ease}
+.donut .pc{fill:var(--ink);font-size:20px;font-weight:700;letter-spacing:-.02em}
+.dn-txt{min-width:0}
+.dn-txt .dn-big{margin:0;font-size:17px;line-height:1.35;color:var(--ink);font-weight:500}
+.dn-txt .dn-big b{font-weight:700}
+.dn-txt .dn-sub{margin:5px 0 0;font-size:13px;color:var(--ink2)}
+
+@media (prefers-reduced-motion: reduce){ .donut .ar{transition:none} }

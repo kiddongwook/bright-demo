@@ -1,0 +1,40 @@
+/* 반·시간표 화면 전용 — 요일 시간 묶음 편집기와 반 없애기 자리.
+   "요일마다 시간이 달라요" 체크는 켜기 전까지 시간이 하나뿐인 척했고, 켜면 요일 수만큼 칸이 쏟아졌다.
+   대신 원장이 말하는 대로 묶는다: "월·수·금 7시, 토 10시" = 묶음 두 개. */
+
+.sgrp{display:grid;gap:10px}
+
+/* 묶음 한 칸 — 요일 칩 한 줄 + 시작·끝 한 줄 */
+.sgrp .grp{display:grid;gap:8px;padding:10px 11px;background:var(--paper);border:1px solid var(--rule);border-radius:var(--r-card)}
+.sgrp .grp-dows{display:flex;align-items:center;gap:5px}
+
+/* 요일 칩 — 한 요일은 한 묶음에만 든다. 다른 묶음에서 누르면 이쪽에서 빠진다. */
+.sgrp .dows{display:flex;gap:4px;flex:1;min-width:0}
+.sgrp .dows button{flex:1 1 0;min-width:0;min-height:38px;padding:0;border:1px solid transparent;border-radius:var(--r-tag);
+  background:var(--ground);color:var(--ink2);font-size:13px;font-weight:700;letter-spacing:-.01em;
+  transition:transform .1s ease,background .12s ease,border-color .12s ease}
+.sgrp .dows button:active{transform:scale(.96)}
+.sgrp .dows button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+/* 다른 묶음이 이미 데려간 요일 — 눌리긴 하지만(누르면 이쪽으로 옮겨 온다) 흐릿하게 둔다 */
+.sgrp .dows button.taken{color:var(--ink3);opacity:.55}
+
+/* 묶음 지우기 — 묶음이 둘 이상일 때만 나온다 */
+.sgrp .grp-x{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--ground);color:var(--ink2);
+  font-size:13px;line-height:1;border:1px solid var(--rule)}
+.sgrp .grp-x:active{opacity:.7}
+
+.sgrp .grp-time{display:flex;align-items:center;gap:8px}
+.sgrp .grp-time .pickfield{flex:1;min-width:0}
+
+/* "+ 다른 시간 묶음" — 점선으로 "여기에 더 넣을 수 있다"를 말해 준다 */
+.sgrp .grp-add{min-height:40px;border:1px dashed var(--rule);border-radius:var(--r-card);background:transparent;
+  color:var(--ink2);font-size:13px;font-weight:600}
+.sgrp .grp-add:active{opacity:.7}
+
+/* 지금 고른 대로면 시간표가 어떻게 보이는지 — 저장 전에 한 줄로 */
+.sched-peek{font-size:13px;color:var(--ink3);letter-spacing:-.01em;padding:0}
+
+/* 반 없애기 — 다른 것과 섞이지 않게 줄을 하나 긋고 아래에 둔다 */
+.cls-danger{margin-top:2px;padding-top:12px;border-top:1px solid var(--rule)}
+.cls-danger .btn.line.danger{background:transparent;color:var(--danger);border:1px solid var(--danger);box-shadow:none}
+.cls-danger p{margin-top:8px;font-size:12.5px;color:var(--ink3);line-height:1.6}

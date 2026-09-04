@@ -4,6 +4,7 @@ import { academy } from '../../lib/api';
 import { reportError } from '../../lib/report';
 import { toast } from '../../lib/toast';
 import { useSession } from '../../auth/session';
+import { AutoTextarea } from '../../components/AutoTextarea';
 
 const ENV_KO: Record<Env, string> = { installed: '홈 화면 앱', kakao: '카톡 안 브라우저', ios: '아이폰 사파리', android: '안드로이드 브라우저', desktop: 'PC' };
 const ROLE: Record<string, string> = { director: '원장', teacher: '강사', parent: '학부모', student: '학생' };
@@ -53,7 +54,7 @@ export function About() {
         {rows.map(([t, s]) => <div key={t} className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">{t}</span><span className="s">{s}</span></span></div>)}
       </div>
       <div className="lab">문제 보내기</div>
-      <div style={{ padding: '0 20px' }}><textarea className="input" value={text} onChange={e => setText(e.target.value)} placeholder="어떤 화면에서 무엇이 안 되었는지 적어 주세요" /></div>
+      <div style={{ padding: '0 20px' }}><AutoTextarea value={text} onChange={e => setText(e.target.value)} placeholder="어떤 화면에서 무엇이 안 되었는지 적어 주세요" /></div>
       <div className="btnrow"><button className="btn" disabled={busy || !text.trim()} onClick={send}>보내기</button></div>
     </section>
   );

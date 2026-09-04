@@ -15,6 +15,8 @@ import { ErrorState } from '../../components/ErrorState';
 import { BottomCta } from '../../components/BottomCta';
 import { confirmSheet } from '../../components/Confirm';
 import { Counter } from '../../components/Counter';
+import { AutoTextarea } from '../../components/AutoTextarea';
+import { fmtComma, parseWon } from '../../lib/money';
 import { LIMITS } from '../../lib/limits';
 import '../ui.css';
 import '../billing.css';
@@ -27,7 +29,9 @@ const TAG: Record<InvStatus, [string, string]> = {
   paid: ['납부', 'ok'], partial: ['부분', 'warn'], issued: ['미납', 'danger'], overdue: ['연체', 'danger'], void: ['면제', 'muted'],
 };
 const METHODS: [PayMethod, string][] = [['transfer', '계좌이체'], ['cash', '현금'], ['card', '카드']];
-const won = (s: string) => Math.max(0, Math.round(Number(s.replace(/[^0-9]/g, '')) || 0));
+/* 금액 칸은 숫자만 담고(문자열), 화면에는 늘 세 자리 콤마로 보여 준다. "15만" 처럼 쳐도 parseWon 이 받는다. */
+const won = parseWon;
+const onMoney = (set: (v: string) => void) => (e: { target: { value: string } }) => set(String(parseWon(e.target.value) || ''));
 
 /* 앱 안 시트 — Confirm 과 같은 모양(.sheet)이되 내용이 길어 스크롤한다.
    .view 는 들어올 때 transform 으로 움직여 position:fixed·absolute 가 어긋난다 → BottomCta 처럼 .app 안에 붙인다. */
@@ -90,8 +94,7 @@ function InvoiceSheet({ inv, onClose, onDone }: { inv: Invoice; onClose: () => v
           <button key={m} className="btn line" disabled={busy} onClick={() => pay(m, rest)}>{label}</button>)}</div>
         <div className="blab">일부만 받았어요</div>
         <div className="brow">
-          <input className="input" inputMode="numeric" placeholder="금액" value={part}
-            onChange={e => setPart(e.target.value.replace(/[^0-9]/g, ''))} />
+          <input className="input" inputMode="numeric" placeholder="금액" value={fmtComma(part)} onChange={onMoney(setPart)} />
           <button className="btn sm line" disabled={busy || !part} onClick={() => pay('transfer', won(part))}>계좌이체로 기록</button>
         </div>
       </>}
@@ -99,9 +102,9 @@ function InvoiceSheet({ inv, onClose, onDone }: { inv: Invoice; onClose: () => v
       {edit
         ? <>
           <div className="blab">금액 수정<span className="r"> </span></div>
-          <div className="bfield"><label htmlFor="bi-a">수강료</label><input id="bi-a" className="input" inputMode="numeric" value={amt} onChange={e => setAmt(e.target.value.replace(/[^0-9]/g, ''))} /></div>
-          <div className="bfield"><label htmlFor="bi-d">할인</label><input id="bi-d" className="input" inputMode="numeric" value={dis} onChange={e => setDis(e.target.value.replace(/[^0-9]/g, ''))} /></div>
-          <div className="bfield"><label htmlFor="bi-t">교재비</label><input id="bi-t" className="input" inputMode="numeric" value={txt} onChange={e => setTxt(e.target.value.replace(/[^0-9]/g, ''))} /></div>
+          <div className="bfield"><label htmlFor="bi-a">수강료</label><input id="bi-a" className="input" inputMode="numeric" value={fmtComma(amt)} onChange={onMoney(setAmt)} /></div>
+          <div className="bfield"><label htmlFor="bi-d">할인</label><input id="bi-d" className="input" inputMode="numeric" placeholder="0" value={fmtComma(dis)} onChange={onMoney(setDis)} /></div>
+          <div className="bfield"><label htmlFor="bi-t">교재비</label><input id="bi-t" className="input" inputMode="numeric" placeholder="0" value={fmtComma(txt)} onChange={onMoney(setTxt)} /></div>
           <p className="muted">합계 {fmtWon(won(amt) - won(dis) + won(txt))}</p>
           <div className="btnrow">
             <button className="btn line" onClick={() => setEdit(false)}>취소</button>
@@ -110,7 +113,7 @@ function InvoiceSheet({ inv, onClose, onDone }: { inv: Invoice; onClose: () => v
         </>
         : <>
           <div className="blab">메모<span className="r"> </span></div>
-          <textarea className="input" style={{ minHeight: 72 }} value={memo} onChange={e => setMemo(e.target.value)} placeholder="예) 다음 주 월요일에 나머지" />
+          <AutoTextarea value={memo} onChange={e => setMemo(e.target.value)} placeholder="예) 다음 주 월요일에 나머지" />
           <div className="btnrow">
             <button className="btn line" disabled={busy} onClick={() => run(() => saveInvoiceMemo(inv.id, memo), '메모를 저장했어요', false)}>메모 저장</button>
             <button className="btn line" onClick={() => setEdit(true)}>금액 수정</button>
@@ -243,7 +246,7 @@ export function BillingSettings() {
   }
   async function removePlan(id: string, name: string) {
     if (!(await confirmSheet({ title: `요금제 「${name}」를 지울까요?`, body: '이미 만들어진 청구서 금액은 그대로예요.', okLabel: '지우기', danger: true }))) return;
-    try { await deleteFeePlan(id); await reloadPlans(); toast('지웠어요'); } catch (e) { errToast(e); }
+    try { await deleteFeePlan(id); await reloadPlans(); setEditing(null); toast('지웠어요'); } catch (e) { errToast(e); }
   }
 
   return (
@@ -255,12 +258,11 @@ export function BillingSettings() {
         : <div className="box">
           {plans.length
             ? plans.map(p => (
-              <div key={p.id} className="rw" style={{ cursor: 'default' }}>
+              // 줄 오른쪽은 금액 하나 — 누르면 편집 시트가 열리고, 지우기는 그 안에 있다 (줄 규격 B9)
+              <button key={p.id} className="rw" onClick={() => setEditing({ id: p.id, class_id: p.class_id, name: p.name, amount: String(p.amount) })}>
                 <span className="bd"><span className="t">{p.name}</span><span className="s">{className(p.class_id)}</span></span>
                 <span className="feeamt">{fmtWon(p.amount)}</span>
-                <button className="btn sm line" onClick={() => setEditing({ id: p.id, class_id: p.class_id, name: p.name, amount: String(p.amount) })}>편집</button>
-                <button className="btn sm line" onClick={() => removePlan(p.id, p.name)}>지우기</button>
-              </div>))
+              </button>))
             : <Empty icon="list" title="요금제가 아직 없어요" hint="반마다 다르면 반별로, 같으면 학원 공통 하나면 돼요." />}
         </div>}
       <div className="btnrow"><button className="btn line" onClick={() => setEditing({ class_id: null, name: '', amount: '' })}>요금제 추가</button></div>
@@ -281,15 +283,17 @@ export function BillingSettings() {
         </div>
         <div className="rw" style={{ cursor: 'default' }}>
           <span className="bd"><span className="t">형제 할인</span><span className="s">번호를 함께 쓰는 둘째부터 빼요</span></span>
-          <input className="input" style={{ width: 96, textAlign: 'right' }} inputMode="numeric" value={String(form.sibling_discount_pct)}
-            onChange={e => set('sibling_discount_pct', Math.min(100, won(e.target.value)))} aria-label="형제 할인 퍼센트" />
-          <span className="muted">%</span>
+          <span className="pctslot">
+            <input className="input" inputMode="numeric" value={String(form.sibling_discount_pct)}
+              onChange={e => set('sibling_discount_pct', Math.min(100, Math.max(0, Math.round(Number(e.target.value.replace(/[^0-9]/g, '')) || 0))))} aria-label="형제 할인 퍼센트" />
+            <span className="muted">%</span>
+          </span>
         </div>
       </div>
 
       <div className="lab">계좌 안내<span className="r">학부모 화면에 보여요</span></div>
       <div style={{ padding: '0 20px' }}>
-        <textarea className="input" style={{ minHeight: 84 }} value={form.bank_info} maxLength={LIMITS.bankInfo}
+        <AutoTextarea value={form.bank_info} maxLength={LIMITS.bankInfo}
           onChange={e => set('bank_info', e.target.value)} placeholder="예) 국민 123456-01-234567 영어의집" />
         <Counter n={(form.bank_info ?? '').length} max={LIMITS.bankInfo} />
         <p className="muted" style={{ paddingTop: 6 }}>미납 안내 알림에도 이 문구가 함께 갑니다.</p>
@@ -308,13 +312,14 @@ export function BillingSettings() {
         </select>
         <div className="blab">금액</div>
         <div className="brow">
-          <input className="input" inputMode="numeric" value={editing.amount} onChange={e => setEditing({ ...editing, amount: e.target.value.replace(/[^0-9]/g, '') })} placeholder="150000" />
+          <input className="input" inputMode="numeric" value={fmtComma(editing.amount)} onChange={e => setEditing({ ...editing, amount: String(parseWon(e.target.value) || '') })} placeholder="150,000" />
           <span className="muted">{fmtWon(won(editing.amount))}</span>
         </div>
         <div className="btnrow">
           <button className="btn line" onClick={() => setEditing(null)}>취소</button>
           <button className="btn" disabled={busy} onClick={savePlan}>저장</button>
         </div>
+        {editing.id && <div className="btnrow"><button className="btn line" disabled={busy} onClick={() => removePlan(editing.id!, editing.name)}>이 요금제 지우기</button></div>}
       </Sheet>}
     </section>
   );
