@@ -11,7 +11,7 @@ export type QuickDate = { label: string; date: string };
 /* 한 번만 본다 — 렌더마다 바뀌지 않는 브라우저 능력이다 */
 const CAN_PICK = typeof HTMLInputElement !== 'undefined' && 'showPicker' in HTMLInputElement.prototype;
 
-export function DateField({ value, onChange, min, quick, placeholder = '날짜 고르기', clearable = false, label }: {
+export function DateField({ value, onChange, min, quick, placeholder = '날짜 고르기', clearable = false, label, disabled = false }: {
   value: string;                       /* 'YYYY-MM-DD' 또는 '' */
   onChange: (v: string) => void;
   min?: string;
@@ -19,6 +19,7 @@ export function DateField({ value, onChange, min, quick, placeholder = '날짜 �
   placeholder?: string;
   clearable?: boolean;
   label?: string;                      /* 보조기기용 이름 */
+  disabled?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const name = label ?? placeholder;
@@ -29,16 +30,16 @@ export function DateField({ value, onChange, min, quick, placeholder = '날짜 �
   return (
     <div className="pickwrap">
       {CAN_PICK
-        ? <div className={'input pickfield' + (value ? '' : ' ph')}>
+        ? <div className={'input pickfield' + (value ? '' : ' ph') + (disabled ? ' off' : '')}>
             <span className="pf-v">{value ? fmtDateLong(value) : placeholder}</span>
-            <input ref={ref} className="pf-native" type="date" value={value} min={min} aria-label={name}
+            <input ref={ref} className="pf-native" type="date" value={value} min={min} aria-label={name} disabled={disabled}
               onClick={openPicker} onChange={e => onChange(e.target.value)} />
-            {clearable && value !== '' && (
+            {clearable && value !== '' && !disabled && (
               <button type="button" className="pf-clear" aria-label={`${name} 지우기`} onClick={() => onChange('')}>✕</button>)}
           </div>
-        : <input className="input" type="date" value={value} min={min} aria-label={name} onChange={e => onChange(e.target.value)} />}
+        : <input className="input" type="date" value={value} min={min} aria-label={name} disabled={disabled} onChange={e => onChange(e.target.value)} />}
       {chips.length > 0 && <div className="chips-row pf-quick">{chips.map(q => (
-        <button key={q.label} type="button" className={value === q.date ? 'on' : ''} onClick={() => onChange(q.date)}>{q.label}</button>))}</div>}
+        <button key={q.label} type="button" className={value === q.date ? 'on' : ''} disabled={disabled} onClick={() => onChange(q.date)}>{q.label}</button>))}</div>}
     </div>
   );
 }

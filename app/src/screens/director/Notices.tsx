@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { listNotices, listClasses, createNotice, updateNoticePhotos, noticeReaders, remindNotice, recipientCount, getContext, addCalendar, nextClassDaysFor, kstToday, kstDate, type Notice } from '../../lib/api';
+import { listNotices, listClasses, createNotice, updateNoticePhotos, noticeReaders, remindNotice, recipientCount, getContext, addCalendar, listCalendar, nextClassDaysFor, kstToday, kstDate, type Notice } from '../../lib/api';
 import { uploadNoticePhotos, MAX_PHOTOS } from '../../lib/files';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
@@ -112,20 +112,23 @@ export function NoticeNew() {
       setUploading(false);
     }
     /* 휴원·특강은 달력에도 넣는다 — 공지는 이미 올라갔으니 여기서 실패해도 끝은 낸다 */
-    let calErr = '';
+    let calErr = '', dupWhat = '';
     if (t?.calendar && linkCal) {
       const day = (fields['날짜'] ?? '').trim();
-      const what = t.calendar.kind === 'closed' ? '휴원일' : '특강 날짜';
+      const kind = t.calendar.kind;
+      const what = kind === 'closed' ? '휴원일' : '특강 날짜';
+      const why = (fields['사유'] ?? '').trim();
       try {
-        if (t.calendar.kind === 'closed') {
-          const why = (fields['사유'] ?? '').trim();
-          if (day) await addCalendar(day, 'closed', why || '휴원', target);
-          const mk = (fields['보강일'] ?? '').trim();
-          if (mk) await addCalendar(mk, 'makeup', why ? `보강 · ${why}` : '보강', target);
-        } else if (day) await addCalendar(day, 'special', title.trim(), target);
+        /* 같은 날·같은 갈래·같은 반이 이미 있으면 그대로 둔다 — 덮어쓰지 않고, 그렇다고 알린다 */
+        const has = !!day && (await listCalendar(day)).some(c => c.date === day && c.kind === kind && (c.class_id ?? null) === target);
+        if (has) dupWhat = what;
+        else if (day) await addCalendar(day, kind, kind === 'closed' ? (why || '휴원') : title.trim(), target);
+        const mk = kind === 'closed' ? (fields['보강일'] ?? '').trim() : '';
+        if (mk) await addCalendar(mk, 'makeup', why ? `보강 · ${why}` : '보강', target);
       } catch (e) { calErr = `공지는 올렸지만 ${what} 등록은 실패했어요: ${e instanceof Error ? e.message : '까닭을 알 수 없어요'}`; }
     }
-    toast(calErr || '공지를 올리고 알렸어요', calErr ? { ms: 5000 } : {});
+    const dupMsg = dupWhat && `공지를 올렸어요 · ${dupWhat}${dupWhat === '휴원일' ? '은' : '는'} 이미 있어서 그대로 뒀어요`;
+    toast(calErr || dupMsg || '공지를 올리고 알렸어요', (calErr || dupMsg) ? { ms: 5000 } : {});
     nav.back();
   }
   return (

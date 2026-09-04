@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { listAbsences, confirmMakeup, studentDetail, closedByClass, closedFor, nextClassDays, fmtMD, fmtMDW, DOW, dowOf, type Closed, type Cls } from '../../lib/api';
+import { listAbsences, confirmMakeup, studentDetail, closedByClass, closedFor, nextClassDays, fmtMD, fmtMDW, kstToday, DOW, dowOf, type Closed, type Cls } from '../../lib/api';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
+import { DateField } from '../../components/DateField';
+import { TimeField } from '../../components/TimeField';
 import { Skeleton } from '../../components/Skeleton';
 import { ErrorState } from '../../components/ErrorState';
 import '../ux.css';
@@ -73,10 +75,10 @@ export function Makeup() {
         : <div className="chips-row wrap"><button className={material ? 'on' : ''} onClick={() => setMaterial(true)}>자료로 대체</button></div>}
       <div className="lab">날짜와 시각</div>
       <div className="mk-manual">
-        <input type="date" className="input" value={date} aria-label="보강 날짜" disabled={material}
-          onChange={e => { setMaterial(false); setDate(e.target.value); }} />
-        <input type="time" className="input" value={time} aria-label="보강 시각" disabled={material}
-          onChange={e => { setMaterial(false); setTime(e.target.value); }} />
+        {/* 후보 칩은 바로 위에 있다 — 여기에 오늘·내일 칩을 또 두지 않는다 */}
+        <DateField value={date} onChange={v => { setMaterial(false); setDate(v); }} quick={[]} min={kstToday()}
+          label="보강 날짜" placeholder="보강 날짜" disabled={material} />
+        <TimeField value={time} onChange={v => { setMaterial(false); setTime(v); }} label="보강 시각" disabled={material} />
       </div>
       <div className="btnrow"><button className="btn line" onClick={nav.back}>나중에</button><button className="btn" disabled={busy} onClick={confirm}>확정하고 알리기</button></div>
     </section>

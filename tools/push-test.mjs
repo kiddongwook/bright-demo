@@ -128,8 +128,13 @@ try {
       const mineDebug = (b.debug ?? []).filter(d => phones.includes(d.to) && d.channel === 'push');
       const { data: after } = await admin.from('outbox').select('*').eq('academy_id', A).eq('channel', 'push');
       const stuck = after.filter(o => o.status !== 'sent');
-      // 비밀값이 없어 막힌 경우가 먼저다 — 이걸 "옛 함수" 로 잘못 읽으면 배포 담당이 헤맨다
-      if (stuck.some(o => (o.last_error ?? '').includes('vapid_not_configured'))) {
+      // 비밀값이 없어 막힌 것만 "건너뜀" 이다. 다른 last_error 는 진짜 실패라 FAIL 로 낸다 —
+      // 예전에는 이것까지 "옛 함수가 깔려 있다" 로 읽어 배포 담당이 엉뚱한 곳을 뒤졌다.
+      const vapid = stuck.filter(o => (o.last_error ?? '').includes('vapid_not_configured'));
+      const other = stuck.filter(o => !(o.last_error ?? '').includes('vapid_not_configured'));
+      if (other.length) {
+        ok(false, `push 발송 실패 ${other.length}건: ${other.map(o => o.last_error ?? `status=${o.status} (last_error 없음)`).join(' | ').slice(0, 400)}`);
+      } else if (vapid.length) {
         notes.push('발송 절 건너뜀 — PUSH_DRY_RUN=1 (또는 VAPID 비밀값) 이 없습니다: npx supabase secrets set PUSH_DRY_RUN=1');
       } else if (!mineDebug.length || mineDebug[0].title === undefined) {
         notes.push('발송 절 건너뜀 — 배포된 outbox-send 가 아직 채널 push 를 모릅니다. `npx supabase functions deploy outbox-send --no-verify-jwt` 뒤 다시 실행하세요.');

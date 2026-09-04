@@ -51,3 +51,7 @@ export function kstToday(): string {
 export function kstDate(offsetDays: number): string {
   return new Date(Date.now() + 9 * 3600e3 + offsetDays * 86400e3).toISOString().slice(0, 10);
 }
+
+/* 9월 4일 금요일 — 홈 제목용 */
+export const DOW_FULL = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+export function fmtDateFull(iso: string): string { const [, m, dd] = iso.split('-').map(Number); return `${m}월 ${dd}일 ${DOW_FULL[dowOf(iso)]}`; }

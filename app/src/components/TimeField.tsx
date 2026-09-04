@@ -14,11 +14,12 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const QUICK = ['16:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
 const hourLabel = (h: number) => `${h < 12 ? '오전' : '오후'} ${h % 12 === 0 ? 12 : h % 12}시`;
 
-export function TimeField({ value, onChange, step = 10, label = '시간' }: {
+export function TimeField({ value, onChange, step = 10, label = '시간', disabled = false }: {
   value: string;                       /* 'HH:MM' */
   onChange: (v: string) => void;
   step?: number;                       /* 분 눈금 — 기본 10분 */
   label?: string;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [h, setH] = useState(19);
@@ -85,7 +86,7 @@ export function TimeField({ value, onChange, step = 10, label = '시간' }: {
 
   return (
     <>
-      <button type="button" className={'input pickfield' + (value ? '' : ' ph')} onClick={openSheet}
+      <button type="button" className={'input pickfield' + (value ? '' : ' ph')} onClick={openSheet} disabled={disabled}
         aria-haspopup="dialog" aria-expanded={open} aria-label={`${label} — ${value ? fmtTime12(value) : '고르지 않음'}`}>
         <span className="pf-v">{value ? fmtTime12(value) : '시간 고르기'}</span>
       </button>

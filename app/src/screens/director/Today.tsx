@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { listClassesFull, listAbsences, closedByClass, closedFor, markMakeupAttended, todaySummary, nextClassDaysFor, type Closed, kstToday, dowOf, fmtMDW, fmtDT, type Cls, type AttStatus, type Absence } from '../../lib/api';
+import { fmtDateFull } from '../../lib/dates';
 import { todayAttendanceWithNotes, saveAttendanceWithNotes, pickInitialClass, kstNowMin, REASONS, type AttNoteRow } from '../../lib/attendance';
 import { atSheetEntry, openSheetEntry, setSheetClose } from '../../lib/nav-history';
 import { useNav } from '../../lib/nav';
@@ -157,7 +158,7 @@ export function Today() {
   return (
     <section className="view on">
       <div className="head">
-        <h1 className="hello">오늘 · {fmtMDW(today)}</h1>
+        <h1 className="hello">{fmtDateFull(today)}</h1>
         {noClasses ? <p className="lede">반을 만들면 여기에 <b>출석부</b>가 생겨요. 아래 첫걸음을 따라 해 보세요.</p> : <p className="lede">{cls ? `${cls.name} · ` : ''}{isClosed ? '오늘은 휴원일이에요. 그래도 기록할 수 있어요. 저장하면 ' : hasClassToday ? '이름을 누르면 바로 표시돼요. 저장하면 ' : '오늘은 이 반 수업이 없는 날이에요. 그래도 기록할 수 있어요. 저장하면 '}<b>결석·지각 학부모 알림까지 한 번에</b> 나갑니다.</p>}
       </div>
       <FirstSteps summary={sum} />

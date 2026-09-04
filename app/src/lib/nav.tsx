@@ -9,7 +9,7 @@ export const TABS: Record<Role, string[]> = {
   student: ['me', 'notice', 'more'],
 };
 export const TABMETA: Record<string, [string, 'list' | 'notice' | 'chat' | 'house']> = {
-  today: ['오늘', 'list'], child: ['우리 아이', 'list'], me: ['나', 'list'],
+  today: ['홈', 'list'], child: ['우리 아이', 'list'], me: ['나', 'list'],
   notice: ['공지', 'notice'], inbox: ['문의', 'chat'], ask: ['문의', 'chat'], more: ['더보기', 'house'],
 };
 /* 진입 화면 제목 [제목, 오른쪽] */

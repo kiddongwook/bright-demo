@@ -18,11 +18,17 @@ export const pushDryRun = () => Deno.env.get('PUSH_DRY_RUN') === '1';
  * 알림 문구. 제목은 학원 이름, 본문은 알림톡 템플릿의 첫 줄(앞머리 [학원] 은 뗀다 — 제목에 이미 있다).
  * 카톡에 안 가는 종류(원장 대상 문의 접수·결석 신청, 학생 본인 출결)는 심사받은 템플릿이 없으므로
  * 트리거가 params 에 실어 준 알림 제목(params['알림'])을 그대로 쓴다.
+ *
+ * 출결 사유("10분"·"병원")는 심사받은 ATTENDANCE 템플릿에 칸이 없어 카톡에는 못 싣는다.
+ * 푸시 문구는 우리가 쓰는 것이라 뒤에 ' · <사유>' 로 붙인다 — 앱 알림과 같은 내용이 보이게.
+ * 사유는 0016_attendance_reason_param.sql 이 채널 push 줄의 params['사유'] 에만 실어 준다.
  */
 export function pushPayload(o: { template_code: string; params: P | null; link_view: string | null; link_ref: string | null }): PushPayload {
   const p = (o.params ?? {}) as P;
   const t = TEMPLATES[o.template_code];
-  const body = t ? t.text(p).replace(/^\[[^\]]*\]\s*/, '') : (p['알림'] ?? '새 알림이 있어요.');
+  let body = t ? t.text(p).replace(/^\[[^\]]*\]\s*/, '') : (p['알림'] ?? '새 알림이 있어요.');
+  const why = (p['사유'] ?? '').trim();
+  if (o.template_code === 'ATTENDANCE' && why) body = body.trim() + ' · ' + why;
   return { title: p['학원'] ?? '학원', body: body.trim(), view: o.link_view ?? 'home', ref: o.link_ref ?? null };
 }
 
@@ -33,32 +39,38 @@ const b64urlToBytes = (s: string) => {
 };
 const bytesToB64url = (b: Uint8Array) => btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-// base64url 로 둔 VAPID 키(웹 푸시 표준 모양) → 라이브러리가 받는 JWK 한 쌍
-function vapidJwk(pub: string, priv: string): webpush.ExportedVapidKeys {
+// VAPID 키 → CryptoKeyPair. 개인키는 PKCS8(VAPID_PRIVATE_PKCS8, base64 DER) 을 우선 쓴다 — Deno 의 JWK 개인키 가져오기가
+// "Unexpected error decoding private key" 를 내는 경우가 있어서. 없으면 JWK(d 스칼라) 로 시도한다.
+const ALGO = { name: 'ECDSA', namedCurve: 'P-256' } as const;
+function b64ToBytes(s: string): Uint8Array { return Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)); }
+async function vapidKeyPair(pub: string, priv: string, pkcs8: string | undefined): Promise<CryptoKeyPair> {
   const raw = b64urlToBytes(pub);
   if (raw.length !== 65 || raw[0] !== 4) throw new Error('bad VAPID_PUBLIC_KEY (raw uncompressed P-256, 65 bytes)');
-  const x = bytesToB64url(raw.slice(1, 33)), y = bytesToB64url(raw.slice(33, 65));
-  return {
-    publicKey: { kty: 'EC', crv: 'P-256', x, y, ext: true, key_ops: ['verify'] },
-    privateKey: { kty: 'EC', crv: 'P-256', x, y, d: priv, ext: true, key_ops: ['sign'] },
-  };
+  const publicKey = await crypto.subtle.importKey('raw', raw, ALGO, true, ['verify']);
+  let privateKey: CryptoKey;
+  if (pkcs8) privateKey = await crypto.subtle.importKey('pkcs8', b64ToBytes(pkcs8), ALGO, false, ['sign']);
+  else {
+    const x = bytesToB64url(raw.slice(1, 33)), y = bytesToB64url(raw.slice(33, 65));
+    privateKey = await crypto.subtle.importKey('jwk', { kty: 'EC', crv: 'P-256', x, y, d: priv }, ALGO, false, ['sign']);
+  }
+  return { publicKey, privateKey };
 }
 
 let cached: Promise<webpush.ApplicationServer> | null = null;
 function appServer(): Promise<webpush.ApplicationServer> {
   if (!cached) {
     const pub = Deno.env.get('VAPID_PUBLIC_KEY'), priv = Deno.env.get('VAPID_PRIVATE_KEY'), sub = Deno.env.get('VAPID_SUBJECT');
-    if (!pub || !priv || !sub) throw new Error('vapid_not_configured');
+    const pkcs8 = Deno.env.get('VAPID_PRIVATE_PKCS8');
+    if (!pub || (!priv && !pkcs8) || !sub) throw new Error('vapid_not_configured');
     cached = (async () =>
       await webpush.ApplicationServer.new({
         contactInformation: sub,
-        vapidKeys: await webpush.importVapidKeys(vapidJwk(pub, priv)),
+        vapidKeys: await vapidKeyPair(pub, priv ?? '', pkcs8),
       }))().catch((e) => { cached = null; throw e; });
   }
   return cached;
 }
 
-/** 그 사용자의 모든 구독에 보낸다. 결과는 구독 하나마다 — 404/410 은 gone(구독을 지운다). */
 export async function sendPush(subs: PushSub[], payload: PushPayload): Promise<PushOne[]> {
   if (pushDryRun()) return subs.map((s) => ({ id: s.id, ok: true, gone: false }));
   const server = await appServer();

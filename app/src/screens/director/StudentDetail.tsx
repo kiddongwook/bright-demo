@@ -78,11 +78,12 @@ export function MonthCal({ sid }: { sid: string }) {
 }
 
 function Timeline({ sid }: { sid: string }) {
+  const nav = useNav();
   const { data } = useLoad(() => timeline(sid), [sid]);
   return (
     <>
       <div className="lab first">기록<span className="r">출결 · 결석 · 문의 · 메모</span></div>
-      {data && (data.length ? <div className="list">{data.map(t => { const Icon = KIND_IC[t.kind]; return <div key={t.kind + t.ref + t.ts} className="tl"><span className={'k ' + t.kind}><Icon size={14} style={{ verticalAlign: -2, marginRight: 3 }} />{KIND[t.kind]}</span><span className="bd"><span className="t">{t.title}</span>{t.body && <span className="s">{t.body}</span>}<span className="d">{when(t.ts)}</span></span></div>; })}</div>
+      {data && (data.length ? <div className="list">{data.map(t => { const Icon = KIND_IC[t.kind]; return <div key={t.kind + t.ref + t.ts} className="tl"><span className={'k ' + t.kind}><Icon size={14} style={{ verticalAlign: -2, marginRight: 3 }} />{KIND[t.kind]}</span><span className="bd"><span className="t">{t.title}</span>{t.body && <span className="s">{t.body}</span>}<span className="d">{when(t.ts)}</span></span>{t.kind === 'inquiry' && <button className="btn sm line" onClick={() => nav.push('answer', { id: t.ref })}>답변 보기</button>}</div>; })}</div>
         : <p className="muted" style={{ padding: '0 20px' }}>아직 기록이 없어요. 출석은 지각·결석·보강만 여기에 남아요.</p>)}
     </>
   );
