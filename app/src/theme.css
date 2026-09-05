@@ -144,6 +144,7 @@ body.has-cta .view{padding-bottom:calc(var(--tab-h) + var(--cta-h) + 28px + env(
 /* ── 게이트 ── */
 .gate{padding:34px 24px 0;display:flex;flex-direction:column;align-items:center;text-align:center}
 .gate-logo{width:200px;height:auto;margin:22px 0 26px}
+.gate-logo.square{width:120px;height:120px;border-radius:27px;object-fit:cover;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06)}   /* 네모 로고는 앱 아이콘처럼 — 어두운 화면에서도 흰 판이 의도로 보이게 */
 .gate h1{font-size:calc(20px * var(--fs));font-weight:600;letter-spacing:-.02em;line-height:1.4}
 .gate p{font-size:calc(13.5px * var(--fs));color:var(--ink2);line-height:1.7;margin-top:8px}
 .field{width:100%;text-align:left;margin-top:26px}

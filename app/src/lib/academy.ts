@@ -18,7 +18,7 @@ export function currentSlug(): string {
   return DEFAULT_SLUG;
 }
 
-export type PublicAcademy = { name: string; brand_color: string; logo_path: string | null };
+export type PublicAcademy = { name: string; brand_color: string; logo_path: string | null; wordmark_path: string | null; wordmark_dark_path: string | null };
 export async function publicAcademy(slug: string): Promise<PublicAcademy | null> {
   const { data, error } = await supabase.rpc('public_academy', { p_slug: slug });
   if (error) return null;

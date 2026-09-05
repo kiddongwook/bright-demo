@@ -1,7 +1,6 @@
 import { useState, type CSSProperties } from 'react';
-import { asset } from '../lib/asset';
+import { GateLogo } from '../components/GateLogo';
 import { useAcademyPublic } from '../lib/academy';
-import { logoUrl } from '../lib/logo';
 import { useDark } from '../lib/theme';
 import { acceptTerms, LEGAL_URLS } from '../lib/legal';
 import { errToast } from '../lib/toast';
@@ -29,7 +28,7 @@ export function Consent({ onDone }: { onDone: () => void }) {
   return (
     <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
-        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={name} />
+        <GateLogo academy={academy} dark={dark} alt={name} />
         <h1>시작하기 전에</h1>
         <p>이용약관과 개인정보 처리방침을 확인하고 동의해 주세요. 한 번만 물어요 — 문서가 바뀌면 다시 안내해요.</p>
         <div style={{ width: '100%', marginTop: 22 }}>

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { asset } from '../lib/asset';
+import { GateLogo } from '../components/GateLogo';
 import { inviteLogin } from '../lib/api';
 import { useSession } from '../auth/session';
 import { currentSlug, useAcademyPublic } from '../lib/academy';
 import { LOCKED } from './Otp';
-import { logoUrl } from '../lib/logo';
 import { useDark } from '../lib/theme';
 
 /* 개인 초대 링크(?i=<토큰>)로 들어온 사람: 토큰을 확인하는 동안 보이는 화면.
@@ -39,7 +38,7 @@ export function InviteEntry({ token, onDone, onGate }: { token: string; onDone: 
     return (
       <section className="view on" style={{ background: 'var(--ground)' }}>
         <div className="gate">
-          <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={name} />
+          <GateLogo academy={academy} dark={dark} alt={name} />
           <h1>이미 들어와 있어요</h1>
           <p>이 기기는 <b>{who}</b>로 들어와 있어요. 초대 링크로 들어가면 지금 계정에서 나가고, 링크는 한 번 쓰면 끝나요.</p>
           <div className="btnrow" style={{ padding: '20px 0 0', width: '100%' }}><button className="btn" onClick={onDone}>지금 계정 그대로</button></div>
@@ -51,7 +50,7 @@ export function InviteEntry({ token, onDone, onGate }: { token: string; onDone: 
   return (
     <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
-        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={name} />
+        <GateLogo academy={academy} dark={dark} alt={name} />
         {err
           ? <><h1>들어가지 못했어요</h1><p>{err}</p>
             <div className="btnrow" style={{ padding: '20px 0 0', width: '100%' }}><button className="btn" onClick={onGate}>전화번호로 들어가기</button></div></>

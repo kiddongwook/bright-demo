@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
+import { GateLogo } from '../components/GateLogo';
 import { asset } from '../lib/asset';
 import { formatPhone, isValidMobile, normalizePhone } from '../lib/phone';
 import { fn } from '../lib/supabase';
 import { useAcademyPublic } from '../lib/academy';
-import { logoUrl } from '../lib/logo';
 import { useDark, applyBrand } from '../lib/theme';
 import { LOCKED } from './Otp';
 export function Gate({ onSent }: { onSent: (phone: string) => void }) {
@@ -45,7 +45,7 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   return (
     <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
-        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={name} />
+        <GateLogo academy={academy} dark={dark} alt={name} />
         <h1>문을 열어드릴게요</h1>
         <p>{name} 학생·학부모로 등록된<br />전화번호를 알려주세요.</p>
         <div className="field"><label>전화번호</label>

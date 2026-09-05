@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { asset } from '../lib/asset';
+import { GateLogo } from '../components/GateLogo';
 import { fn } from '../lib/supabase';
 import { useSession, type Membership } from '../auth/session';
 import { formatPhone } from '../lib/phone';
 import { useAcademyPublic } from '../lib/academy';
-import { logoUrl } from '../lib/logo';
 import { useDark } from '../lib/theme';
 /** 잠긴 학원의 사람에게 보이는 한 줄 — Otp·InviteEntry 가 같은 말을 쓴다. */
 export const LOCKED = '이 학원은 지금 이용이 정지되어 있어요. 원장님께 문의해 주세요.';
@@ -33,7 +32,7 @@ export function Otp({ phone, onBack }: { phone: string; onBack: () => void }) {
   return (
     <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
-        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={name} />
+        <GateLogo academy={academy} dark={dark} alt={name} />
         <h1>인증번호를 보냈어요</h1>
         <p>{formatPhone(phone)} 으로 6자리를 보냈습니다.</p>
         <div className="field"><label>인증번호</label>
