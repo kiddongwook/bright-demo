@@ -9,7 +9,7 @@ export type AttStatus = 'present' | 'late' | 'absent' | 'makeup';
 export type AttRow = { student_id: string; name: string; status: AttStatus | null };
 /** class_ids: 이 공지가 걸린 반들. 빈 배열이면 전체 공지.
  *  (DB 는 notice_targets 줄이 있으면 그것, 없으면 옛 target_class_id 를 본다 — 0021) */
-export type Notice = { id: string; title: string; body: string; target_class_id: string | null; class_ids: string[]; created_at: string; reminded_at: string | null; photos: string[]; read: boolean; read_count: number };
+export type Notice = { id: string; title: string; body: string; target_class_id: string | null; class_ids: string[]; created_at: string; reminded_at: string | null; publish_at: string; fanned_at: string | null; photos: string[]; read: boolean; read_count: number };
 export type Reader = { user_id: string; name: string; read_at: string | null };
 export type Inquiry = { id: string; student_id: string | null; asked_by: string; asker_name: string; student_name: string | null; topic: string; body: string; answer: string | null; answered_at: string | null; created_at: string };
 export type Faq = { id: string; q: string; a: string; sort: number };
@@ -259,7 +259,7 @@ const noticeClassIds = (r: any): string[] => {
   const t = (r.notice_targets ?? []).map((x: any) => x.class_id).filter(Boolean) as string[];
   return t.length ? t : (r.target_class_id ? [r.target_class_id] : []);
 };
-const NOTICE_COLS = 'id, title, body, target_class_id, created_at, reminded_at, photos, notice_targets(class_id)';
+const NOTICE_COLS = 'id, title, body, target_class_id, created_at, reminded_at, photos, publish_at, fanned_at, notice_targets(class_id)';
 export async function listNotices(): Promise<Notice[]> {
   const rows = must(await supabase.from('notices').select(NOTICE_COLS + ', notice_reads(user_id)').order('created_at', { ascending: false })) as any[];
   return rows.map(r => ({ ...r, class_ids: noticeClassIds(r), photos: (r.photos ?? []) as string[], read: (r.notice_reads ?? []).some((x: any) => x.user_id === ctx.userId), read_count: (r.notice_reads ?? []).length }));

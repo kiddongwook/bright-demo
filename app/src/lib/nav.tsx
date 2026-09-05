@@ -105,5 +105,6 @@ export function linkToNav(link: string | null, role: Role): { view: string; para
   if (v === 'today') return { view: role === 'parent' ? 'child' : 'today', params: {} };
   if (v === 'child') return { view: 'child', params: {} };
   if (v === 'me') return { view: 'me', params: {} };
+  if (v === 'billing') return { view: role === 'parent' || role === 'student' ? 'child' : 'billing', params: {} };   // 0028 자동 발행·안내 → 원장 수강료 화면
   return null;
 }

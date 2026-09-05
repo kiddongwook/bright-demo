@@ -129,6 +129,16 @@ export function Prefs() {
       </div>
       <p className="muted" style={{ padding: '10px 20px 0' }}>체크를 지우면 그 카톡만 안 보내요. 앱을 열면 그대로 다 보여요.</p>
       </>}
+      {/* 주간 요약(0029) — 학부모만. 학원이 정한 요일·시(기본 금 18:00)에 아이의 이번 주 출결·숙제 한 줄. 기본 켬(prefs.weekly !== false). */}
+      {active?.role === 'parent' && <>
+      <div className="lab">주간 요약</div>
+      <div className="box">
+        <button className="rw" onClick={() => { if (prefs.weekly === false) pop.fire('weekly'); toggle('weekly', true); }} aria-pressed={prefs.weekly !== false}>
+          <span className="bd"><span className="t">주간 요약 받기</span><span className="s">매주 한 번(보통 금요일 저녁) 이번 주 출결·숙제·다음 수업 한 줄</span></span>
+          <span className={'cb' + (prefs.weekly !== false ? ' on' : '') + pop.cls('weekly')} onAnimationEnd={pop.end}>{prefs.weekly !== false ? '✓' : ''}</span>
+        </button>
+      </div>
+      </>}
       <div className="lab">화면</div>
       <div className="box">
         <div className="rw stack">

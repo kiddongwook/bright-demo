@@ -28,6 +28,9 @@ export function pushPayload(o: { template_code: string; params: P | null; link_v
   const p = clampParams(o.params as P | null);
   const academy = p['학원'] ?? '학원';
   let body = TEMPLATES[o.template_code] ? renderTemplate(o.template_code, p) : (p['알림'] ?? '새 알림이 있어요.');
+  // 주간 요약(0029)은 카톡 템플릿이 없는 푸시 전용 — 제목("이번 주 지훈 요약")만 보내면 숫자가 빠진다.
+  // 트리거가 params['요약'] 에 실어 준 본문을 제목 뒤에 붙인다(자녀 둘인 학부모가 누구 것인지 알 수 있게 제목을 남긴다).
+  if (o.template_code === 'WEEKLY') body = [p['알림'], p['요약']].filter(Boolean).join(' · ') || body;
   // 앞머리 [학원] 은 뗀다 — 제목에 이미 있다. 학원 이름에 ']' 가 있어도 끊기지 않게 이름으로 먼저 맞춰 본다(INP-04).
   const head = `[${academy}] `;
   body = body.startsWith(head) ? body.slice(head.length) : body.replace(/^\[[^\]]*\]\s*/, '');

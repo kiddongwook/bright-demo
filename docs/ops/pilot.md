@@ -189,6 +189,7 @@ select status, channel, count(*) from outbox group by 1,2;
 | `tools/vapid-keygen.mjs` | 웹 푸시 서명 키(VAPID) 한 쌍 생성. 값은 화면에 한 번만 — `docs/ops/outbox.md` "웹 푸시" 참고 |
 | `tools/push-test.mjs` | 알림 → 채널 push 매핑·구독 RLS·(배포 뒤) 발송 확인 |
 | `tools/invite-test.mjs` | `create_invite` RPC + `invite-login` 확인 |
+| `tools/billing-auto-test.mjs` | 수강료 자동 발행·자동 안내(0028) — 같은 날 두 번 tick·퇴원생 제외·20시간 dedupe·내부 함수 권한 |
 
 ## 안 들어온 사람 다시 부르기
 
@@ -200,6 +201,16 @@ select status, channel, count(*) from outbox group by 1,2;
 - `otp-verify` 는 `SMS_PROVIDER` 가 `console`(기본) 일 때만, Edge 비밀값 `DEV_OTP_PHONES`(쉼표 구분 번호) 에 적힌 번호에 대해 `DEV_OTP_CODE` 를 인증번호로 받아 준다. 대행사를 켜면(`SMS_PROVIDER=http`) 자동으로 꺼진다.
 - 설정: `npx supabase secrets set DEV_OTP_CODE=<6자리> DEV_OTP_PHONES=<번호>` → `npx supabase functions deploy otp-verify --no-verify-jwt`. 끄기: `npx supabase secrets unset DEV_OTP_CODE DEV_OTP_PHONES`.
 - 코드 값은 저장소·문서에 적지 않는다. 현재는 원장 번호 1개만 등록.
+
+## 수강료 자동 발행·자동 안내 (0028)
+
+원장 화면 **수강료 설정 › 자동** 묶음에서 켠다. 둘 다 기본은 꺼짐이고, 켜고 끄는 즉시 저장된다.
+
+- **청구서 자동 발행**: 매일 아침 9시(KST)에 크론 `billing-tick` 이 돌며, 오늘이 그 학원의 **청구일**(같은 화면의 청구 규칙)이면 이번 달 청구서를 활성 학생마다 한 장씩 만든다. 퇴원생은 빠지고, 이미 있는 학생×달은 건너뛴다(같은 날 두 번 돌아도 두 장이 안 된다). 만들어지면 원장에게 종 알림 "[학원] 9월 청구서 N건 자동 발행" 이 가고, 학부모 수강료 카드에는 그 자리에서 보인다. 요금제가 없으면 0원 청구서가 만들어지니 **요금제를 먼저** 넣어 둔다.
+- **미납 자동 안내**: 납기 + N일(1~14, 기본 3)이 지났는데 남은 금액이 있는 청구서(이번 달·지난달)가 있으면 그 학부모에게 수동 "미납 안내 보내기" 와 같은 알림(남은 금액·납기·계좌 안내)이 간다. 자동은 마지막 안내 뒤 6일이 지난 청구서가 있을 때만 그 달을 넘기므로 **첫 안내 뒤 낼 때까지 일주일에 한 번** 간다. 원장이 그 주에 이미 수동으로 보냈으면 자동은 건너뛴다. 보낸 날은 원장에게 "미납 N명에게 안내를 보냈어요" 가 온다.
+- 수동 버튼(청구서 만들기·미납 안내 보내기)은 그대로 살아 있다. 자동이 켜져 있으면 빈 화면에 "자동 발행이 켜져 있어요 · 매월 N일에 저절로 만들어져요" 가 덧붙는다.
+- 한 학원에서 실패해도(예: 규칙 행이 이상함) 다른 학원은 계속 돈다 — Postgres 로그에 `billing_tick …` warning 만 남는다. 확인: `select * from cron.job where jobname = 'billing-tick'`, 강제 실행은 service role 로 `select * from billing_tick()`.
+- 테스트: `cd tools && node --env-file=../.env.local billing-auto-test.mjs` (접두어 `auto-`).
 
 ## 0018 뒤로 달라진 것 (2026-09-04, 레드팀 뒷수습)
 

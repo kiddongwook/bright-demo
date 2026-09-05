@@ -21,4 +21,21 @@
 .dn-txt .dn-big b{font-weight:700}
 .dn-txt .dn-sub{margin:5px 0 0;font-size:calc(13px * var(--fs));color:var(--ink2)}
 
+/* ── 예약 발송 ── */
+/* 쓰기 화면: "지금 / 예약" 아래 날짜·시간 칸. 틀 채우기(.tpl-fields)와 같은 간격 */
+.sched-fields{display:flex;flex-direction:column;gap:12px;padding:12px 20px 0}
+.sched-fields .tf-lab{display:block;font-size:calc(12px * var(--fs));font-weight:600;color:var(--ink2);margin-bottom:6px}
+.sched-note{margin:0;font-size:calc(13px * var(--fs));color:var(--ink2);line-height:1.6}
+.sched-note b{color:var(--ink);font-weight:700}
+/* 목록: 예약 공지 줄 — 배지는 공용 .tag, 줄 자체는 조금 흐리게 */
+.post.sched .pt{color:var(--ink2)}
+.post.sched .pm .tag{margin-left:2px}
+/* 시간 바꾸기 — 그 줄 아래에 펼쳐지는 판 */
+.sched-edit{display:flex;flex-direction:column;gap:10px;padding:12px 20px 16px;border-bottom:1px solid var(--rule);background:var(--ground)}
+.sched-edit .tf-lab{font-size:calc(12px * var(--fs));font-weight:600;color:var(--ink2)}
+.sched-edit .sa{display:flex;gap:9px;margin-top:4px}
+.sched-edit .sa .btn{flex:1}
+/* 행동 시트 — 단추를 세로로 (확인 시트의 .sa 는 가로) */
+.sheet.acts .sa{flex-direction:column;gap:8px}
+
 @media (prefers-reduced-motion: reduce){ .donut .ar{transition:none} }

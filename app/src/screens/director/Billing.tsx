@@ -6,7 +6,9 @@ import {
   recordPayment, refreshOverdue, remindUnpaid, saveBillingRules, saveFeePlan, saveInvoiceMemo, deleteFeePlan,
   setInvoiceAmount, voidInvoice, type BillingRules, type Invoice, type InvStatus, type PayMethod,
 } from '../../lib/billing';
+import { DEFAULT_AUTO, REMIND_DAYS_MAX, REMIND_DAYS_MIN, describeAuto, getAutoRules, setAutoRules, type AutoRules } from '../../lib/billingAuto';
 import { useNav } from '../../lib/nav';
+import { usePop } from '../../lib/pop';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
@@ -138,6 +140,11 @@ export function Billing() {
     await refreshOverdue().catch(() => {});   // 납기 지난 청구서를 '연체' 로 — 못 돌아도 목록은 보여 준다
     return listInvoices(ym);
   }, [ym]);
+  // 자동 발행이 켜져 있으면 빈 화면에 한 줄 덧붙인다 — 못 읽어도 목록은 그대로 (0028)
+  const { data: autoInfo } = useLoad(async () => {
+    const [a, r] = await Promise.all([getAutoRules().catch(() => DEFAULT_AUTO), getBillingRules().catch(() => DEFAULT_RULES)]);
+    return { auto_issue: a.auto_issue, billing_day: r.billing_day };
+  });
   const g = monthGrid(ym);
   const list = data ?? [];
   const live = list.filter(i => i.status !== 'void');          // 면제는 청구·미납 셈에서 뺀다
@@ -183,9 +190,13 @@ export function Billing() {
       {!data
         ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={4} />)
         : !list.length
-          ? <div className="box"><Empty icon="list" title={`${monthOf(ym)}월 청구서가 아직 없어요`}
+          ? <>
+            <div className="box"><Empty icon="list" title={`${monthOf(ym)}월 청구서가 아직 없어요`}
               hint="활성 학생마다 한 장씩 만들어요. 금액은 요금제에서 오고, 형제 할인은 자동으로 붙어요."
               action={{ label: busy ? '만드는 중…' : '이번 달 청구서 만들기', onClick: doIssue }} /></div>
+            {autoInfo?.auto_issue && <p className="muted" style={{ padding: '10px 20px 0', textAlign: 'center' }}>
+              자동 발행이 켜져 있어요 · 매월 {autoInfo.billing_day}일에 저절로 만들어져요</p>}
+          </>
           : <>
             <div className="summary">
               <div className="st"><span className="k">청구</span><span className="v">{live.length}명<em>{fmtWon(total)}</em></span></div>
@@ -231,6 +242,20 @@ export function BillingSettings() {
   const dirty = !!rules && JSON.stringify(form) !== JSON.stringify(rules);
   const set = <K extends keyof BillingRules>(k: K, v: BillingRules[K]) => setForm(f => ({ ...f, [k]: v }));
   const className = (id: string | null) => id ? (classes?.find(c => c.id === id)?.name ?? '없어진 반') : '학원 공통';
+
+  // 자동 발행·자동 안내 — 누르는 즉시 저장 (0028). 실패하면 되돌린다.
+  const { data: auto, err: autoErr, reload: reloadAuto, setData: setAuto } = useLoad(getAutoRules);
+  const [autoBusy, setAutoBusy] = useState(false);
+  const pop = usePop();
+  async function changeAuto(next: AutoRules, msg: string) {
+    if (autoBusy || !auto) return;
+    const prev = auto;
+    setAutoBusy(true); setAuto(next);
+    try { await setAutoRules(next); toast(msg); }
+    catch (e) { setAuto(prev); errToast(e); }
+    finally { setAutoBusy(false); }
+  }
+  const dayNow = rules?.billing_day ?? form.billing_day;
 
   async function save() {
     setBusy(true);
@@ -290,6 +315,33 @@ export function BillingSettings() {
           </span>
         </div>
       </div>
+
+      <div className="lab">자동<span className="r">{auto ? describeAuto(auto, dayNow) : ''}</span></div>
+      {!auto
+        ? (autoErr ? <ErrorState onRetry={reloadAuto} /> : <Skeleton rows={2} />)
+        : <div className="box">
+          <button className="rw" aria-pressed={auto.auto_issue} disabled={autoBusy}
+            onClick={() => { if (!auto.auto_issue) pop.fire('auto_issue'); changeAuto({ ...auto, auto_issue: !auto.auto_issue }, auto.auto_issue ? '자동 발행을 껐어요' : `매월 ${dayNow}일에 청구서가 저절로 만들어져요`); }}>
+            <span className="bd"><span className="t">청구서 자동 발행</span>
+              <span className="s">매월 {dayNow}일 아침 9시에 이번 달 청구서를 만들어요 · 발행하면 학부모 수강료 카드에 바로 보여요</span></span>
+            <span className={'cb' + (auto.auto_issue ? ' on' : '') + pop.cls('auto_issue')} onAnimationEnd={pop.end}>{auto.auto_issue ? '✓' : ''}</span>
+          </button>
+          <button className="rw" aria-pressed={auto.auto_remind} disabled={autoBusy}
+            onClick={() => { if (!auto.auto_remind) pop.fire('auto_remind'); changeAuto({ ...auto, auto_remind: !auto.auto_remind }, auto.auto_remind ? '자동 안내를 껐어요' : `납기 ${auto.auto_remind_after_days}일 뒤에도 안 낸 집에 안내가 가요`); }}>
+            <span className="bd"><span className="t">미납 자동 안내</span>
+              <span className="s">납기가 지나도 안 낸 학부모에게 남은 금액·계좌 안내를 아침 9시에 보내요 · 낼 때까지 일주일에 한 번</span></span>
+            <span className={'cb' + (auto.auto_remind ? ' on' : '') + pop.cls('auto_remind')} onAnimationEnd={pop.end}>{auto.auto_remind ? '✓' : ''}</span>
+          </button>
+          {auto.auto_remind && (
+            <div className="rw" style={{ cursor: 'default' }}>
+              <span className="bd"><span className="t">납기 며칠 뒤부터</span><span className="s">납기일에서 이만큼 지나면 보내기 시작해요</span></span>
+              <select className="input" style={{ width: 96 }} value={auto.auto_remind_after_days} disabled={autoBusy} aria-label="납기 며칠 뒤"
+                onChange={e => changeAuto({ ...auto, auto_remind_after_days: +e.target.value }, `납기 ${+e.target.value}일 뒤부터 안내해요`)}>
+                {Array.from({ length: REMIND_DAYS_MAX - REMIND_DAYS_MIN + 1 }, (_, i) => <option key={i} value={REMIND_DAYS_MIN + i}>{REMIND_DAYS_MIN + i}일 뒤</option>)}
+              </select>
+            </div>
+          )}
+        </div>}
 
       <div className="lab">계좌 안내<span className="r">학부모 화면에 보여요</span></div>
       <div style={{ padding: '0 20px' }}>

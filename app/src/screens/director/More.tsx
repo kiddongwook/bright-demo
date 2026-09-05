@@ -16,6 +16,7 @@ import {
   IcList, IcHouse, IcNote, IcReceipt, IcSparkle, IcMail, IcTrendingUp, IcBell,
 } from '../../components/icons';
 import { AutoTextarea } from '../../components/AutoTextarea';
+import { getWeeklySettings, setWeeklySettings, describeWeekly, weeklyToast, WEEKLY_DOW_ORDER, DOW_LABELS, WEEKLY_HOUR_MIN, WEEKLY_HOUR_MAX, type WeeklySettings } from '../../lib/weekly';
 
 export function More() {
   const nav = useNav(); const { logout, active, session, isOperator, enterOperator } = useSession();
@@ -136,6 +137,16 @@ export function Academy() {
     try { await removeLogo(cur).catch(() => {}); await setWordmark(null, dark); setData({ ...data, [wmKey(dark)]: null }); toast('가로 로고를 지웠어요'); }
     catch (e) { errToast(e); } finally { setBusyX(false); }
   }
+  /* 주간 요약(0029) — 학원 단위 요일·시. 줄을 누르면 아래로 펼쳐지고, 고르면 바로 저장한다. */
+  const { data: wk, setData: setWk } = useLoad(getWeeklySettings);
+  const [wkOpen, setWkOpen] = useState(false);
+  const [busyWk, setBusyWk] = useState(false);
+  async function saveWk(next: WeeklySettings) {
+    if (busyWk || !wk) return;
+    const prev = wk; setBusyWk(true); setWk(next);
+    try { await setWeeklySettings(next); toast(weeklyToast(next)); }
+    catch (e) { setWk(prev); errToast(e); } finally { setBusyWk(false); }
+  }
   const logoSrc = data?.logo_path ? logoUrl(data.logo_path, Date.now()) : null;
   const wmSrc = data?.wordmark_path ? logoUrl(data.wordmark_path, Date.now()) : null;
   const wmDarkSrc = data?.wordmark_dark_path ? logoUrl(data.wordmark_dark_path, Date.now()) : null;
@@ -181,6 +192,29 @@ export function Academy() {
         </div>
         <p className="muted" style={{ padding: '2px 16px 12px' }}>네모 로고는 앱 아이콘과 설치 이름에 쓰여요(512×512 PNG가 가장 좋아요). 가로 로고는 투명 배경 PNG 로, 세로 120px 안에 맞춰 줄여 올려요.</p>
       </div>}
+      <div className="lab">학부모에게</div>
+      <div className="box">
+        <button className="rw" onClick={() => setWkOpen(o => !o)} aria-expanded={wkOpen}>
+          <span className="bd"><span className="t">주간 요약</span><span className="s">{wk ? (wk.weekly_summary ? `매주 ${describeWeekly(wk)} · 이번 주 출결·숙제·다음 수업 한 줄` : '꺼져 있어요 · 학부모에게 가지 않아요') : '불러오는 중…'}</span></span>
+          <span className="go">{wkOpen ? '⌄' : '›'}</span>
+        </button>
+        {wkOpen && wk && <div style={{ padding: '0 16px 14px', display: 'grid', gap: 8 }}>
+          <div className="seg" role="radiogroup" aria-label="주간 요약 보내기">
+            <button role="radio" aria-checked={wk.weekly_summary} className={wk.weekly_summary ? 'on' : ''} disabled={busyWk} onClick={() => !wk.weekly_summary && saveWk({ ...wk, weekly_summary: true })}>보내기</button>
+            <button role="radio" aria-checked={!wk.weekly_summary} className={!wk.weekly_summary ? 'on' : ''} disabled={busyWk} onClick={() => wk.weekly_summary && saveWk({ ...wk, weekly_summary: false })}>끄기</button>
+          </div>
+          <div className="seg" role="radiogroup" aria-label="요일">
+            {WEEKLY_DOW_ORDER.map(d => <button key={d} role="radio" aria-checked={wk.weekly_dow === d} className={wk.weekly_dow === d ? 'on' : ''} disabled={busyWk || !wk.weekly_summary} onClick={() => wk.weekly_dow !== d && saveWk({ ...wk, weekly_dow: d })}>{DOW_LABELS[d]}</button>)}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button className="btn sm line" aria-label="한 시간 일찍" disabled={busyWk || !wk.weekly_summary || wk.weekly_hour <= WEEKLY_HOUR_MIN} onClick={() => saveWk({ ...wk, weekly_hour: wk.weekly_hour - 1 })}>−</button>
+            <span style={{ fontWeight: 600, minWidth: 64, textAlign: 'center' }}>{String(wk.weekly_hour).padStart(2, '0')}:00</span>
+            <button className="btn sm line" aria-label="한 시간 늦게" disabled={busyWk || !wk.weekly_summary || wk.weekly_hour >= WEEKLY_HOUR_MAX} onClick={() => saveWk({ ...wk, weekly_hour: wk.weekly_hour + 1 })}>+</button>
+            <span className="muted" style={{ fontSize: 'calc(13px * var(--fs))' }}>정각에 보내요 (06~22시)</span>
+          </div>
+          <p className="muted">"출석 3 · 지각 1 · 결석 0 · 숙제 2/3 · 다음 수업 월 19:00" 처럼 아이마다 한 줄. 앱 알림으로만 가요(카톡 비용 없음). 원장님께는 출석률·미납 건수가 와요.</p>
+        </div>}
+      </div>
       <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}>로고는 단색으로 두고, 강조색은 앱바·버튼·표시에 씁니다.</p>
     </section>
   );

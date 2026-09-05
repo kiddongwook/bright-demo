@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { listNotices, listClasses, createNotice, updateNoticePhotos, noticeReaders, remindNotice, recipientCount, getContext, addCalendar, listCalendar, nextClassDaysFor, kstToday, kstDate, type Notice } from '../../lib/api';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { listNotices, listClasses, updateNoticePhotos, noticeReaders, remindNotice, recipientCount, getContext, addCalendar, listCalendar, nextClassDaysFor, kstToday, kstDate } from '../../lib/api';
+import { createNoticeScheduled, rescheduleNotice, deleteNotice, withSchedule, isScheduled, fmtPublishAt, toPublishAt, publishAtParts, defaultScheduleAt, scheduleProblem, sortWithScheduled, humanizeScheduleError, type ScheduledNotice } from '../../lib/noticeSchedule';
 import { uploadNoticePhotos, MAX_PHOTOS } from '../../lib/files';
 import { useNav } from '../../lib/nav';
+import { atSheetEntry, openSheetEntry, setSheetClose } from '../../lib/nav-history';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast, humanizeError } from '../../lib/toast';
 import { Empty } from '../../components/Empty';
@@ -21,11 +24,94 @@ import { targetLabel, readPct, remindLabel } from '../../lib/recipients';
 import '../notices.css';
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+/** 목록 — 예약 칸(publish_at·fanned_at)까지 붙여 읽는다 */
+const listWithSchedule = () => listNotices().then(withSchedule);
+
+/* 예약 공지를 눌렀을 때 뜨는 행동 시트 — 확인 시트(.sheet-dim/.sheet)와 같은 틀에 단추만 세로로.
+   고른 행동은 시트가 다 닫힌 뒤에 돈다(finish): 그 안에서 confirmSheet 를 다시 열어도 history 항목이 겹치지 않게. */
+type SheetAction = { label: string; danger?: boolean; run: () => void };
+function ActionSheet({ title, sub, actions, onPick, onCancel }: { title: string; sub?: string; actions: SheetAction[]; onPick: (a: SheetAction) => void; onCancel: () => void }) {
+  const first = useRef<HTMLButtonElement>(null);
+  useEffect(() => { first.current?.focus(); }, []);   /* 포커스를 시트 안으로 — 탭이 뒤 화면으로 새지 않게. 열릴 때 한 번만 */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); onCancel(); } };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onCancel]);
+  /* .app 안에 붙인다 — .sheet-dim 이 폰 틀만 덮고, 목록이 스크롤돼 있어도 어긋나지 않게(TimeField 와 같은 자리) */
+  const host = typeof document !== 'undefined' ? document.querySelector<HTMLElement>('.app') ?? document.body : null;
+  if (!host) return null;
+  return createPortal(
+    <div className="sheet-dim" onClick={onCancel}>
+      <div className="sheet acts" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
+        <p className="st">{title}</p>
+        {sub && <p className="sb">{sub}</p>}
+        <div className="sa">
+          {actions.map((a, i) => <button key={a.label} ref={i === 0 ? first : undefined} className={'btn' + (a.danger ? ' danger' : ' line')} onClick={() => onPick(a)}>{a.label}</button>)}
+          <button className="btn line" onClick={onCancel}>닫기</button>
+        </div>
+      </div>
+    </div>, host);
+}
 
 export function NoticeList() {
   const nav = useNav();
-  const { data: notices, err, reload } = useLoad(listNotices);
+  const { data: raw, err, reload } = useLoad(listWithSchedule);
   const { data: classes } = useLoad(listClasses);
+  const notices = raw ? sortWithScheduled(raw) : null;
+  /* 예약 공지 행동 시트 — 열릴 때 history 항목을 하나 쌓고, 닫힘은 늘 popstate(finish) 로 끝난다 */
+  const [sheetFor, setSheetFor] = useState<ScheduledNotice | null>(null);
+  const pending = useRef<(() => void) | null>(null);
+  const closing = useRef(false);
+  /* 시간 바꾸기 — 그 줄 아래에 날짜·시간 칸이 펼쳐진다 */
+  const [editing, setEditing] = useState<string | null>(null);
+  const [edDate, setEdDate] = useState(''); const [edHm, setEdHm] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  function finishSheet() {
+    closing.current = false; setSheetFor(null);
+    const run = pending.current; pending.current = null;
+    run?.();
+  }
+  function openSheet(n: ScheduledNotice) {
+    pending.current = null; closing.current = false;
+    setSheetClose(finishSheet); openSheetEntry();
+    setSheetFor(n);
+  }
+  function closeSheet(run: (() => void) | null = null) {
+    if (closing.current) return;
+    pending.current = run;
+    if (atSheetEntry()) { closing.current = true; history.back(); return; }   /* popstate → finishSheet */
+    setSheetClose(null); finishSheet();
+  }
+  function actionsFor(n: ScheduledNotice): SheetAction[] {
+    return [
+      { label: '시간 바꾸기', run: () => { const p = publishAtParts(n.publish_at); setEdDate(p.date); setEdHm(p.hm); setEditing(n.id); } },
+      { label: '지금 보내기', run: async () => {
+        if (!(await confirmSheet({ title: '지금 바로 보낼까요?', body: '대상 반의 학부모와 학생에게 바로 알림이 가요.', okLabel: '지금 보내기' }))) return;
+        setBusy(true);
+        try { await rescheduleNotice(n.id, null); toast('공지를 올리고 알렸어요'); setEditing(null); await reload(); }
+        catch (e) { toast(humanizeScheduleError(e)); }
+        finally { setBusy(false); }
+      } },
+      { label: '삭제', danger: true, run: async () => {
+        if (!(await confirmSheet({ title: '이 예약 공지를 지울까요?', body: '아직 아무에게도 나가지 않았어요. 지우면 되돌릴 수 없어요.', okLabel: '지우기', danger: true }))) return;
+        setBusy(true);
+        try { await deleteNotice(n.id, n.photos); toast('예약 공지를 지웠어요'); setEditing(null); await reload(); }
+        catch (e) { errToast(e); }
+        finally { setBusy(false); }
+      } },
+    ];
+  }
+  async function saveTime(id: string) {
+    const at = toPublishAt(edDate, edHm);
+    const problem = scheduleProblem(at);
+    if (problem || !at) { toast(problem ?? '날짜와 시간을 골라 주세요'); return; }
+    setBusy(true);
+    try { await rescheduleNotice(id, at); toast(`${fmtPublishAt(at.toISOString())}에 나가요`); setEditing(null); await reload(); }
+    catch (e) { toast(humanizeScheduleError(e)); }
+    finally { setBusy(false); }
+  }
   return (
     <section className="view on">
       <div className="head"><h1 className="hello">공지</h1><p className="lede">올리면 대상 반의 학부모와 학생에게 <b>알림이 갑니다.</b></p></div>
@@ -33,11 +119,34 @@ export function NoticeList() {
       <div className="lab">올린 공지<span className="r">누르면 읽은 사람</span></div>
       {!notices ? (err ? <ErrorState onRetry={reload} /> : <Skeleton rows={4} />) : (notices.length === 0
         ? <div className="box"><Empty icon="notice" title="아직 공지가 없어요" hint="위 단추로 올리면 대상 반의 학부모와 학생에게 알림이 가요." /></div>
-        : <div className="list">{notices.map(n => (
-          <button key={n.id} className="post" style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.push('readers', { id: n.id })}>
-            <div className="pt">{n.photos?.length ? <IcCamera className="ic" size={16} /> : null}{n.title}</div>
-            <div className="pm"><b>{targetLabel(n.class_ids, classes)}</b><span>{fmt(n.created_at)}</span><span>· {n.read_count}명 읽음</span>{n.reminded_at && <span>· 다시 알림</span>}</div>
-          </button>))}</div>)}
+        : <div className="list">{notices.map(n => {
+          const sched = isScheduled(n);
+          /* Fragment — .post 가 .list 의 직계여야 한다(.post:last-child 가 마지막 줄의 금만 지운다) */
+          return (
+          <Fragment key={n.id}>
+            <button className={'post' + (sched ? ' sched' : '')} style={{ width: '100%', textAlign: 'left' }}
+              onClick={() => sched ? openSheet(n) : nav.push('readers', { id: n.id })}>
+              <div className="pt">{n.photos?.length ? <IcCamera className="ic" size={16} /> : null}{n.title}</div>
+              <div className="pm"><b>{targetLabel(n.class_ids, classes)}</b>
+                {sched
+                  ? <span className="tag">예약 · {fmtPublishAt(n.publish_at)}</span>
+                  : <><span>{fmt(n.created_at)}</span><span>· {n.read_count}명 읽음</span>{n.reminded_at && <span>· 다시 알림</span>}</>}
+              </div>
+            </button>
+            {sched && editing === n.id && (
+              <div className="sched-edit">
+                <span className="tf-lab">나갈 시각</span>
+                <DateField value={edDate} onChange={setEdDate} min={kstToday()} label="나갈 날짜" />
+                <TimeField value={edHm} onChange={setEdHm} label="나갈 시간" />
+                <div className="sa">
+                  <button className="btn line" disabled={busy} onClick={() => setEditing(null)}>취소</button>
+                  <button className="btn" disabled={busy} onClick={() => saveTime(n.id)}>저장</button>
+                </div>
+              </div>)}
+          </Fragment>);
+        })}</div>)}
+      {sheetFor && <ActionSheet title={sheetFor.title} sub={`예약 · ${fmtPublishAt(sheetFor.publish_at)}에 나가요`}
+        actions={actionsFor(sheetFor)} onPick={a => closeSheet(a.run)} onCancel={() => closeSheet()} />}
     </section>
   );
 }
@@ -58,6 +167,10 @@ export function NoticeNew() {
   /* 제목·내용을 손으로 고치면 그때부터 틀이 덮어쓰지 않는다 — 다시 채우기 링크로 되돌린다 */
   const [dirtyTitle, setDirtyTitle] = useState(false); const [dirtyBody, setDirtyBody] = useState(false);
   const [linkCal, setLinkCal] = useState(true);
+  /* 보내기 — 지금 / 예약(날짜·시간, 기본 내일 08:00). 예약해도 휴원일 등은 지금 바로 달력에 들어간다(휴원은 사실이니까) */
+  const [when, setWhen] = useState<'now' | 'later'>('now');
+  const [sch, setSch] = useState(defaultScheduleAt);
+  const schAt = when === 'later' ? toPublishAt(sch.date, sch.hm) : null;
   const t = templateOf(tpl);
   const picks = useRef<Photo[]>([]); picks.current = photos;
   /* 알림이 갈 사람 수 — 대상 반의 학생 번호 + 학부모 번호(겹치면 한 번). 원장만 읽을 수 있어서 실패하면 문구를 감춘다 */
@@ -108,18 +221,21 @@ export function NoticeNew() {
     if (!title.trim()) { toast('제목을 적어주세요'); return; }
     const miss = missingField(t, fields);
     if (miss) { toast(`${withEul(miss.label)} ${miss.type === 'text' ? '적어주세요' : '골라주세요'}`); return; }
+    /* 예약이면 시각을 먼저 본다 — 지난 시각은 서버가 바로 뿌려 버려 "…에 나가요" 가 거짓말이 된다 */
+    if (when === 'later') { const problem = scheduleProblem(schAt); if (problem) { toast(problem); return; } }
     setBusy(true);
-    let notice;
-    /* 공지와 대상 반은 한 트랜잭션에 — 반만 남고 공지가 없거나 그 반대가 되지 않게 (create_notice_v2) */
-    try { notice = await createNotice(title.trim(), body.trim(), targets.length === 1 ? targets[0] : null, [], targets); }
-    catch (e) { errToast(e); setBusy(false); return; }
+    let noticeId: string;
+    /* 공지와 대상 반(과 나갈 시각)은 한 트랜잭션에 — 반만 남고 공지가 없거나 그 반대가 되지 않게 (create_notice_v2) */
+    try { noticeId = await createNoticeScheduled(title.trim(), body.trim(), targets, schAt); }
+    catch (e) { toast(humanizeScheduleError(e)); setBusy(false); return; }
+    const photoFail = schAt ? '공지는 예약됐지만 사진은 못 올렸어요' : '공지는 올라갔지만 사진은 못 올렸어요';
     if (photos.length) {
       setUploading(true);
       try {
-        const paths = await uploadNoticePhotos(getContext().academyId, notice.id, photos.map(p => p.file));
-        if (paths.length) await updateNoticePhotos(notice.id, paths);
-        if (paths.length < photos.length) toast('공지는 올라갔지만 사진은 못 올렸어요');
-      } catch { toast('공지는 올라갔지만 사진은 못 올렸어요'); }
+        const paths = await uploadNoticePhotos(getContext().academyId, noticeId, photos.map(p => p.file));
+        if (paths.length) await updateNoticePhotos(noticeId, paths);
+        if (paths.length < photos.length) toast(photoFail);
+      } catch { toast(photoFail); }
       setUploading(false);
     }
     /* 휴원·특강은 달력에도 넣는다 — 공지는 이미 올라갔으니 여기서 실패해도 끝은 낸다.
@@ -142,10 +258,11 @@ export function NoticeNew() {
           if (day) await addCalendar(day, kind, kind === 'closed' ? (why || '휴원') : title.trim(), cid);
         }
         for (const cid of where) if (mk) await addCalendar(mk, 'makeup', why ? `보강 · ${why}` : '보강', cid);
-      } catch (e) { calErr = `공지는 올렸지만 ${what} 등록은 실패했어요: ${humanizeError(e)}`; }
+      } catch (e) { calErr = `공지는 ${schAt ? '예약했지만' : '올렸지만'} ${what} 등록은 실패했어요: ${humanizeError(e)}`; }
     }
-    const dupMsg = dupWhat && `공지를 올렸어요 · ${dupWhat}${dupWhat === '휴원일' ? '은' : '는'} 이미 있어서 그대로 뒀어요`;
-    toast(calErr || dupMsg || '공지를 올리고 알렸어요', (calErr || dupMsg) ? { ms: 5000 } : {});
+    const done = schAt ? `${fmtPublishAt(schAt.toISOString())}에 나가요` : '공지를 올리고 알렸어요';
+    const dupMsg = dupWhat && `${done} · ${dupWhat}${dupWhat === '휴원일' ? '은' : '는'} 이미 있어서 그대로 뒀어요`;
+    toast(calErr || dupMsg || done, (calErr || dupMsg) ? { ms: 5000 } : {});
     nav.back();
   }
   return (
@@ -187,6 +304,18 @@ export function NoticeNew() {
         <Counter n={body.length} max={LIMITS.noticeBody} />
       </div>
       {t && t.fields.length > 0 && (dirtyTitle || dirtyBody) && <div className="tpl-refill"><button type="button" onClick={refill}>템플릿으로 다시 채우기</button></div>}
+      <div className="lab">보내기<span className="r">{when === 'later' ? '고른 시각에 알림이 가요' : '올리는 즉시 알림이 가요'}</span></div>
+      <div className="seg" role="radiogroup" aria-label="보내기">
+        <button type="button" className={when === 'now' ? 'on' : ''} role="radio" aria-checked={when === 'now'} onClick={() => setWhen('now')}>지금</button>
+        <button type="button" className={when === 'later' ? 'on' : ''} role="radio" aria-checked={when === 'later'} onClick={() => setWhen('later')}>예약</button>
+      </div>
+      {when === 'later' && <div className="sched-fields">
+        <div><span className="tf-lab">나갈 날짜</span>
+          <DateField value={sch.date} onChange={v => setSch({ ...sch, date: v })} min={kstToday()} label="나갈 날짜" /></div>
+        <div><span className="tf-lab">나갈 시간</span>
+          <TimeField value={sch.hm} onChange={v => setSch({ ...sch, hm: v })} label="나갈 시간" /></div>
+        <p className="sched-note">{schAt && !scheduleProblem(schAt) ? <><b>{fmtPublishAt(schAt.toISOString())}</b>에 나가요 · 그때까지 학부모에게는 보이지 않아요</> : (scheduleProblem(schAt) ?? '')}</p>
+      </div>}
       <details className="fold"><summary>미리보기 — 학부모 화면</summary>
         <div className="notice-preview">
           <NoticeBody title={title.trim() || '(제목 없음)'} meta={`${label} · ${fmt(new Date().toISOString())}`} body={body} photoUrls={photos.map(p => p.url)} />
@@ -201,8 +330,8 @@ export function NoticeNew() {
       {photos.length > 0 && <div className="photo-pick">{photos.map((p, i) => (
         <div key={p.url} className="ph"><img src={p.url} alt="" /><button type="button" onClick={() => dropPhoto(i)} aria-label="사진 빼기">✕</button></div>))}</div>}
       <p className="muted" style={{ padding: '8px 20px 0' }}>아이폰은 사진을 고르면 자동으로 JPEG 로 바뀌어요.</p>
-      {!recipientsErr && <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}><b style={{ color: 'var(--ink)', fontWeight: 600 }}>{recipients === null || recipientsLoading ? '…' : recipients}명</b>에게 알림이 가요</p>}
-      <BottomCta primary={{ label: uploading ? '사진 올리는 중…' : '올리고 알리기', onClick: post, disabled: busy }} secondary={{ label: '취소', onClick: nav.back }} />
+      {!recipientsErr && <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}><b style={{ color: 'var(--ink)', fontWeight: 600 }}>{recipients === null || recipientsLoading ? '…' : recipients}명</b>에게 {when === 'later' ? '그때 ' : ''}알림이 가요</p>}
+      <BottomCta primary={{ label: uploading ? '사진 올리는 중…' : when === 'later' ? '예약하기' : '올리고 알리기', onClick: post, disabled: busy }} secondary={{ label: '취소', onClick: nav.back }} />
     </section>
   );
 }
@@ -224,13 +353,25 @@ function ReadDonut({ read, total }: { read: number; total: number }) {
 
 export function Readers() {
   const nav = useNav(); const id = nav.params.id;
-  const { data: notices } = useLoad(listNotices);
+  const { data: notices } = useLoad(listWithSchedule);
   const { data: classes } = useLoad(listClasses);
   const { data: readers, reload } = useLoad(() => noticeReaders(id), [id]);
-  const n: Notice | undefined = notices?.find(x => x.id === id);
+  const n: ScheduledNotice | undefined = notices?.find(x => x.id === id);
   const un = readers?.filter(r => !r.read_at) ?? [], rd = readers?.filter(r => r.read_at) ?? [];
   const total = readers?.length ?? 0;
   const [busy, setBusy] = useState(false);
+  /* 아직 안 나간 공지(fanned_at 없음)는 읽은 사람이 있을 수 없다(서버도 not_published 로 막는다) — 목록에서 눌러 오는 길은 없지만 뒤로가기로 올 수 있다.
+     publish_at 이 아니라 fanned_at 을 본다: 시각은 지났는데 크론이 아직 안 뿌린 1분 사이에도 "0명 읽음" 이라고 하지 않게.
+     훅은 모두 위에서 불렀으니 여기서 갈라도 된다. */
+  if (n && n.publish_at != null && n.fanned_at == null) {
+    return (
+      <section className="view on">
+        <div className="head"><h1 className="hello">{n.title}</h1><p className="lede">{targetLabel(n.class_ids, classes)} · 예약 · {fmtPublishAt(n.publish_at)}</p></div>
+        <div className="box"><Empty icon="notice" title="아직 안 나간 공지예요" hint={`${fmtPublishAt(n.publish_at)}에 나가요. 나간 뒤에 누가 읽었는지 여기서 볼 수 있어요.`} /></div>
+        <div className="btnrow"><button className="btn line" onClick={nav.back}>목록으로</button></div>
+      </section>
+    );
+  }
   async function remind() { setBusy(true); try { const c = await remindNotice(id); toast(`안 읽은 ${c}명에게 다시 알렸어요`); await reload(); } catch (e) { errToast(e); } finally { setBusy(false); } }
   const row = (r: { user_id: string; name: string; read_at: string | null }) => (
     <div key={r.user_id} className="rw" style={{ cursor: 'default' }}><span className="nm">{r.name.charAt(0)}</span><span className="bd"><span className="t">{r.name}</span></span><span className={'tag ' + (r.read_at ? 'ok' : 'danger')}>{r.read_at ? '읽음' : '안 읽음'}</span></div>);
