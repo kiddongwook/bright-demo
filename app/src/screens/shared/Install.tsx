@@ -23,7 +23,7 @@ export function Install() {
       <div className="head"><p className="lede">앱처럼 아이콘으로 열어요. 설치는 <b>한 번</b>이면 돼요.</p></div>
       {/* 홈 화면에 실제로 놓일 모습 — 이름·아이콘은 학원마다 다르다(설치할 때의 로고로 굳는다) */}
       <div className="homescr">
-        <div className="appicon"><img src={logo ?? asset('logo/yeongeo-jip-bold-white.png')} alt="" style={logo ? { width: 70, height: 70, borderRadius: 19, objectFit: 'cover' } : undefined} /></div>
+        <div className="appicon"><img src={logo ?? asset('logo/bright-icon-192.png')} alt="" style={{ width: 70, height: 70, borderRadius: 19, objectFit: 'cover' }} /></div>
         <div className="hl">{name}</div>
         <p className="hc">이 이름과 아이콘으로 홈 화면에 놓여요.
           {!logo && active?.role === 'director' && <><br />더보기 → <b>우리 학원</b> → 로고를 올리면 아이콘이 바뀌어요.</>}</p>

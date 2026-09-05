@@ -17,9 +17,13 @@ Deno.serve(async (req) => {
   if (!it) return json(401, { error: 'bad_token' });
   if (new Date(it.expires_at) < new Date()) return json(401, { error: 'expired' });
   if (it.used_at && Date.now() - new Date(it.used_at).getTime() > REUSE_MS) return json(401, { error: 'used' });
+  // 이 학원이 잠겼으면(0023 op_set_lock) 링크도 열리지 않는다. ensureUser 도 잠긴 학원을 빼지만,
+  // 그 번호가 다른 학원에도 있으면 통과해 버려 여기서 'not_in_roster' 라는 틀린 안내가 나간다 — 먼저 본다.
+  const { data: lock } = await admin.from('academies').select('locked').eq('id', it.academy_id).maybeSingle();
+  if (lock?.locked) return json(403, { error: 'academy_locked' });
 
   try {
-    const { uid, email, password, memberships } = await ensureUser(admin, it.phone);
+    const { uid, email, password, memberships, operator } = await ensureUser(admin, it.phone);
     // 이 학원의 소속으로 화면을 연다 (자녀·본인 우선). 명부에서 빠졌으면 초대는 더 이상 유효하지 않다.
     const inAcademy = memberships.filter((m) => m.academy_id === it.academy_id);
     if (!inAcademy.length) return json(404, { error: 'not_in_roster' });
@@ -31,7 +35,7 @@ Deno.serve(async (req) => {
     if (!it.used_at) await admin.from('invite_tokens').update({ used_at: new Date().toISOString() }).eq('id', it.id);
     const { data: ac } = await admin.from('academies').select('slug, name').eq('id', it.academy_id).maybeSingle();
     const session = await issueSession(email, password);
-    return json(200, { user_id: uid, session, memberships, academy_id: it.academy_id, academy_slug: ac?.slug, academy_name: ac?.name });
+    return json(200, { user_id: uid, session, memberships, operator, academy_id: it.academy_id, academy_slug: ac?.slug, academy_name: ac?.name });
   } catch (e) {
     if (e instanceof AuthFail) return json(e.status, { error: e.code });
     throw e;

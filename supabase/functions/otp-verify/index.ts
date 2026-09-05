@@ -21,9 +21,10 @@ Deno.serve(async (req) => {
 
   // auth 사용자 보장 + 소속 동기화 + 세션 발급 — invite-login 과 같은 코드 (_shared/auth.ts)
   try {
-    const { email, password, memberships } = await ensureUser(admin, phone);
+    // operator: BRIGHT 운영자다. 소속이 없어도(memberships: []) 세션이 나온다 — 앱은 곧장 운영 홈으로 간다 (0023).
+    const { email, password, memberships, operator } = await ensureUser(admin, phone);
     const session = await issueSession(email, password);
-    return json(200, { session, memberships });
+    return json(200, { session, memberships, operator });
   } catch (e) {
     if (e instanceof AuthFail) return json(e.status, { error: e.code });
     throw e;

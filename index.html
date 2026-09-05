@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>영어의 집 · 우리 학원 앱</title>
-<meta name="description" content="출결·공지·문의를 폰 하나로. 영어의 집 학생과 학부모를 위한 우리 학원 앱.">
+<title>BRIGHT — 학원용 앱</title>
+<meta name="description" content="학원 출결·공지·문의·수강료를 폰 하나로. 학원마다 그 학원 이름과 로고로 놓이는 앱, BRIGHT.">
 <meta name="theme-color" content="#2F5BEA">
 <meta property="og:url" content="https://kiddongwook.github.io/bright-demo/">
-<meta property="og:image" content="https://kiddongwook.github.io/bright-demo/og.png?v=4">
+<meta property="og:image" content="https://kiddongwook.github.io/bright-demo/og.png?v=5">
 <meta property="og:type" content="website">
-<meta property="og:title" content="영어의 집 · 우리 학원 앱">
-<meta property="og:description" content="출결·공지·문의를 폰 하나로. 영어의 집 학생과 학부모를 위한 우리 학원 앱.">
+<meta property="og:title" content="BRIGHT — 학원용 앱">
+<meta property="og:description" content="학원 출결·공지·문의·수강료를 폰 하나로. 학원마다 그 학원 이름과 로고로 놓이는 앱, BRIGHT.">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://kiddongwook.github.io/bright-demo/og.png?v=4">
-<link rel="icon" href="assets/logo/yeongeo-jip-bold.png">
+<meta name="twitter:image" content="https://kiddongwook.github.io/bright-demo/og.png?v=5">
+<link rel="icon" href="assets/brand/bright-icon-192.png">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
 /* ── 디자인 토큰: 방향 C · 색 블록 (app/src/theme.css 와 같은 값) ── */
@@ -87,7 +87,7 @@ button{cursor:pointer;border:none;background:none}
 .appbar{flex:0 0 auto;background:var(--ground);color:var(--ink);border-bottom:1px solid var(--rule);
   padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;gap:10px;min-height:56px}
 .appbar .bk{width:28px;height:30px;margin-left:-8px;display:grid;place-items:center;font-size:26px;line-height:1;color:var(--ink)}
-.appbar .logo{height:30px;width:auto;display:block;margin-right:auto;content:url(assets/logo/yeongeo-jip-bold.png)}
+.appbar .logo{height:30px;width:auto;display:block;margin-right:auto;content:url(assets/brand/bright-wordmark.png)}
 .appbar .an{font-size:var(--t-title);font-weight:600;letter-spacing:-.02em;margin-right:auto}
 .appbar .ad{margin-left:auto;font-size:12px;font-weight:500;color:var(--ink3)}
 .appbar .bell{position:relative;width:32px;height:32px;display:grid;place-items:center;margin-right:-6px;color:var(--ink)}
@@ -126,7 +126,7 @@ button{cursor:pointer;border:none;background:none}
 
 /* ── 게이트 ── */
 .gate{padding:34px 24px 0;display:flex;flex-direction:column;align-items:center;text-align:center}
-.gate-logo{width:200px;height:auto;margin:22px 0 26px;content:url(assets/logo/yeongeo-jip-medium.png)}
+.gate-logo{width:200px;height:auto;margin:22px 0 26px;content:url(assets/brand/bright-wordmark.png)}
 .gate h1{font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.4}
 .gate p{font-size:13.5px;color:var(--ink2);line-height:1.7;margin-top:8px}
 .field{width:100%;text-align:left;margin-top:26px}
@@ -277,7 +277,7 @@ textarea.input{min-height:120px;padding:12px 14px;font-size:16px;font-weight:400
 .khead{background:#A5BCD0;padding:10px 14px;display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:#1C1C1C}
 .khead .ktag{margin-left:auto;font-size:10.5px;font-weight:600;color:#3E5262;background:rgba(255,255,255,.55);padding:2px 7px;border-radius:4px}
 .kav{width:32px;height:32px;border-radius:12px;background:#fff;display:grid;place-items:center;flex:0 0 auto}
-.kav img{width:22px;height:auto}
+.kav img{width:32px;height:32px;border-radius:12px;object-fit:cover;display:block}
 .kmsg{display:flex;gap:7px;padding:12px 12px 0;align-items:flex-end}
 .kcard{background:#fff;border-radius:4px 14px 14px 14px;max-width:250px;overflow:hidden;font-size:13.5px;line-height:1.6;color:#1C1C1C;align-self:flex-start}
 .kcard .klab{font-size:10.5px;color:#7A8791;padding:8px 12px 0}
@@ -337,7 +337,7 @@ textarea.input{min-height:120px;padding:12px 14px;font-size:16px;font-weight:400
 .chip{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);position:relative}
 .chip.on::after{content:"";position:absolute;inset:-4px;border:1px solid var(--ink);border-radius:50%}
 .appicon{width:70px;height:70px;border-radius:19px;background:var(--brand);display:grid;place-items:center;margin:0 auto;transition:background .25s;box-shadow:0 6px 18px rgba(0,0,0,.14)}
-.appicon img{width:52px;height:auto}
+.appicon img{width:70px;height:70px;border-radius:19px;object-fit:cover;display:block}
 .homescr{padding:26px 20px 22px;text-align:center;background:var(--paper);border-bottom:1px solid var(--rule)}
 .homescr .hl{font-size:12.5px;font-weight:600;margin-top:9px}
 .homescr .hc{font-size:13px;color:var(--ink2);margin-top:14px;line-height:1.7}
@@ -349,21 +349,56 @@ textarea.input{min-height:120px;padding:12px 14px;font-size:16px;font-weight:400
 .toast.up{bottom:calc(var(--tab-h) + 182px + env(safe-area-inset-bottom))}
 /* 로고는 단색 이미지라 어두운 화면에서는 흰 판으로 갈아 끼운다 (앱은 src 를 바꾼다) */
 @media (prefers-color-scheme: dark){
-  .appbar .logo{content:url(assets/logo/yeongeo-jip-bold-white.png)}
-  .gate-logo{content:url(assets/logo/yeongeo-jip-medium-white.png)}
+  .appbar .logo{content:url(assets/brand/bright-wordmark-white.png)}
+  .gate-logo{content:url(assets/brand/bright-wordmark-white.png)}
 }
-/* ?a=<학원> 으로 열었을 때만 나오는 실제 앱 바로가기 — 그냥 연 데모(영어의 집)에는 없다 */
+/* ?a=<학원> 으로 열었을 때만 나오는 실제 앱 바로가기 — BRIGHT 제품 소개(예시 학원 데모)에는 없다 */
 .openapp{display:none;position:fixed;right:16px;bottom:calc(var(--tab-h) + 16px);z-index:60;background:var(--brand);color:#fff;text-decoration:none;font-size:13.5px;font-weight:700;padding:11px 16px;border-radius:999px;box-shadow:0 8px 20px rgba(0,0,0,.22)}
 body.acad .openapp{display:block}
 @media(min-width:641px){.openapp{bottom:52px}}
+
+/* ── BRIGHT 제품 소개 머리 ─────────────────────────────────────────
+   ?a= 없이 열면 여기가 제품 페이지다: BRIGHT 워드마크 + 한 줄 설명, 그 아래(옆)가 예시 학원 데모.
+   ?a=<slug> 로 열면 그 학원의 페이지이므로 이 머리는 통째로 감춘다(body.acad). */
+.phero{padding:30px 22px 22px;max-width:520px;margin:0 auto}
+.phero .pwm{height:32px;width:auto;display:block;margin-bottom:24px}
+.phero h1{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.3}
+.phero .psub{margin-top:12px;font-size:15px;font-weight:700;color:var(--brand);letter-spacing:-.01em}
+.phero .pnote{margin-top:18px;font-size:13.5px;color:var(--ink2);line-height:1.75}
+.phero .pfeat{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px}
+.phero .pfeat span{font-size:12.5px;font-weight:600;color:var(--ink2);background:var(--paper);border:1px solid var(--rule);border-radius:999px;padding:7px 13px}
+body.acad .phero{display:none}
+@media (prefers-color-scheme: dark){ .phero .pwm{content:url(assets/brand/bright-wordmark-white.png)} }
+@media(min-width:641px){
+  .phero{padding:0;max-width:430px}
+  .phero .pwm{height:38px;margin-bottom:30px}
+  .phero h1{font-size:38px}
+  .phero .pnote{font-size:14px}
+  body:not(.acad){align-content:center;row-gap:30px;padding:40px 20px}
+}
+@media(min-width:1060px){
+  body:not(.acad){grid-auto-flow:column;grid-template-columns:430px auto;column-gap:76px;justify-content:center}
+  body:not(.acad) .credit{display:none}
+}
 </style>
 </head>
 <body>
+<script>/* 학원 링크로 열렸는지를 첫 페인트 전에 정한다 — 학원 방문자에게 BRIGHT 소개가 번쩍이지 않게 */
+if(/[?&]a=[a-z0-9-]{2,40}(&|$)/.test(location.search)) document.body.classList.add('acad');</script>
+
+<header class="phero">
+  <img class="pwm" src="assets/brand/bright-wordmark.png" alt="BRIGHT">
+  <h1>학원 출결·공지·문의·수강료를<br>폰 하나로</h1>
+  <p class="psub">BRIGHT — 학원용 앱</p>
+  <p class="pnote">원장님이 출석을 누르면 학부모 폰으로 바로 갑니다. 학원마다 <b>그 학원 이름과 로고</b>로 홈 화면에 놓여요.<br>여기 보이는 화면은 <b>예시 학원</b>으로 만든 데모입니다 — 눌러 보세요.</p>
+  <div class="pfeat"><span>출결</span><span>공지</span><span>문의</span><span>수강료</span><span>알림톡·푸시</span></div>
+</header>
+
 <div class="shell"><div class="app">
 
 <header class="appbar" id="appbar">
   <button class="bk" id="bk" onclick="back()" style="display:none" aria-label="뒤로">&lsaquo;</button>
-  <img class="logo" id="logo" src="assets/logo/yeongeo-jip-bold.png" alt="영어의 집">
+  <img class="logo alogo" id="logo" src="assets/brand/bright-wordmark.png" alt="예시 학원">
   <span class="an" id="an" style="display:none"></span>
   <span class="ad" id="ad"></span>
   <button class="bell" id="bell" onclick="push('noti')" aria-label="알림">
@@ -375,9 +410,9 @@ body.acad .openapp{display:block}
 <!-- ════ 게이트 ════ -->
 <section class="view on" id="g-phone" style="background:var(--ground)">
   <div class="gate">
-    <img class="gate-logo" src="assets/logo/yeongeo-jip-medium.png" alt="영어의 집">
+    <img class="gate-logo alogo" src="assets/brand/bright-wordmark.png" alt="예시 학원">
     <h1>문을 열어드릴게요</h1>
-    <p>영어의 집 학생·학부모로 등록된<br>전화번호를 알려주세요.</p>
+    <p>예시 학원 학생·학부모로 등록된<br>전화번호를 알려주세요.</p>
     <div class="field">
       <label>전화번호</label>
       <input class="input" id="phone" inputmode="tel" placeholder="010-0000-0000" oninput="gatePhone(this.value)">
@@ -395,7 +430,7 @@ body.acad .openapp{display:block}
 
 <section class="view" id="g-code" style="background:var(--ground)">
   <div class="gate">
-    <img class="gate-logo" src="assets/logo/yeongeo-jip-medium.png" alt="영어의 집">
+    <img class="gate-logo alogo" src="assets/brand/bright-wordmark.png" alt="예시 학원">
     <h1>인증번호를 보냈어요</h1>
     <p id="code-to">010-0000-0000 으로 6자리를 보냈습니다.</p>
     <div class="field">
@@ -409,9 +444,9 @@ body.acad .openapp{display:block}
 
 <section class="view" id="g-deny" style="background:var(--ground)">
   <div class="gate">
-    <img class="gate-logo" src="assets/logo/yeongeo-jip-medium.png" alt="영어의 집">
+    <img class="gate-logo alogo" src="assets/brand/bright-wordmark.png" alt="예시 학원">
     <h1>아직 등록되지 않은 번호예요</h1>
-    <p>영어의 집 학생·학부모로 등록되면 문이 열려요.<br>원장님께 말씀해 주세요.</p>
+    <p>예시 학원 학생·학부모로 등록되면 문이 열려요.<br>원장님께 말씀해 주세요.</p>
     <div class="btnrow" style="padding-left:0;padding-right:0;width:100%"><button class="btn line" onclick="back()">다른 번호로</button></div>
   </div>
 </section>
@@ -511,7 +546,7 @@ body.acad .openapp{display:block}
   </div>
 
   <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
-  <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
+  <div class="madeby">예시 학원 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
 </section>
 <section class="view" id="d-roster">
   <div class="head"><p class="lede">명부에 있는 전화번호로만 앱에 들어올 수 있어요.<br>학생과 학부모는 <b>각자 번호로</b> 들어옵니다.</p></div>
@@ -532,13 +567,13 @@ body.acad .openapp{display:block}
 
 <section class="view" id="d-academy">
   <div class="homescr">
-    <div class="appicon"><img src="assets/logo/yeongeo-jip-bold-white.png" alt=""></div>
-    <div class="hl">영어의 집</div>
+    <div class="appicon"><img class="alogo" src="assets/brand/bright-icon-192.png" alt=""></div>
+    <div class="hl">예시 학원</div>
     <p class="hc">원장님과 학부모, 학생 폰 홈 화면에<br>이렇게 놓입니다.</p>
   </div>
   <div class="lab">앱에 보이는 것</div>
   <div class="box">
-    <div class="rw" style="cursor:default"><span class="bd"><span class="t">학원 이름</span><span class="s">영어의 집</span></span></div>
+    <div class="rw" style="cursor:default"><span class="bd"><span class="t">학원 이름</span><span class="s">예시 학원</span></span></div>
     <div class="rw" style="cursor:default"><span class="bd"><span class="t">강조색</span><span class="s">기본은 코발트 — 로고 컬러웨이 중 고르세요</span></span>
       <span class="chips">
         <button class="chip on" style="background:#2F5BEA" onclick="setBrand('#2F5BEA',this)" aria-label="코발트"></button>
@@ -611,7 +646,7 @@ body.acad .openapp{display:block}
     <button class="rw" onclick="toast('알림 설정은 실제 버전에서 열려요')"><span class="bd"><span class="t">알림 설정</span><span class="s">공지 · 답변 · 출결</span></span><span class="go">›</span></button>
   </div>
   <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
-  <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
+  <div class="madeby">예시 학원 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
 </section>
 <section class="view" id="p-noti"><div id="p-noti-list"></div></section>
 
@@ -641,7 +676,7 @@ body.acad .openapp{display:block}
     <div class="rw" style="cursor:default"><span class="nm">김</span><span class="bd"><span class="t">김민수</span><span class="s">010-1234-0104 · 고2 B</span></span></div>
   </div>
   <div class="btnrow"><button class="btn line" onclick="logout()">로그아웃</button></div>
-  <div class="madeby">영어의 집 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
+  <div class="madeby">예시 학원 앱 · BRIGHT로 만들어졌습니다 · 데모</div>
 </section>
 <section class="view" id="s-noti"><div id="s-noti-list"></div></section>
 
@@ -674,7 +709,7 @@ body.acad .openapp{display:block}
 <section class="view" id="d-kakao">
   <div class="head"><p class="lede">학부모는 앱을 안 열어도 <b>카톡으로 먼저</b> 받아요.<br>「앱에서 보기」를 누르면 그 화면이 바로 열립니다.</p></div>
   <div class="kchat">
-    <div class="khead"><span class="kav"><img src="assets/logo/yeongeo-jip-bold.png" alt=""></span>영어의 집<span class="ktag">알림톡</span></div>
+    <div class="khead"><span class="kav"><img class="alogo" src="assets/brand/bright-icon-192.png" alt=""></span>예시 학원<span class="ktag">알림톡</span></div>
     <div id="kk-list"></div>
     <div class="kpad"></div>
   </div>
@@ -685,13 +720,13 @@ body.acad .openapp{display:block}
 <nav class="tabbar" id="tabbar" hidden></nav>
 
 </div></div>
-<div class="credit">영어의 집 · 학원 앱 데모 — PC에서는 폰 화면으로 보여드립니다</div>
-<a class="openapp" id="openapp" href="pwa/">앱 열기 ›</a>
+<div class="credit">예시 학원 · 학원 앱 데모 — PC에서는 폰 화면으로 보여드립니다</div>
+<a class="openapp" id="openapp" href="pwa/">우리 학원 앱 열기 ›</a>
 <div class="toast" id="toast"></div>
 
 <script>
-/* ── 이 페이지가 보여 주는 학원 — 기본은 데모(영어의 집), ?a=<slug> 면 아래 loadAcademy 가 갈아 끼운다 ── */
-var ACADEMY={name:'영어의 집', icon:'assets/logo/yeongeo-jip-bold.png', color:'#2F5BEA'};
+/* ── 이 페이지가 보여 주는 학원 — 기본은 데모(예시 학원), ?a=<slug> 면 아래 loadAcademy 가 갈아 끼운다 ── */
+var ACADEMY={name:'예시 학원', icon:'assets/brand/bright-icon-192.png', color:'#2F5BEA'};
 /* ── 데모 명부: 번호 → 역할 ── */
 var PHONES={'010-1000-0001':'d','010-1234-0001':'p','010-1234-0104':'s'};
 var ME={p:{name:'박지훈 어머님',child:'박지훈',cls:'A'}, s:{name:'김민수',cls:'B'}};
@@ -1179,9 +1214,9 @@ function setBrand(color,el){
 
 /* ── 학원별 소개 페이지 ─────────────────────────────────────────────
    ?a=<slug> 로 열면 그 학원의 이름·강조색·로고로 갈아 끼우고 「앱 열기」를 그 학원 앱으로 보낸다.
-   ?a= 가 없으면 아무것도 하지 않는다 — 지금까지의 영어의 집 데모 그대로.
+   ?a= 가 없으면 아무것도 하지 않는다 — BRIGHT 제품 소개 + 예시 학원 데모 그대로.
    앱과 같은 RPC(public_academy) 를 같은 anon 키로 부른다(이 키는 이미 앱 번들에 들어 있는 공개 키다).
-   한계: og:* 미리보기(카톡 링크 썸네일)는 정적 파일이라 계속 영어의 집으로 뜬다. */
+   한계: og:* 미리보기(카톡 링크 썸네일)는 정적 파일이라 학원과 무관하게 BRIGHT 로 뜬다. */
 var SB_URL='https://wqkpwqasmkwpyalvdjfb.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indxa3B3cWFzbWt3cHlhbHZkamZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNzY0NzUsImV4cCI6MjEwMzk1MjQ3NX0._eUF-citWr55nqIY0HyoY_UgLqiCAjiJhRemj_0vE8A';
 
@@ -1207,7 +1242,7 @@ function applyAcademy(a){
   var r=document.documentElement.style; r.setProperty('--brand',ACADEMY.color); r.setProperty('--brand-soft',tint(ACADEMY.color,.9));
   /* 로고 — .logo/.gate-logo 는 CSS content:url() 로 그려지므로(밝음·어두움 두 벌) 인라인 style 로 눌러 준다 */
   if(a.logo_path){
-    var imgs=document.querySelectorAll('img[src*="yeongeo-jip"]');
+    var imgs=document.querySelectorAll('img.alogo');
     for(var i=0;i<imgs.length;i++) imgs[i].src=ACADEMY.icon;
     var cs=document.querySelectorAll('.logo,.gate-logo');
     for(var j=0;j<cs.length;j++){ cs[j].style.content='url("'+ACADEMY.icon+'")'; cs[j].style.width='auto'; cs[j].style.height=cs[j].classList.contains('logo')?'30px':'92px'; }

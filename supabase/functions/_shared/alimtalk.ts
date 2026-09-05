@@ -43,7 +43,8 @@ export function renderTemplate(code: string, params: P | null | undefined): stri
   return cut(t ? t.text(p) : `[${p['학원'] ?? '학원'}] 알림이 있어요.`, TEXT_MAX);
 }
 
-export type AlimtalkMsg = { to: string; templateCode: string; params: P; buttonUrl: string };
+// senderKey: 학원별 발신키 (0023 academy_settings). 없으면 전역 ALIMTALK_SENDER_KEY 로 간다.
+export type AlimtalkMsg = { to: string; templateCode: string; params: P; buttonUrl: string; senderKey?: string | null };
 /** 대행사 어댑터. console: 로그만(받는 번호가 9999 로 끝나면 일부러 실패 — dead·문자 대체 경로 테스트용). http: 대행사 REST 로 전달. 반환값은 대행사 메시지 id. */
 export async function sendAlimtalk(m: AlimtalkMsg): Promise<string> {
   const provider = Deno.env.get('ALIMTALK_PROVIDER') ?? 'console';
@@ -59,7 +60,7 @@ export async function sendAlimtalk(m: AlimtalkMsg): Promise<string> {
     // 대행사 계약 뒤 요청 본문·응답 필드(messageId)를 대행사 문서에 맞춘다 — docs/ops/outbox.md "대행사 붙이기"
     const r = await fetch(Deno.env.get('ALIMTALK_HTTP_URL')!, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (Deno.env.get('ALIMTALK_HTTP_TOKEN') ?? '') },
-      body: JSON.stringify({ senderKey: Deno.env.get('ALIMTALK_SENDER_KEY'), to: m.to, templateCode: m.templateCode, text, buttons: [{ name: t.button, type: 'WL', url: m.buttonUrl }] }),
+      body: JSON.stringify({ senderKey: m.senderKey ?? Deno.env.get('ALIMTALK_SENDER_KEY'), to: m.to, templateCode: m.templateCode, text, buttons: [{ name: t.button, type: 'WL', url: m.buttonUrl }] }),
     });
     if (!r.ok) throw new Error('alimtalk http ' + r.status + ' ' + (await r.text()).slice(0, 200));
     const j = await r.json().catch(() => ({})); if (!j.messageId) throw new Error('alimtalk http: no messageId');

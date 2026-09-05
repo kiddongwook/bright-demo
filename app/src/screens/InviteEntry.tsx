@@ -19,7 +19,7 @@ export function InviteEntry({ token, onDone, onGate }: { token: string; onDone: 
   const { setFromVerify, limited, endLimited, session, active, loading } = useSession();
   const dark = useDark();
   const academy = useAcademyPublic();
-  const name = academy?.name ?? '학원';
+  const name = academy?.name ?? '이 학원';
   const [err, setErr] = useState('');
   // 이 기기에 이미 정식으로 들어와 있으면(원장이 자기가 만든 링크를 눌러 보는 경우 등) 토큰을 쓰기 전에 한 번 묻는다
   const occupied = !loading && !!session && !limited && !!active;
@@ -37,7 +37,7 @@ export function InviteEntry({ token, onDone, onGate }: { token: string; onDone: 
     return (
       <section className="view on" style={{ background: 'var(--ground)' }}>
         <div className="gate">
-          <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-medium.png')} alt={name} />
+          <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={name} />
           <h1>이미 들어와 있어요</h1>
           <p>이 기기는 <b>{who}</b>로 들어와 있어요. 초대 링크로 들어가면 지금 계정에서 나가고, 링크는 한 번 쓰면 끝나요.</p>
           <div className="btnrow" style={{ padding: '20px 0 0', width: '100%' }}><button className="btn" onClick={onDone}>지금 계정 그대로</button></div>
@@ -49,7 +49,7 @@ export function InviteEntry({ token, onDone, onGate }: { token: string; onDone: 
   return (
     <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
-        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-medium.png')} alt={name} />
+        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={name} />
         {err
           ? <><h1>들어가지 못했어요</h1><p>{err}</p>
             <div className="btnrow" style={{ padding: '20px 0 0', width: '100%' }}><button className="btn" onClick={onGate}>전화번호로 들어가기</button></div></>

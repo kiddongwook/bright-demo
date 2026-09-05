@@ -12,7 +12,7 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   useEffect(() => {
     if (academy) { applyBrand(academy.brand_color); document.title = academy.name; }
   }, [academy]);
-  const name = academy?.name ?? '학원';
+  const name = academy?.name ?? '이 학원';
   async function send() {
     if (!isValidMobile(phone)) { setErr('휴대폰 번호를 확인해 주세요'); return; }
     setBusy(true); setErr('');
@@ -29,6 +29,7 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
     return (
       <section className="view on" style={{ background: 'var(--ground)' }}>
         <div className="gate">
+          <img className="gate-logo" src={asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt="BRIGHT" />
           <h1>학원을 찾을 수 없어요</h1>
           <p>원장님께 받은 주소로 다시 들어와 주세요.</p>
         </div>
@@ -38,7 +39,7 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   return (
     <section className="view on" style={{ background: 'var(--ground)' }}>
       <div className="gate">
-        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-medium.png')} alt={name} />
+        <img className="gate-logo" src={logoUrl(academy?.logo_path ?? null) ?? asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={name} />
         <h1>문을 열어드릴게요</h1>
         <p>{name} 학생·학부모로 등록된<br />전화번호를 알려주세요.</p>
         <div className="field"><label>전화번호</label>

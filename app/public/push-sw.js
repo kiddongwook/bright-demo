@@ -14,9 +14,9 @@ self.addEventListener('push', event => {
   const ref = typeof d.ref === 'string' ? d.ref : '';
   event.waitUntil(self.registration.showNotification(d.title || '알림', {
     body: d.body || '',
-    icon: BASE + 'logo/icon-192.png',
+    icon: BASE + 'logo/bright-icon-192.png',
     // 배지는 안드로이드 상태 표시줄의 작은 단색 자리 — 알파만 쓰이니 흰 실루엣 한 장을 따로 둔다
-    badge: BASE + 'logo/badge.png',
+    badge: BASE + 'logo/bright-badge.png',
     data: { view, ref },
     // 같은 화면으로 가는 알림은 한 줄로 겹친다. renotify 가 없으면 두 번째 알림이 소리 없이 첫 알림을 갈아치운다.
     tag: view + ':' + ref,

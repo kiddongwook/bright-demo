@@ -101,7 +101,7 @@ function Frame() {
       <header className={'appbar' + (showScrollTitle ? ' scrolled' : '')}>
         {nav.isTab
           ? <>
-            {logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-bold.png')} alt={active!.academy_name} />}
+            {logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={active!.academy_name} />}
             <span className={'sct' + (showScrollTitle ? ' on' : '')} aria-hidden={!showScrollTitle}>{scrollTitle}</span>
           </>
           : <><button className="bk" onClick={nav.back} aria-label="뒤로"><IcBack /></button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}

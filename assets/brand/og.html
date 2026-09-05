@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<!-- og.png(1200x630) 원본. 굽기: scratchpad/sweep/shot-og-bright.mjs → E:/KID/Study/bright-demo/og.png -->
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+  html,body{margin:0;width:1200px;height:630px;overflow:hidden;font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;background:#FFFFFF;color:#111318}
+  .wrap{position:relative;width:1200px;height:630px;background:#FFFFFF}
+  .left{position:absolute;left:84px;top:90px;width:560px}
+  .logo{height:62px;display:block;margin-bottom:32px}
+  h1{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1.2;margin:0 0 18px}
+  p{font-size:24px;color:#6F7480;line-height:1.55;margin:0 0 30px;font-weight:500}
+  .tiles{display:flex;gap:12px}
+  .t{border-radius:20px;padding:16px 20px;min-width:140px}
+  .t b{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .t span{font-size:15px;color:#6F7480}
+  .t1{background:#DCE9FF}.t2{background:#FFE5D6}.t3{background:#DAF4E6}
+  .phone{position:absolute;right:96px;top:56px;width:292px;height:518px;border-radius:44px;background:#111;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.22)}
+  .scr{width:100%;height:100%;border-radius:36px;background:#fff;overflow:hidden;position:relative}
+  .bar{padding:20px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E4E8F0}
+  .bar img{height:20px}
+  .v{padding:16px 18px}
+  .h{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0 0 12px}
+  .st{display:flex;gap:6px;margin-bottom:12px}
+  .st div{flex:1;border-radius:14px;padding:10px 10px 8px}
+  .st div i{display:block;font-style:normal;font-size:10px;color:#6F7480}
+  .st div b{font-size:18px;font-weight:800}
+  .att{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+  .stu{border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;background:#F5F6FA;border:1.5px solid transparent;font-size:11px;font-weight:700}
+  .stu .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:800;background:#DCE9FF;color:#2F5BEA}
+  .stu.p{background:#E6F6EC;border-color:#2FA36B}.stu.p .av{background:#2FA36B;color:#fff}
+  .stu.l{background:#FFF4D6;border-color:#E0A100}.stu.l .av{background:#E0A100;color:#fff}
+  .cta{position:absolute;left:14px;right:14px;bottom:78px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2F5BEA,#6A3DF0);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;box-shadow:0 10px 24px rgba(47,91,234,.3)}
+  .tabs{position:absolute;left:14px;right:14px;bottom:14px;height:50px;border-radius:22px;background:#111318;color:#9AA0AD;display:flex;justify-content:space-around;align-items:center;font-size:10px;font-weight:600}
+  .tabs span.on{color:#fff}
+</style></head><body><div class="wrap">
+  <div class="left">
+    <img class="logo" src="bright-wordmark.png" alt="BRIGHT">
+    <h1>학원 출결·공지·문의<br>수강료를 폰 하나로</h1>
+    <p>BRIGHT — 학원용 앱. 원장님이 출석을 누르면<br>학부모 폰으로 바로 갑니다.</p>
+    <div class="tiles"><div class="t t1"><b>1개</b><span>오늘 수업</span></div><div class="t t2"><b>0</b><span>답변 대기</span></div><div class="t t3"><b>1</b><span>결석 신청</span></div></div>
+  </div>
+  <div class="phone"><div class="scr">
+    <div class="bar"><img src="bright-wordmark.png" alt=""><span style="font-size:11px;color:#6F7480">9월 4일 금</span></div>
+    <div class="v">
+      <div class="h">9월 4일 금요일</div>
+      <div class="st"><div style="background:#DCE9FF"><i>오늘 수업</i><b>1개</b></div><div style="background:#FFE5D6"><i>답변 대기</i><b>0</b></div><div style="background:#DAF4E6"><i>결석 신청</i><b>1</b></div></div>
+      <div class="att">
+        <div class="stu p"><span class="av">박</span>박지훈<span style="font-size:9px;color:#1E7A4D">출석</span></div>
+        <div class="stu l"><span class="av">이</span>이서연<span style="font-size:9px;color:#9A6B10">지각</span></div>
+        <div class="stu"><span class="av">최</span>최유나<span style="font-size:9px;color:#6F7480">—</span></div>
+        <div class="stu p"><span class="av">김</span>김민수<span style="font-size:9px;color:#1E7A4D">출석</span></div>
+        <div class="stu p"><span class="av">정</span>정하윤<span style="font-size:9px;color:#1E7A4D">출석</span></div>
+        <div class="stu p"><span class="av">한</span>한지우<span style="font-size:9px;color:#1E7A4D">출석</span></div>
+      </div>
+    </div>
+    <div class="cta">저장하고 알리기</div>
+    <div class="tabs"><span class="on">홈</span><span>공지</span><span>문의</span><span>더보기</span></div>
+  </div></div>
+</div></body></html>

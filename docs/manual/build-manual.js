@@ -1,10 +1,10 @@
-// 영어의 집 앱 — 원장님 사용 설명서 (.docx)
+// BRIGHT 원장님 사용 설명서 (.docx) — 제품 문서다. 학원 이름은 원장님이 앱의 "우리 학원" 화면에서 정한다.
 const fs = require('fs');
 const path = require('path');
 const { Document, Packer, Paragraph, TextRun, HeadingLevel, ImageRun, Table, TableRow, TableCell, WidthType, ShadingType, AlignmentType, BorderStyle, LevelFormat, PageBreak, TableOfContents } = require('docx');
 
 const SHOT = 'C:/Users/user/AppData/Local/Temp/claude/E--KID-Study-bright-demo/34aa45f7-c823-4782-808a-498e4f2c69d5/scratchpad/sweep/out/';
-const OUT = 'E:/KID/Study/bright-demo/docs/manual/영어의집-앱-원장님-사용설명서.docx';
+const OUT = 'E:/KID/Study/bright-demo/docs/manual/BRIGHT-원장님-사용설명서.docx';
 const FONT = 'Malgun Gothic';
 const INK = '111318', INK2 = '6F7480', BRAND = '2F5BEA', SOFT = 'F5F6FA', TILE = 'DCE9FF';
 
@@ -44,9 +44,9 @@ function table(rows, widths) {
 const children = [];
 // 표지
 children.push(new Paragraph({ spacing: { before: 2400 } }));
-children.push(p([t('영어의 집 앱', { size: 60, bold: true })], { align: AlignmentType.CENTER, after: 120 }));
+children.push(p([t('BRIGHT', { size: 60, bold: true })], { align: AlignmentType.CENTER, after: 120 }));
 children.push(p([t('원장님 사용 설명서', { size: 36, bold: true, color: BRAND })], { align: AlignmentType.CENTER, after: 400 }));
-children.push(p([t('처음 쓰는 날, 이 문서 하나면 됩니다.', { size: 24, color: INK2 })], { align: AlignmentType.CENTER, after: 2400 }));
+children.push(p([t('학원 이름은 우리 학원 화면에서 정합니다', { size: 24, color: INK2 })], { align: AlignmentType.CENTER, after: 2400 }));
 children.push(p([t('2026년 9월 · 앱 주소: https://kiddongwook.github.io/bright-demo/pwa/', { size: 18, color: INK2 })], { align: AlignmentType.CENTER }));
 children.push(new Paragraph({ children: [new PageBreak()] }));
 
@@ -88,10 +88,10 @@ children.push(step('학생 타일을 누릅니다. 누를 때마다 출석 → �
 children.push(step('대부분 출석이면 "전원 출석"을 먼저 누르고 예외만 고칩니다.'));
 children.push(step('타일을 길게 누르면(또는 오른쪽 위 ⋯) 사유를 적을 수 있어요. 지각 10분, 병원 같은 칩을 누르면 됩니다.'));
 children.push(step('아래에 "저장하고 알리기"가 올라오면 누릅니다. 지각·결석 학부모에게 사유까지 알림이 갑니다.'));
-children.push(shots2('director-light-02-today-dirty.png', '홈 — 타일을 누르면 저장 단추가 올라옵니다', 'director-light-24-att-reason.png', '길게 누르면 사유 칩'));
+children.push(shots2('director-light-02-today-dirty.png', '홈 — 타일을 누르면 저장 단추가 올라옵니다', 'director-light-26-att-reason.png', '길게 누르면 사유 칩'));
 children.push(h2('결석 신청 처리'));
 children.push(p('학부모가 미리 알린 결석은 홈 아래 "결석 신청"에 쌓입니다. 누르면 보강 날짜 후보(그 반의 다음 수업)가 칩으로 뜹니다. 하나 고르고 "확정하고 알리기"를 누르면 학부모에게 보강 안내가 갑니다. 자료로 대체할 수도 있습니다.'));
-children.push(...shot('makeup-crop.png', '결석 신청 — 보강 후보 칩', 2.0));
+children.push(...shot('director-light-25-makeup-chips.png', '결석 신청 — 보강 후보 칩', 2.0));
 children.push(h2('이번 주 할 것'));
 children.push(p('홈의 "이번 주 할 것 관리"에서 숙제·시험을 넣습니다. 제목은 최근 것과 자주 쓰는 틀을 칩으로 고를 수 있고, 마감은 그 반 다음 수업일이 기본입니다. 학생이 앱에서 체크하고 원장님도 대신 체크할 수 있어요.'));
 
@@ -112,7 +112,7 @@ children.push(bullet('자주 쓰는 답이 칩으로 있어 누르면 들어갑�
 children.push(bullet('"학생 기록 보기"를 누르면 그 아이의 출결·결석·문의·메모가 시간순으로 보입니다.'));
 children.push(bullet('"자주 묻는 질문에도 올리기"를 켜면 같은 질문을 학부모가 먼저 볼 수 있게 됩니다. "메모로도 남기기"를 켜면 상담 메모로 남습니다.'));
 children.push(bullet('답하면 그 학부모에게만 알림이 갑니다.'));
-children.push(shots2('director-light-06-inbox.png', '문의 — 답변 대기·완료', 'director-light-25-inbox-answer.png', '답변 — 칩·기록 보기·FAQ·메모'));
+children.push(shots2('director-light-06-inbox.png', '문의 — 답변 대기·완료', 'director-light-27-inbox-answer.png', '답변 — 칩·기록 보기·FAQ·메모'));
 
 // 6
 children.push(h1('6. 더보기 — 학원 운영'));
@@ -133,7 +133,7 @@ children.push(step('"수강료 설정"에서 요금제(반별 또는 학원 공�
 children.push(step('달마다 "이번 달 청구서 만들기". 활성 학생마다 한 장, 형제 할인은 자동입니다. 다시 눌러도 이미 있는 학생은 건너뜁니다.'));
 children.push(step('통장에 들어오면 학생을 눌러 "전액 납부 확인"(계좌이체·현금·카드) 또는 부분 금액. 남은 금액보다 많이는 받을 수 없어요.'));
 children.push(step('"미납 안내 보내기"를 누르면 미납 학부모에게 계좌 안내와 함께 알림이 갑니다(하루 한 번).'));
-children.push(shots2('director-light-21-billing.png', '수강료 — 이번 달 청구서', 'director-light-22-billing-settings.png', '수강료 설정 — 요금제·규칙·계좌'));
+children.push(shots2('director-light-23-billing.png', '수강료 — 이번 달 청구서', 'director-light-24-billing-settings.png', '수강료 설정 — 요금제·규칙·계좌'));
 children.push(note('결제는 앱을 거치지 않습니다. 돈은 학원 계좌로 직접 받고, 앱은 누가 냈는지만 기록합니다. 학부모 화면에는 이번 달 금액·납기·계좌 안내가 보입니다.'));
 children.push(h2('우리 학원 · 알림 설정 · 앱 정보'));
 children.push(bullet('우리 학원: 이름, 강조색(5가지), 로고. 로고를 올리면 앱바와 학부모 화면에 보입니다.'));
@@ -166,8 +166,8 @@ children.push(p('더보기 → 앱 정보·진단 → "문제 보내기"로 화�
 children.push(p([t('이 설명서는 앱이 바뀌면 함께 고칩니다. 마지막 수정: 2026년 9월 5일.', { size: 18, color: INK2 })]));
 
 const doc = new Document({
-  creator: '영어의 집',
-  title: '영어의 집 앱 원장님 사용 설명서',
+  creator: 'BRIGHT',
+  title: 'BRIGHT 원장님 사용 설명서',
   styles: { default: { document: { run: { font: FONT, size: 22 } } } },
   numbering: { config: [
     { reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 480, hanging: 240 } } } }] },

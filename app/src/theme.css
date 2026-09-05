@@ -466,7 +466,7 @@ body.no-tab.has-cta .toast{bottom:calc(var(--cta-h) + 32px + env(safe-area-inset
   .sidenav{display:flex;flex-direction:column;grid-column:1;grid-row:1 / 3;
     background:var(--paper);border-right:1px solid var(--rule);padding:18px 12px 12px;overflow-y:auto}
   .sidenav .brandrow{display:flex;align-items:center;justify-content:center;min-height:56px;padding:6px 10px 20px}
-  .sidenav .brandrow .logo{height:44px;width:auto;display:block}
+  .sidenav .brandrow .logo{height:30px;width:auto;max-width:100%;display:block}   /* BRIGHT 워드마크는 가로로 길다(4:1) — 232px 내비 안에 들어오게 */
   .sidenav .brandrow .an{font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.35}
   .sidenav .nvgroup{display:flex;flex-direction:column;gap:2px}
   .sidenav .nv{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:9px 12px;border-radius:var(--r-el);

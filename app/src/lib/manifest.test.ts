@@ -8,13 +8,14 @@ const BASE: IdentityInput = {
 const LOGO = 'https://wq.supabase.co/storage/v1/object/public/logos/abc/logo.png';
 
 describe('buildManifest', () => {
-  it('로고가 없으면 기본 아이콘 두 장을 쓴다', () => {
+  it('로고가 없으면 BRIGHT 기본 아이콘 세 장(any 두 장 + maskable 한 장)을 쓴다', () => {
     const m = buildManifest(BASE);
     expect(m.icons.map(i => i.src)).toEqual([
-      'https://kiddongwook.github.io/bright-demo/pwa/logo/icon-192.png',
-      'https://kiddongwook.github.io/bright-demo/pwa/logo/icon-512.png',
+      'https://kiddongwook.github.io/bright-demo/pwa/logo/bright-icon-192.png',
+      'https://kiddongwook.github.io/bright-demo/pwa/logo/bright-icon-512.png',
+      'https://kiddongwook.github.io/bright-demo/pwa/logo/bright-icon-maskable-512.png',
     ]);
-    expect(m.icons.every(i => i.purpose === undefined)).toBe(true);
+    expect(m.icons.map(i => i.purpose)).toEqual([undefined, undefined, 'maskable']);
   });
   it('로고가 있으면 로고만 쓴다 — 기본 아이콘을 maskable 로 섞으면 안드로이드가 그걸 고른다', () => {
     const m = buildManifest({ ...BASE, logoUrl: LOGO });
@@ -37,7 +38,7 @@ describe('buildManifest', () => {
   it('base 가 로컬 개발의 / 여도 슬래시가 한 번만 붙는다', () => {
     const m = buildManifest({ ...BASE, base: '/', origin: 'http://localhost:5173' });
     expect(m.start_url).toBe('http://localhost:5173/?a=haetsal');
-    expect(m.icons[0].src).toBe('http://localhost:5173/logo/icon-192.png');
+    expect(m.icons[0].src).toBe('http://localhost:5173/logo/bright-icon-192.png');
   });
   it('이름·강조색을 그대로 싣고, 색이 이상하면 기본색으로 되돌린다', () => {
     expect(buildManifest(BASE).theme_color).toBe('#0FA37F');
@@ -58,8 +59,8 @@ describe('appleTouchIcon', () => {
   it('PNG 로고면 그 로고, 아니면 기본 아이콘', () => {
     expect(appleTouchIcon({ ...BASE, logoUrl: LOGO })).toBe(LOGO);
     expect(appleTouchIcon({ ...BASE, logoUrl: LOGO + '?v=17' })).toBe(LOGO + '?v=17');
-    expect(appleTouchIcon({ ...BASE, logoUrl: 'https://x/logo.svg' })).toBe('https://kiddongwook.github.io/bright-demo/pwa/logo/icon-192.png');
-    expect(appleTouchIcon(BASE)).toBe('https://kiddongwook.github.io/bright-demo/pwa/logo/icon-192.png');
+    expect(appleTouchIcon({ ...BASE, logoUrl: 'https://x/logo.svg' })).toBe('https://kiddongwook.github.io/bright-demo/pwa/logo/bright-icon-192.png');
+    expect(appleTouchIcon(BASE)).toBe('https://kiddongwook.github.io/bright-demo/pwa/logo/bright-icon-192.png');
   });
   it('isPng 는 쿼리가 붙은 주소도 본다', () => {
     expect(isPng(LOGO)).toBe(true);

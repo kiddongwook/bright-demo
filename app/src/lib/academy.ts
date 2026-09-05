@@ -44,8 +44,8 @@ export function useAcademyPublic(): PublicAcademy | null | undefined {
   return a;
 }
 
-/** 로그인 전 화면의 로고 alt 용 — 이름이 오기 전엔 '학원'. */
+/** 로그인 전 화면의 로고 alt 용 — 이름이 오기 전엔 '이 학원'. */
 export function useAcademyName(): string {
   const a = useAcademyPublic();
-  return a?.name ?? '학원';
+  return a?.name ?? '이 학원';
 }

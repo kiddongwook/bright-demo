@@ -3,7 +3,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, { auth: { persistSession: false } });
-const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%,slug.like.manage-%,slug.like.export-%,slug.like.hk-%,slug.like.onb-%,slug.like.files-%,slug.like.push-%,slug.like.inv-%,slug.like.bill-%,slug.like.seam-%,slug.like.hard-%,slug.like.rt-%,slug.like.ns-%,slug.like.attnote-%,slug.like.nt-%,slug.like.low-%');
+const { data: acs } = await admin.from('academies').select('id, slug').or('slug.like.a-%,slug.like.b-%,slug.like.otp-%,slug.like.flow-%,slug.like.outbox-%,slug.like.manage-%,slug.like.export-%,slug.like.hk-%,slug.like.onb-%,slug.like.files-%,slug.like.push-%,slug.like.inv-%,slug.like.bill-%,slug.like.seam-%,slug.like.hard-%,slug.like.rt-%,slug.like.ns-%,slug.like.attnote-%,slug.like.nt-%,slug.like.low-%,slug.like.op-%');
 let users = 0;
 for (const a of acs ?? []) {
   const { data: ms } = await admin.from('memberships').select('user_id').eq('academy_id', a.id);
@@ -13,9 +13,11 @@ for (const a of acs ?? []) {
 }
 // 학원 없이 남은 테스트 사용자 (전화 0101*/0109*). 씨앗 학원 사용자(소속·명부가 있는 사람)는 절대 건드리지 않는다.
 const { data: cand } = await admin.from('users').select('id, phone').or('phone.like.0101%,phone.like.0109%');
+// BRIGHT 운영자(0023)는 소속도 명부도 없다 — 여기서 지키지 않으면 "고아" 로 보고 지운다.
 const keep = new Set([
   ...((await admin.from('memberships').select('user_id')).data ?? []).map(m => m.user_id),
   ...((await admin.from('roster_phones').select('phone')).data ?? []).map(r => r.phone),
+  ...((await admin.from('app_operators').select('user_id')).data ?? []).map(o => o.user_id),
 ]);
 const orphans = (cand ?? []).filter(u => !keep.has(u.id) && !keep.has(u.phone));
 for (const u of orphans) {

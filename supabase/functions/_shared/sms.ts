@@ -1,9 +1,12 @@
-export async function sendSms(to: string, text: string): Promise<void> {
+// senderKey: 학원별 발신키 (0023 academy_settings). 주면 이 요청에만 그 키를 쓰고, 없으면 전역 값으로 간다.
+// 콘솔 모드에서는 아무 차이가 없다 — 키가 실제로 나가는 자리는 대행사 REST 뿐이다.
+export async function sendSms(to: string, text: string, senderKey?: string | null): Promise<void> {
   const provider = Deno.env.get('SMS_PROVIDER') ?? 'console';
   if (provider === 'console') { console.log(`[SMS→${to}] ${text}`); return; }
   if (provider === 'http') {
     const url = Deno.env.get('SMS_HTTP_URL')!;
-    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (Deno.env.get('SMS_HTTP_TOKEN') ?? '') }, body: JSON.stringify({ to, text }) });
+    const key = senderKey ?? Deno.env.get('SMS_SENDER_KEY') ?? null;
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (Deno.env.get('SMS_HTTP_TOKEN') ?? '') }, body: JSON.stringify({ to, text, ...(key ? { senderKey: key } : {}) }) });
     if (!r.ok) throw new Error('sms http ' + r.status);
     return;
   }

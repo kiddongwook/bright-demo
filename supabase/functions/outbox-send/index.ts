@@ -42,6 +42,18 @@ Deno.serve(async (req) => {
   const { data: rows, error } = await admin.rpc('outbox_claim', { n: 20 });
   if (error) return json(500, { error: error.message });
   let sent = 0, failed = 0, dead = 0, skipped = 0; const debug: unknown[] = [];
+  // 학원별 발신키 (0023 academy_settings). service_role 전용 RPC 로만 원문이 나온다 — 운영자 화면은 마스킹만 본다.
+  // 한 번 돌 때 학원마다 한 번만 묻는다. RPC 가 아직 없으면(배포 순서) 전역 값으로 간다.
+  const keyCache = new Map<string, string | null>();
+  const senderKeyOf = async (academyId: string): Promise<string | null> => {
+    if (keyCache.has(academyId)) return keyCache.get(academyId) ?? null;
+    let key: string | null = null;
+    const { data, error: e } = await admin.rpc('academy_sms_key', { p_academy: academyId });
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!e && row?.sms_provider === 'http' && row?.sender_key) key = row.sender_key as string;
+    keyCache.set(academyId, key);
+    return key;
+  };
   for (const o of rows ?? []) {
     let lt: { id: string } | null = null, u: UserRow | null = null;
     try {
@@ -87,8 +99,8 @@ Deno.serve(async (req) => {
         }
         extra = { title: payload.title, body: payload.body, view: payload.view, subs: good.length, gone: gone.length, dry: pushDryRun() };
       }
-      else if (o.channel === 'alimtalk') pid = await sendAlimtalk({ to: u!.phone, templateCode: o.template_code, params: o.params ?? {}, buttonUrl: url });
-      else await sendSms(u!.phone, renderSms(o.template_code, o.params ?? {}, url));
+      else if (o.channel === 'alimtalk') pid = await sendAlimtalk({ to: u!.phone, templateCode: o.template_code, params: o.params ?? {}, buttonUrl: url, senderKey: await senderKeyOf(o.academy_id) });
+      else await sendSms(u!.phone, renderSms(o.template_code, o.params ?? {}, url), await senderKeyOf(o.academy_id));
       await admin.from('outbox').update({ status: 'sent', provider_msg_id: pid, sent_at: new Date().toISOString(), link_token_id: lt?.id ?? null, last_error: null }).eq('id', o.id);
       sent++; if (debugOn) debug.push({ id: o.id, channel: o.channel, to: u!.phone, template_code: o.template_code, url, ...extra });
     } catch (e) {

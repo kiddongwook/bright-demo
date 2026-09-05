@@ -28,7 +28,7 @@ export function SideNav({ role, academyName, logoSrc, dark }: { role: Role; acad
       <div className="brandrow">
         {logoSrc
           ? <span className="an">{academyName}</span>
-          : <img className="logo" src={asset(dark ? 'logo/yeongeo-jip-bold-white.png' : 'logo/yeongeo-jip-bold.png')} alt={academyName} />}
+          : <img className="logo" src={asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={academyName} />}
       </div>
       <nav className="nvgroup">
         {TABS[role].map(t => (

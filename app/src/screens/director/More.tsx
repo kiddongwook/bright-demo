@@ -112,7 +112,7 @@ export function Academy() {
   return (
     <section className="view on">
       <div className="homescr">
-        <div className="appicon"><img src={logoSrc ?? asset('logo/yeongeo-jip-bold-white.png')} alt="" /></div>
+        <div className="appicon"><img src={logoSrc ?? asset('logo/bright-icon-192.png')} alt="" style={{ width: 70, height: 70, borderRadius: 19, objectFit: 'cover' }} /></div>
         <div className="hl">{data?.name ?? ''}</div>
         <p className="hc">원장님과 학부모, 학생 폰 홈 화면에<br />이렇게 놓입니다.</p>
       </div>
