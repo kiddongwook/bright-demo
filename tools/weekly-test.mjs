@@ -80,7 +80,7 @@ ok(pn?.body?.includes('숙제 1/3'), `숙제는 이번 주 homework 만 — 1/3 
 ok(pn?.body?.includes('다음 수업'), `다음 수업이 붙는다 (got ${pn?.body})`);
 ok(/다음 수업 [월수] 19:00/.test(pn?.body ?? ''), `다음 수업은 시간표(월·수 19:00)에서 (got ${pn?.body})`);
 ok((pn?.body?.length ?? 999) <= 120, `본문 120자 안 (got ${pn?.body?.length})`);
-ok(pn?.link === 'child:', `링크는 우리 아이 화면 'child:' (got ${pn?.link})`);
+ok(pn?.link === `child:${st.id}`, `링크는 우리 아이 화면 'child:<student_id>' (0030 B4-W4 — dedupe 키) (got ${pn?.link})`);
 ok(!!dn, '원장 주간 요약 알림이 있다');
 ok(dn?.body?.includes('출석률 100%'), `원장 본문에 출석률 100% — 출석 2·지각 1·결석 0 (got ${dn?.body})`);
 ok(dn?.body?.includes('미납 0건'), `원장 본문에 미납 0건 (got ${dn?.body})`);

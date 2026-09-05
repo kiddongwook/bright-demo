@@ -1,4 +1,5 @@
-// 수강료 자동화(0028) 통합 테스트: 자동 발행(같은 날 두 번 tick → 1회, 퇴원생 제외, 원장 알림 1건) → 자동 미납 안내(20시간 dedupe) → 내부 함수 권한
+// 수강료 자동화(0028) 통합 테스트: 자동 발행(같은 날 두 번 tick → 1회, 퇴원생 제외, 원장 알림 1건) → 자동 미납 안내(크론은 납기+N일·6일 간격 — 0030 B4-B5; 수동 버튼은 20시간) → 내부 함수 권한
+// remind_unpaid_for 는 0030 부터 4인자(p_academy, p_ym, p_due_before, p_min_gap) — 2인자 호출은 기본값으로 같은 함수에 닿는다.
 // node --env-file=../.env.local billing-auto-test.mjs
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';

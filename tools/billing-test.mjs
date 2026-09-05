@@ -96,7 +96,7 @@ try {
   ok(((await admin.from('notifications').select('id').eq('academy_id', A).eq('kind', 'billing')).data ?? []).length === 1, '알림도 늘지 않는다');
 
   // ---- D. 연체 표시
-  await admin.from('invoices').update({ due_date: '2020-01-05' }).eq('student_id', S3);
+  await admin.from('invoices').update({ due_date: '2020-01-05', status: 'issued' })   /* 오늘이 납기 뒤면 C 의 안내가 이미 overdue 로 뒤집어 놓는다 — 날짜에 안 흔들리게 되돌린다 */.eq('student_id', S3);
   // 0018: 부분 납부도 뒤집는다(INT-32) → 둘째 청구서의 납기가 지난 날에 돌리면 2장이 될 수 있다. "적어도 셋째 한 장" 으로 본다.
   r = await d.rpc('refresh_overdue'); ok(!r.error && r.data >= 1, `refresh_overdue → 1 이상 (got ${r.error?.message ?? r.data})`);
   ok((await admin.from('invoices').select('status').eq('student_id', S3).single()).data?.status === 'overdue', '납기 지난 issued → overdue');
@@ -106,7 +106,7 @@ try {
   r = await d.rpc('set_invoice_amount', { p_invoice: inv2.id, p_amount: 150000, p_discount: 15000, p_textbook: 20000 });
   ok(!r.error, 'set_invoice_amount: ' + r.error?.message);
   got = (await admin.from('invoices').select('total, status').eq('id', inv2.id).single()).data;
-  ok(got?.total === 155000 && got.status === 'partial', `총액 다시 계산 (got ${JSON.stringify(got)})`);
+  ok(got?.total === 155000 && ['partial', 'overdue'].includes(got.status), /* 납기가 지난 날에 돌리면 부분 납부는 overdue 로 보인다(INT-32) */ `총액 다시 계산 (got ${JSON.stringify(got)})`);
   // 0018(INT-30): 이미 낸 돈(35,000)보다 낮은 총액은 거절 — 환불이 먼저다
   r = await d.rpc('set_invoice_amount', { p_invoice: inv2.id, p_amount: 10000, p_discount: 0, p_textbook: 0 });
   ok(!!r.error && /below_paid/.test(r.error.message), `낸 돈보다 낮은 총액 거절 (got ${r.error?.message})`);

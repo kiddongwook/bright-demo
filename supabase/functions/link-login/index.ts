@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { sha256, json, cors } from '../_shared/sms.ts';
+import { listMemberships } from '../_shared/auth.ts';
 // 알림톡 버튼의 토큰 하나로 그 사용자 세션을 만든다. 토큰은 해시만 저장돼 있다. 만료 전엔 다시 눌러도 열린다(카톡에서 여러 번 누른다).
 // 세션은 매직링크 검증으로 만든다 — 비밀번호를 갈지 않으므로 설치된 앱의 기존 세션이 끊기지 않는다.
 Deno.serve(async (req) => {
@@ -16,8 +17,8 @@ Deno.serve(async (req) => {
   if (ac?.locked === true) return json(403, { error: 'academy_locked' });
   const { data: u } = await admin.from('users').select('id, phone, active_membership_id').eq('id', lt.user_id).single();
   if (!u) return json(401, { error: 'bad_token' });
-  const { data: ms } = await admin.from('memberships').select('id, academy_id, role, student_id, academies(name), students(name)').eq('user_id', u.id);
-  const memberships = (ms ?? []).map((m: any) => ({ id: m.id, academy_id: m.academy_id, role: m.role, student_id: m.student_id, academy_name: m.academies?.name, student_name: m.students?.name }));
+  // 소속은 otp-verify·invite-login 과 같은 한 곳(listMemberships)에서 — 잠긴 학원(0023) 소속은 빠진다. 응답 모양은 그대로. (B4-L7)
+  const memberships = await listMemberships(admin, u.id);
   // 활성 역할이 이 학원 것이 아니면 이 학원의 첫 소속으로 (학부모·학생 우선)
   const inAcademy = memberships.filter(m => m.academy_id === lt.academy_id);
   if (!inAcademy.length) return json(401, { error: 'bad_token' });
