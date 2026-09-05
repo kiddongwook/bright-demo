@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { asset } from '../../lib/asset';
-import { academy, setBrandColor, setLogo, listClassesFull, exportAcademy } from '../../lib/api';
-import { uploadLogo, removeLogo, logoUrl } from '../../lib/logo';
+import { academy, setBrandColor, setLogo, setWordmark, listClassesFull, exportAcademy } from '../../lib/api';
+import { uploadLogo, uploadWordmark, removeLogo, logoUrl } from '../../lib/logo';
 import { useNav } from '../../lib/nav';
 import { useLoad } from '../../lib/useLoad';
 import { useSession } from '../../auth/session';
@@ -111,7 +111,32 @@ export function Academy() {
     try { await removeLogo(data.logo_path).catch(() => {}); await setLogo(null); setData({ ...data, logo_path: null }); toast('로고를 지웠어요'); }
     catch (e) { errToast(e); } finally { setBusyLogo(false); }
   }
+  /* 가로 로고 두 칸(밝음·어두움) — 바쁨 표시·파일 입력을 칸마다 따로 두어 한쪽을 올리는 동안 다른 쪽 버튼이 죽지 않게 */
+  const [busyWm, setBusyWm] = useState(false);
+  const [busyWmDark, setBusyWmDark] = useState(false);
+  const wmRef = useRef<HTMLInputElement>(null);
+  const wmDarkRef = useRef<HTMLInputElement>(null);
+  const wmKey = (dark: boolean) => dark ? 'wordmark_dark_path' as const : 'wordmark_path' as const;
+  async function pickWordmark(f: File | undefined, dark: boolean) {
+    if (!f || !data) return;
+    const setBusyX = dark ? setBusyWmDark : setBusyWm, ref = dark ? wmDarkRef : wmRef;
+    setBusyX(true);
+    try { const path = await uploadWordmark(data.id, f, dark); await setWordmark(path, dark); setData({ ...data, [wmKey(dark)]: path }); toast(dark ? '다크 모드용 가로 로고를 올렸어요. 어두운 화면에서 바로 보여요' : '가로 로고를 올렸어요. 앱 위쪽에 바로 보여요'); }
+    catch (e) { errToast(e); }
+    finally { setBusyX(false); if (ref.current) ref.current.value = ''; }
+  }
+  async function clearWordmark(dark: boolean) {
+    const cur = data?.[wmKey(dark)];
+    if (!data || !cur) return;
+    if (!(await confirmSheet({ title: dark ? '다크 모드용 가로 로고를 지울까요?' : '가로 로고를 지울까요?', body: dark ? '어두운 화면에서는 학원 이름 글자로 보여요.' : '앱 위쪽과 PC 왼쪽은 학원 이름 글자로 보여요.', okLabel: '지우기', danger: true }))) return;
+    const setBusyX = dark ? setBusyWmDark : setBusyWm;
+    setBusyX(true);
+    try { await removeLogo(cur).catch(() => {}); await setWordmark(null, dark); setData({ ...data, [wmKey(dark)]: null }); toast('가로 로고를 지웠어요'); }
+    catch (e) { errToast(e); } finally { setBusyX(false); }
+  }
   const logoSrc = data?.logo_path ? logoUrl(data.logo_path, Date.now()) : null;
+  const wmSrc = data?.wordmark_path ? logoUrl(data.wordmark_path, Date.now()) : null;
+  const wmDarkSrc = data?.wordmark_dark_path ? logoUrl(data.wordmark_dark_path, Date.now()) : null;
   return (
     <section className="view on">
       <div className="homescr">
@@ -126,14 +151,33 @@ export function Academy() {
           <span className="chips">{COLORS.map(c => <button key={c} className={'chip' + (data?.brand_color === c ? ' on' : '')} style={{ background: c }} disabled={busy} onClick={() => pick(c)} aria-label={c} />)}</span></div>
         <div className="rw" style={{ cursor: 'default' }}>
           {logoSrc && <img src={logoSrc} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flex: '0 0 auto' }} />}
-          <span className="bd"><span className="t">로고</span><span className="s">{logoSrc ? '문·인증 화면에 바로 보여요' : '정사각으로 잘라 올려요'}</span></span>
+          <span className="bd"><span className="t">로고</span><span className="s">{logoSrc ? '네모 로고 · 설치 아이콘과 문 화면에 보여요' : '정사각으로 잘라 올려요 · 설치 아이콘과 문 화면용'}</span></span>
           {logoSrc
             ? <><button className="btn sm line" disabled={busyLogo} onClick={() => fileRef.current?.click()}>바꾸기</button>
                 <button className="btn sm line" style={{ marginLeft: 8 }} disabled={busyLogo} onClick={clearLogo}>지우기</button></>
             : <button className="btn sm line" disabled={busyLogo} onClick={() => fileRef.current?.click()}>올리기</button>}
           <input ref={fileRef} type="file" accept="image/png,image/jpeg" style={{ display: 'none' }} onChange={e => pickLogo(e.target.files?.[0])} />
         </div>
-        <p className="muted" style={{ padding: '2px 16px 12px' }}>이 로고가 앱 아이콘과 설치 이름에 쓰여요. 512×512 PNG가 가장 좋아요.</p>
+        <div className="rw" style={{ cursor: 'default' }}>
+          {wmSrc && <img src={wmSrc} alt="" style={{ height: 28, width: 'auto', maxWidth: 120, flex: '0 0 auto' }} />}
+          <span className="bd"><span className="t">가로 로고</span><span className="s">{wmSrc ? '앱 위쪽과 PC 왼쪽에 그림으로 보여요' : '가로로 긴 로고를 올려요 · 없으면 학원 이름 글자로 보여요'}</span></span>
+          {wmSrc
+            ? <><button className="btn sm line" disabled={busyWm} onClick={() => wmRef.current?.click()}>바꾸기</button>
+                <button className="btn sm line" style={{ marginLeft: 8 }} disabled={busyWm} onClick={() => clearWordmark(false)}>지우기</button></>
+            : <button className="btn sm line" disabled={busyWm} onClick={() => wmRef.current?.click()}>올리기</button>}
+          <input ref={wmRef} type="file" accept="image/png,image/jpeg" style={{ display: 'none' }} onChange={e => pickWordmark(e.target.files?.[0], false)} />
+        </div>
+        <div className="rw" style={{ cursor: 'default' }}>
+          {/* 어두운 화면용은 대개 흰 글자라 밝은 목록 위에서 안 보인다 — 검은 판 위에 올려 미리 보인다 */}
+          {wmDarkSrc && <span style={{ background: '#111', borderRadius: 8, padding: '4px 8px', flex: '0 0 auto', display: 'inline-flex' }}><img src={wmDarkSrc} alt="" style={{ height: 28, width: 'auto', maxWidth: 120 }} /></span>}
+          <span className="bd"><span className="t">가로 로고 · 다크</span><span className="s">{wmDarkSrc ? '어두운 화면에서 이 그림을 써요' : '없으면 어두운 화면은 학원 이름 글자로'}</span></span>
+          {wmDarkSrc
+            ? <><button className="btn sm line" disabled={busyWmDark} onClick={() => wmDarkRef.current?.click()}>바꾸기</button>
+                <button className="btn sm line" style={{ marginLeft: 8 }} disabled={busyWmDark} onClick={() => clearWordmark(true)}>지우기</button></>
+            : <button className="btn sm line" disabled={busyWmDark} onClick={() => wmDarkRef.current?.click()}>올리기</button>}
+          <input ref={wmDarkRef} type="file" accept="image/png,image/jpeg" style={{ display: 'none' }} onChange={e => pickWordmark(e.target.files?.[0], true)} />
+        </div>
+        <p className="muted" style={{ padding: '2px 16px 12px' }}>네모 로고는 앱 아이콘과 설치 이름에 쓰여요(512×512 PNG가 가장 좋아요). 가로 로고는 투명 배경 PNG 로, 세로 120px 안에 맞춰 줄여 올려요.</p>
       </div>}
       <p className="muted" style={{ padding: '16px 20px 0', textAlign: 'center' }}>로고는 단색으로 두고, 강조색은 앱바·버튼·표시에 씁니다.</p>
     </section>

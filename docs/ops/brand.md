@@ -29,8 +29,17 @@
 |---|---|
 | 학원 이름 | `academies.name` |
 | 강조색 | `academies.brand_color` |
-| 로고 | `logos` 버킷 `<academy_id>/logo.png` + `academies.logo_path` |
+| 로고(네모) | `logos` 버킷 `<academy_id>/logo.png` + `academies.logo_path` |
+| 가로 로고(밝음·어두움) | `logos` 버킷 `<academy_id>/wordmark.png`, `wordmark-dark.png` + `academies.wordmark_path`, `wordmark_dark_path` (0025) |
 | 주소의 학원 | `?a=<slug>` → `academies.slug` |
+
+### 네모 로고와 가로 로고
+
+- **네모 로고**(`logo_path`)는 설치 아이콘·문 화면·홈 화면 미리보기용. 정사각 512×512 불투명 PNG.
+- **가로 로고**(`wordmark_path`)는 앱바와 PC 좌측 내비에 그림으로 보인다. 어두운 화면용은 `wordmark_dark_path` 에 따로 받는다 — 한 장을 반전하지 않는다.
+- 규칙은 `app/src/lib/brandMark.ts` 한 곳: 화면 밝기에 맞는 가로 로고가 있으면 **그림**, 없는데 무엇이든(다른 판 가로 로고나 네모 로고) 올려 두었으면 **학원 이름 글자**, 아무것도 없으면 **BRIGHT 워드마크**.
+  밝은 판만 있는 학원은 어두운 화면에서 글자로 물러난다(어두운 바닥에 어두운 글자를 올리지 않는다).
+- 원장님이 직접: **더보기 → 우리 학원 → 가로 로고 / 다크 모드용 가로 로고**. 앱이 비율 그대로 640×120 안에 맞춰 PNG 로 줄인다(`shrinkWordmarkPng`, 키우지는 않는다).
 
 로그인 전에는 `public_academy(slug)` RPC 한 방으로 이 셋(`name`·`brand_color`·`logo_path`)을 가져온다.
 로그인 뒤에는 `academy()` 가 최종본이다 — `?a=` 나 기기에 남은 slug 는 낡을 수 있어서, 로그인 뒤 값이 설치 정체성을 덮어쓴다.
@@ -42,8 +51,8 @@
 | 자리 | 파일 | 로고 없을 때 | 로고 있을 때 |
 |---|---|---|---|
 | 문·인증·링크·초대 화면 로고 | `screens/{Gate,Otp,LinkEntry,InviteEntry}.tsx` | BRIGHT 워드마크(어두우면 흰 판) | 학원 로고 |
-| 앱바 | `App.tsx` | BRIGHT 워드마크 | 학원 이름 텍스트 |
-| PC 좌측 내비 머리 | `components/SideNav.tsx` | BRIGHT 워드마크 | 학원 이름 텍스트 |
+| 앱바 | `App.tsx` | BRIGHT 워드마크 | 가로 로고 그림, 없으면 학원 이름 텍스트 (`brandMark`) |
+| PC 좌측 내비 머리 | `components/SideNav.tsx` | BRIGHT 워드마크 | 가로 로고 그림, 없으면 학원 이름 텍스트 (`brandMark`) |
 | 홈 화면 설치 미리보기 | `screens/shared/Install.tsx`, `screens/director/More.tsx` | BRIGHT 아이콘 타일 | 학원 로고 |
 | 홈 화면 아이콘(매니페스트) | `lib/manifest.ts` `buildManifest` | `bright-icon-192/512` + `maskable-512` | 학원 로고 한 장(`any maskable`) |
 | iOS `apple-touch-icon` | `lib/manifest.ts` `appleTouchIcon` | `bright-icon-192.png` | 학원 로고(PNG 일 때만) |
@@ -52,9 +61,9 @@
 | 학원 이름을 아직 모를 때의 문구 | `screens/Gate.tsx` 등, `lib/academy.ts` | `이 학원` | 학원 이름 |
 | 소개 페이지 데모 안의 학원 | 루트 `index.html` | `예시 학원` | `?a=<slug>` 의 학원 이름·로고 |
 
-**어두운 화면 주의.** BRIGHT 워드마크는 밝음·어두움 두 벌이 있지만 **학원이 올린 로고는 한 장뿐**이다.
-그래서 앱바는 로고가 있으면 그림 대신 학원 이름 텍스트를 쓰고, 문 화면은 그 한 장을 그대로 쓴다 —
-학원 로고는 **불투명 배경(대개 흰색)의 정사각 PNG** 여야 어두운 화면에서도 살아남는다.
+**어두운 화면 주의.** BRIGHT 워드마크는 밝음·어두움 두 벌이 있지만 **학원의 네모 로고는 한 장뿐**이다.
+그래서 앱바·PC 내비는 네모 로고만 있으면 그림 대신 학원 이름 텍스트를 쓰고(가로 로고는 밝음·어두움을 따로 받아 그림으로), 문 화면은 그 한 장을 그대로 쓴다 —
+네모 로고는 **불투명 배경(대개 흰색)의 정사각 PNG** 여야 어두운 화면에서도 살아남는다.
 
 ## 4. 학원에 로고를 주는 법
 
@@ -86,6 +95,5 @@ node --env-file=../.env.local set-academy-logo.mjs <slug> <png 경로>
 
 - DB: `academies` 두 행(`yeongeo`, `yeongeo-jip`)의 이름과 `logos` 버킷의 그 두 파일 — 고객 데이터다.
 - `assets/logo/yeongeo-jip*.png` — 그 학원 로고 원본. 저장소에 남기지만 **코드에서 참조하지 않는다**.
-- `app/public/logo/yeongeo-jip-*.png` — 옛 기본값. 지금은 아무도 안 쓴다(다음 정리 때 지운다).
 - `docs/superpowers/**` — 지나간 설계·계획 문서. 그때의 기록이라 그대로 둔다.
 - `tools/seed-demo.mjs`, `tools/*-test.mjs` 의 `@auth.yeongeo.local` 이메일 규칙 — 씨앗·시험 데이터다.

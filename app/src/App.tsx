@@ -10,6 +10,7 @@ import { Placeholder } from './screens/Placeholder';
 import { NavProvider, useNav, TABS, TABMETA, TITLE, ICON, WIDE_VIEWS, type Role } from './lib/nav';
 import { setContext, unreadCount, academy, type Academy } from './lib/api';
 import { logoUrl } from './lib/logo';
+import { brandMark } from './lib/brandMark';
 import { applyInstallIdentity } from './lib/manifest';
 import { SCREENS } from './screens/registry';
 import { LinkEntry, type LinkTarget } from './screens/LinkEntry';
@@ -93,29 +94,36 @@ function Frame() {
   useEffect(() => { window.scrollTo(0, 0); }, [nav.view]);   // 화면이 바뀌면 맨 위부터
   // 운영 화면은 학원이 없다 → 빈 문자열. 소속을 바꾸면 이 값이 바뀌어 아래 effect 가 다시 돈다.
   const academyKey = isOp ? '' : active!.academy_id;
+  // 우리 학원 화면에서 로고·색을 바꾸면 api 가 'academy-changed' 를 쏜다 — 다시 읽고, 같은 경로에 덮어쓴 그림은 ?v= 로 캐시를 깬다.
+  const [acadV, setAcadV] = useState(0);
+  useEffect(() => { const h = () => setAcadV(Date.now()); window.addEventListener('academy-changed', h); return () => window.removeEventListener('academy-changed', h); }, []);
   // 로그인 뒤의 학원 값이 최종본이다 — 설치 정체성(이름·아이콘·색)도 여기 값으로 굳힌다(?a= 나 기기에 남은 slug 는 낡을 수 있다)
   useEffect(() => {
     // 운영자는 학원이 없다 — 앞 역할이 물들여 둔 강조색만 기본으로 되돌리고 학원 정체성은 건드리지 않는다.
     if (isOp) { setAcad(null); applyBrand(DEFAULT_BRAND); document.title = 'BRIGHT 운영'; return; }
     academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; applyInstallIdentity({ name: active!.academy_name ?? a.name, brandColor: a.brand_color, logoUrl: logoUrl(a.logo_path), slug: a.slug }, true); }).catch(() => {});
-  }, [academyKey]);
+  }, [academyKey, acadV]);
   const key = `${role}:${nav.view}`;
   // 큰 제목이 위로 지나가면 앱바에 작은 제목을 띄운다 (탭 루트에서만 — 진입 화면 앱바는 이미 제목이다)
   const { title: scrollTitle, scrolled } = useScrollTitle(key + JSON.stringify(nav.params));
   const showScrollTitle = nav.isTab && scrolled && !!scrollTitle;
   const Screen: ComponentType<any> = nav.view === 'noti' ? (() => <Noti onRead={refreshBadge} />) : (SCREENS[key] ?? SCREENS[`*:${nav.view}`] ?? (() => <Placeholder name={nav.view} />));
   const title = TITLE[nav.view];
-  // 학원이 올린 로고가 있으면 앱바는 학원 이름 텍스트로 대신한다 — 올린 로고의 배경·비율을 앱바가 보장할 수 없어서.
-  const logoSrc = acad?.logo_path ? logoUrl(acad.logo_path) : null;
+  // 앱바 머리: 화면 밝기에 맞는 가로 로고가 있으면 그림, 네모 로고만 있으면 학원 이름 글자(비율·배경을 앱바가 보장할 수 없어서), 아무것도 없으면 BRIGHT.
+  // 운영자는 acad 가 null 이라 늘 BRIGHT. 규칙은 brandMark 한 곳 — SideNav 도 같은 mark 를 받는다.
+  const mark = brandMark(acad && { wordmark: logoUrl(acad.wordmark_path, acadV || undefined), wordmarkDark: logoUrl(acad.wordmark_dark_path, acadV || undefined), logo: acad.logo_path }, dark);
+  const brandName = isOp ? 'BRIGHT' : (active!.academy_name ?? '');
   return (
     <div className="shell"><div className="app framed">
       <UpdateBanner />
       <ConfirmHost />
-      {pc && <SideNav role={role} academyName={isOp ? 'BRIGHT' : (active!.academy_name ?? '')} logoSrc={logoSrc} dark={dark} />}
+      {pc && <SideNav role={role} academyName={brandName} mark={mark} dark={dark} />}
       <header className={'appbar' + (showScrollTitle ? ' scrolled' : '')}>
         {nav.isTab
           ? <>
-            {logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={isOp ? 'BRIGHT' : active!.academy_name} />}
+            {mark.kind === 'img' ? <img className="logo" src={mark.src} alt={brandName} />
+              : mark.kind === 'text' ? <span className="an">{brandName}</span>
+              : <img className="logo" src={asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={brandName} />}
             <span className={'sct' + (showScrollTitle ? ' on' : '')} aria-hidden={!showScrollTitle}>{scrollTitle}</span>
           </>
           : <><button className="bk" onClick={nav.back} aria-label="뒤로"><IcBack /></button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}

@@ -3,6 +3,7 @@ import { asset } from '../lib/asset';
 import { useNav, TABS, TABMETA, ICON, type Role } from '../lib/nav';
 import { IcCalendar, IcClock, IcHouse, IcList, IcPeople, IcPerson, IcPlus, IcReceipt, IcTable } from './icons';
 import { SCREENS } from '../screens/registry';
+import type { BrandMark } from '../lib/brandMark';
 
 /* PC 관리 모드의 좌측 내비 — 폭 1024px 이상, 원장·강사만. 하단 탭바 대신 쓴다.
    더보기의 운영 줄들을 "관리" 묶음으로 펼쳐 두어, 한 번에 눌러 들어간다. */
@@ -25,7 +26,8 @@ const OPERATE: (Item & { tab?: boolean })[] = [
   { view: 'op-settings', label: '운영 설정', Icon: IcHouse, tab: true },
 ];
 
-export function SideNav({ role, academyName, logoSrc, dark }: { role: Role; academyName: string; logoSrc: string | null; dark: boolean }) {
+/* mark: 머리에 무엇을 보일지는 App 이 brandMark 로 정해 넘긴다 — 앱바와 같은 답이어야 해서 여기서 다시 셈하지 않는다 */
+export function SideNav({ role, academyName, mark, dark }: { role: Role; academyName: string; mark: BrandMark; dark: boolean }) {
   const nav = useNav();
   const go = (v: string) => { if (nav.view !== v) nav.push(v); };
   if (role === 'operator') return (
@@ -48,8 +50,8 @@ export function SideNav({ role, academyName, logoSrc, dark }: { role: Role; acad
   return (
     <aside className="sidenav">
       <div className="brandrow">
-        {logoSrc
-          ? <span className="an">{academyName}</span>
+        {mark.kind === 'img' ? <img className="logo" src={mark.src} alt={academyName} />
+          : mark.kind === 'text' ? <span className="an">{academyName}</span>
           : <img className="logo" src={asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={academyName} />}
       </div>
       <nav className="nvgroup">

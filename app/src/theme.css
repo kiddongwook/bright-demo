@@ -95,7 +95,7 @@ button{cursor:pointer;border:none;background:none}
   padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;gap:10px;min-height:56px}
 .appbar .bk{width:28px;height:30px;margin-left:-8px;display:grid;place-items:center;font-size:26px;line-height:1;color:var(--ink)}
 /* margin-right:auto — 탭 화면엔 날짜(.ad)가 없으니 로고·이름이 종을 오른쪽 끝으로 민다 */
-.appbar .logo{height:30px;width:auto;display:block;margin-right:auto}
+.appbar .logo{height:30px;width:auto;max-width:56%;object-fit:contain;object-position:left center;display:block;margin-right:auto}   /* 가로 로고가 아주 길어도 종·제목 자리를 밀지 않게 */
 .appbar .an{font-size:17px;font-weight:600;letter-spacing:-.02em;margin-right:auto}
 .appbar .ad{margin-left:auto;font-size:12px;font-weight:500;color:var(--ink3)}
 .appbar .bell{position:relative;width:32px;height:32px;display:grid;place-items:center;margin-right:-6px;color:var(--ink)}
