@@ -7,7 +7,7 @@
 .att .stu .st{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 /* 마우스로 쓰는 사람을 위한 "…" — 길게 누르기와 같은 자리를 연다 */
 .att .stu .more{position:absolute;top:2px;right:4px;width:22px;height:22px;border-radius:50%;
-  display:grid;place-items:center;font-size:13px;line-height:1;font-weight:700;color:var(--ink3)}
+  display:grid;place-items:center;font-size:calc(13px * var(--fs));line-height:1;font-weight:700;color:var(--ink3)}
 .att .stu .more:active{background:var(--rule)}
 
 /* 사유 시트 */
@@ -36,7 +36,7 @@
 .rw.qk{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* 마우스로 쓰는 사람을 위한 "⋯" — 길게 누르기와 같은 자리를 연다 */
 .rw.qk .more{width:30px;height:30px;border-radius:50%;flex:0 0 auto;margin-left:-5px;
-  display:grid;place-items:center;font-size:15px;line-height:1;font-weight:700;color:var(--ink3)}
+  display:grid;place-items:center;font-size:calc(15px * var(--fs));line-height:1;font-weight:700;color:var(--ink3)}
 .rw.qk .more:active{background:var(--rule)}
 
 /* 학생 빠른 작업 시트 — 한 줄에 하나씩, 누르면 바로 그 일을 한다 */

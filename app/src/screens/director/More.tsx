@@ -13,7 +13,7 @@ import { ErrorState } from '../../components/ErrorState';
 import { confirmSheet } from '../../components/Confirm';
 import {
   IcCopy, IcDownload, IcPeople, IcTable, IcClock, IcCalendar, IcPerson, IcPalette, IcHelp,
-  IcList, IcHouse, IcNote, IcReceipt, IcSparkle, IcMail, IcTrendingUp,
+  IcList, IcHouse, IcNote, IcReceipt, IcSparkle, IcMail, IcTrendingUp, IcBell,
 } from '../../components/icons';
 import { AutoTextarea } from '../../components/AutoTextarea';
 
@@ -42,6 +42,7 @@ export function More() {
         : <div className="box">{myClasses.length ? myClasses.map(c => <div key={c.id} className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">{c.name}</span><span className="s">출결·공지·문의·학생 기록을 이 반 안에서 봐요</span></span></div>)
         : <p className="muted" style={{ padding: '14px 16px' }}>원장님이 담당 반을 지정하면 여기 보여요. 그 전엔 화면이 비어 있어요.</p>}</div>}
       <div className="box" style={{ marginTop: 12 }}>
+        <button className="rw" onClick={() => nav.push('prefs')}><span className="ic"><IcBell size={20} /></span><span className="bd"><span className="t">알림 설정</span><span className="s">이 기기 알림 · 글자 크기 · 테마</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('install')}><span className="ic"><IcHouse size={20} /></span><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('about')}><span className="ic"><IcNote size={20} /></span><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
       </div>
@@ -69,6 +70,7 @@ export function More() {
         <button className="rw" disabled={busy} onClick={download}><span className="ic"><IcDownload size={20} /></span><span className="bd"><span className="t">학원 데이터 내려받기</span><span className="s">학생·출결·공지·문의 전부 한 파일로 (JSON)</span></span><span className="go">›</span></button>
         <button className="rw" onClick={doCopyInvite}><span className="ic"><IcCopy size={20} /></span><span className="bd"><span className="t">학부모 초대 문구 복사</span><span className="s">카톡에 붙여 보내요</span></span><span className="go">›</span></button>
         {invite && <div style={{ padding: '0 16px 14px' }}><AutoTextarea readOnly value={invite} /><p className="muted" style={{ paddingTop: 6 }}>길게 눌러 복사해 주세요</p></div>}
+        <button className="rw" onClick={() => nav.push('prefs')}><span className="ic"><IcBell size={20} /></span><span className="bd"><span className="t">알림 설정</span><span className="s">이 기기 알림 · 글자 크기 · 테마</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('install')}><span className="ic"><IcHouse size={20} /></span><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('about')}><span className="ic"><IcNote size={20} /></span><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
         {/* 사장님이 이 학원의 원장이기도 할 때 — 운영 화면으로 건너간다 (0023) */}

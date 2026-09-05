@@ -3,7 +3,7 @@ export function Counter({ n, max }: { n: number; max: number }) {
   const full = n >= max;
   return (
     <span aria-hidden="true" style={{
-      display: 'block', textAlign: 'right', fontSize: 12, lineHeight: 1.4, paddingTop: 4,
+      display: 'block', textAlign: 'right', fontSize: 'calc(12px * var(--fs))', lineHeight: 1.4, paddingTop: 4,
       color: full ? 'var(--danger)' : 'var(--ink2)',
     }}>{n}/{max}</span>
   );

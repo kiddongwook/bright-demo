@@ -10,11 +10,11 @@
 .opcard{display:block;width:100%;text-align:left;background:var(--paper);border:0;border-radius:var(--r-card);padding:15px 16px}
 .opcard:active{opacity:.9}
 .opcard .ct{display:flex;align-items:center;gap:8px}
-.opcard .cn{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.opcard .cs{font-size:12.5px;color:var(--ink3);font-variant-numeric:tabular-nums}
-.opcard .go{margin-left:auto;color:var(--ink3);font-size:18px;flex:0 0 auto}
+.opcard .cn{font-size:calc(17px * var(--fs));font-weight:700;letter-spacing:-.02em;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opcard .cs{font-size:calc(12.5px * var(--fs));color:var(--ink3);font-variant-numeric:tabular-nums}
+.opcard .go{margin-left:auto;color:var(--ink3);font-size:calc(18px * var(--fs));flex:0 0 auto}
 .opcard .cnums{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px}
-.opcard .cnums span{font-size:13px;color:var(--ink2);line-height:1.5}
+.opcard .cnums span{font-size:calc(13px * var(--fs));color:var(--ink2);line-height:1.5}
 .opcard .cnums b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .opcard .cnums span.hot b{color:var(--danger)}
 
@@ -22,24 +22,24 @@
 .ophead{display:flex;align-items:center;gap:13px;margin:0 20px var(--s2);padding:16px;background:var(--paper);border-radius:var(--r-card)}
 .ophead img{width:48px;height:48px;border-radius:14px;object-fit:cover;flex:0 0 auto;background:var(--rule)}
 .ophead .bd{min-width:0;flex:1}
-.ophead .t{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
-.ophead .s{display:block;font-size:13px;color:var(--ink3);margin-top:4px;line-height:1.5;font-variant-numeric:tabular-nums}
+.ophead .t{display:flex;align-items:center;gap:8px;font-size:calc(18px * var(--fs));font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.ophead .s{display:block;font-size:calc(13px * var(--fs));color:var(--ink3);margin-top:4px;line-height:1.5;font-variant-numeric:tabular-nums}
 
 /* 줄 안에 넣는 칸(발신키·삭제 확인) — .box 안에서 바탕이 한 겹 밝아지지 않게 .input 규칙을 그대로 쓴다 */
 .opfield{padding:0 16px 14px}
 .opfield .row{display:flex;gap:8px;align-items:center}
 .opfield .row .input{flex:1;min-width:0}
-.opfield .hint{font-size:12.5px;color:var(--ink3);line-height:1.6;padding-top:7px}
+.opfield .hint{font-size:calc(12.5px * var(--fs));color:var(--ink3);line-height:1.6;padding-top:7px}
 .opfield .hint.warn{color:var(--danger)}
 
 /* 만든 뒤의 초대 링크 카드 — 이 화면에서 한 번만 보인다 */
 .opdone{margin:0 20px;padding:18px 16px;background:var(--brand-soft);border-radius:var(--r-card)}
-.opdone .t{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
-.opdone .s{font-size:13.5px;color:var(--ink2);line-height:1.65;margin-top:6px}
+.opdone .t{font-size:calc(17px * var(--fs));font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.opdone .s{font-size:calc(13.5px * var(--fs));color:var(--ink2);line-height:1.65;margin-top:6px}
 .opdone .url{display:block;margin-top:12px;padding:11px 12px;background:var(--ground);border-radius:var(--r-el);
-  font-size:12.5px;line-height:1.6;color:var(--ink2);word-break:break-all}
+  font-size:calc(12.5px * var(--fs));line-height:1.6;color:var(--ink2);word-break:break-all}
 
 /* 운영 절차 요약 — docs/ops/operator.md 를 네 줄로 */
 .opsteps{margin:0 20px;padding:2px 0}
-.opsteps li{display:flex;gap:10px;padding:9px 2px;font-size:13.5px;color:var(--ink2);line-height:1.6}
+.opsteps li{display:flex;gap:10px;padding:9px 2px;font-size:calc(13.5px * var(--fs));color:var(--ink2);line-height:1.6}
 .opsteps li i{font-style:normal;font-weight:700;color:var(--brand);flex:0 0 auto;font-variant-numeric:tabular-nums}

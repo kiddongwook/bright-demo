@@ -15,9 +15,11 @@ import { applyInstallIdentity } from './lib/manifest';
 import { SCREENS } from './screens/registry';
 import { LinkEntry, type LinkTarget } from './screens/LinkEntry';
 import { InviteEntry } from './screens/InviteEntry';
+import { Consent } from './screens/Consent';
+import { fetchConsent, needsConsent } from './lib/legal';
 import { takeInviteToken, takeLinkToken, takeNavParam } from './lib/link';
 import { pushToNav } from './lib/push';
-import { setReportScreen } from './lib/report';
+import { setReportScreen, reportError } from './lib/report';
 import { UpdateBanner } from './components/UpdateBanner';
 import { ConfirmHost } from './components/Confirm';
 import { SideNav } from './components/SideNav';
@@ -40,10 +42,24 @@ function Shell() {
   const [target, setTarget] = useState<LinkTarget | null>(null);
   // 들어오면 번호 단계를 지운다 — 로그아웃 뒤 남의 인증 화면이 남지 않게. 소속 없는 운영자는 active 가 늘 비어 있으므로 session 을 본다.
   useEffect(() => { if (session) setPhone(null); }, [session]);
+  // 약관·개인정보 동의 (0026): 세션마다 한 번 my_consent 를 묻는다. 제한 세션(알림톡 링크)은 건너뛰고, 운영자도 지나간다.
+  // 읽기에 실패하면 막지 않는다 — UX 게이트일 뿐 RLS 강제가 아니라서, 서버가 잠깐 안 닿는다고 문을 잠그지 않는다.
+  const [consent, setConsent] = useState<'unknown' | 'ok' | 'needed'>('unknown');
+  const uid = session?.user.id ?? null;
+  useEffect(() => {
+    setConsent('unknown');
+    if (!uid || limited) return;
+    let gone = false;
+    fetchConsent().then(r => { if (!gone) setConsent(needsConsent(r) ? 'needed' : 'ok'); }).catch(e => { void reportError(e); if (!gone) setConsent('ok'); });
+    return () => { gone = true; };
+  }, [uid, limited]);
   if (loading) return null;
   if (link) return <div className="shell"><div className="app"><LinkEntry token={link} currentUserId={session && memberships.length ? session.user.id : null} onDone={t => { setLink(null); setTarget(t); }} /></div></div>;
   if (invite) return <div className="shell"><div className="app"><InviteEntry token={invite} onDone={() => setInvite(null)} onGate={() => setInvite(null)} /></div></div>;
   if (!session || (!memberships.length && !isOperator)) return <div className="shell"><div className="app">{phone ? <Otp phone={phone} onBack={() => setPhone(null)} /> : <Gate onSent={setPhone} />}</div></div>;
+  // 동의 문 — 역할 고르기·운영 화면·학원 화면 모두 이 앞을 지난다. 아직 모르면 로딩과 같이 아무것도 안 그린다.
+  if (!limited && consent === 'unknown') return null;
+  if (!limited && consent === 'needed') return <div className="shell"><div className="app"><Consent onDone={() => setConsent('ok')} /></div></div>;
   // 이번에 막 들어온 운영자가 소속도 있다 → 서버가 정해 둔 active 를 건너뛰고 한 번 묻는다 (소속이 하나뿐인 사장님도 운영 화면으로 갈 수 있게)
   if (pickPending) return <div className="shell"><div className="app"><PickRole /></div></div>;
   // BRIGHT 운영자: 어느 학원의 소속도 아니다. 소속이 없으면 곧장, 소속이 있으면 역할 고르기에서 "BRIGHT 운영자" 를 고른 동안 (0023).

@@ -7,7 +7,7 @@
 .tgt-chips{align-items:center}
 .tgt-chips .all{position:relative;margin-right:9px}
 .tgt-chips .all::after{content:"";position:absolute;top:8px;bottom:8px;right:-5px;width:1px;background:var(--rule)}
-.tgt-pick{padding:6px 20px 0;font-size:13px;color:var(--ink2)}
+.tgt-pick{padding:6px 20px 0;font-size:calc(13px * var(--fs));color:var(--ink2)}
 .tgt-pick b{color:var(--ink);font-weight:600}
 
 /* ── 읽음률 도넛 ── */
@@ -15,10 +15,10 @@
 .donut{flex:0 0 auto;display:block}
 .donut .tr{fill:none;stroke:var(--rule);stroke-width:8}
 .donut .ar{fill:none;stroke:var(--brand);stroke-width:8;transition:stroke-dasharray .45s ease}
-.donut .pc{fill:var(--ink);font-size:20px;font-weight:700;letter-spacing:-.02em}
+.donut .pc{fill:var(--ink);font-size:calc(20px * var(--fs));font-weight:700;letter-spacing:-.02em}
 .dn-txt{min-width:0}
-.dn-txt .dn-big{margin:0;font-size:17px;line-height:1.35;color:var(--ink);font-weight:500}
+.dn-txt .dn-big{margin:0;font-size:calc(17px * var(--fs));line-height:1.35;color:var(--ink);font-weight:500}
 .dn-txt .dn-big b{font-weight:700}
-.dn-txt .dn-sub{margin:5px 0 0;font-size:13px;color:var(--ink2)}
+.dn-txt .dn-sub{margin:5px 0 0;font-size:calc(13px * var(--fs));color:var(--ink2)}
 
 @media (prefers-reduced-motion: reduce){ .donut .ar{transition:none} }

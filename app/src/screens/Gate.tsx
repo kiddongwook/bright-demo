@@ -5,6 +5,7 @@ import { fn } from '../lib/supabase';
 import { useAcademyPublic } from '../lib/academy';
 import { logoUrl } from '../lib/logo';
 import { useDark, applyBrand } from '../lib/theme';
+import { LOCKED } from './Otp';
 export function Gate({ onSent }: { onSent: (phone: string) => void }) {
   const [phone, setPhone] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   const dark = useDark();   // 훅은 academy === null 조기 반환보다 위에서 부른다
@@ -22,6 +23,11 @@ export function Gate({ onSent }: { onSent: (phone: string) => void }) {
     setBusy(false);
     if (r.status === 404) { setErr(`아직 등록되지 않은 번호예요. ${name} 학생·학부모로 등록되면 문이 열려요.`); return; }
     if (r.status === 429) { setErr('잠시 뒤 다시 시도해 주세요.'); return; }
+    if (r.status === 403) {
+      // 잠긴 학원(운영자가 이용 정지) — 인증번호 자체가 안 나간다 (0023)
+      const e = await r.json().catch(() => ({})) as { error?: string };
+      setErr(e.error === 'academy_locked' ? LOCKED : '보내지 못했어요. 다시 시도해 주세요.'); return;
+    }
     if (!r.ok) { setErr('보내지 못했어요. 다시 시도해 주세요.'); return; }
     onSent(normalizePhone(phone));
   }

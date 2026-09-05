@@ -3,6 +3,7 @@ import { currentEnv, type Env } from '../../lib/env';
 import { academy } from '../../lib/api';
 import { reportError } from '../../lib/report';
 import { toast } from '../../lib/toast';
+import { LEGAL_URLS, TERMS_VERSION, PRIVACY_VERSION } from '../../lib/legal';
 import { useSession } from '../../auth/session';
 import { AutoTextarea } from '../../components/AutoTextarea';
 
@@ -52,6 +53,11 @@ export function About() {
       <div className="head"><p className="lede">안 될 때 이 화면을 캡처해 보내주시면 빨리 찾을 수 있어요.</p></div>
       <div className="box">
         {rows.map(([t, s]) => <div key={t} className="rw" style={{ cursor: 'default' }}><span className="bd"><span className="t">{t}</span><span className="s">{s}</span></span></div>)}
+      </div>
+      <div className="lab">약관·개인정보</div>
+      <div className="box">
+        <a className="rw" href={LEGAL_URLS.terms} target="_blank" rel="noopener noreferrer"><span className="bd"><span className="t">이용약관</span><span className="s">{TERMS_VERSION} 판 · 새 탭에서 열려요</span></span><span className="go">›</span></a>
+        <a className="rw" href={LEGAL_URLS.privacy} target="_blank" rel="noopener noreferrer"><span className="bd"><span className="t">개인정보 처리방침</span><span className="s">{PRIVACY_VERSION} 판 · 새 탭에서 열려요</span></span><span className="go">›</span></a>
       </div>
       <div className="lab">문제 보내기</div>
       <div style={{ padding: '0 20px' }}><AutoTextarea value={text} onChange={e => setText(e.target.value)} placeholder="어떤 화면에서 무엇이 안 되었는지 적어 주세요" /></div>

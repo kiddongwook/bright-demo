@@ -4,9 +4,10 @@
 //   OP_EDGE_DEPLOYED=1 node --env-file=../.env.local operator-test.mjs   ← Edge 재배포 뒤 (E 묶음까지 돈다)
 //
 // Edge 가 걸린 항목(운영자 OTP 로그인·잠긴 학원 로그인 거절·?academy= 내려받기·op-delete)은
-// otp-send/otp-verify/invite-login/export-academy/op-delete 가 새로 배포된 뒤에만 뜻이 있다.
+// otp-send/otp-verify/invite-login/link-login/export-academy/op-delete 가 새로 배포된 뒤에만 뜻이 있다.
 // 배포 전에는 SKIP (after deploy) 으로 찍고 넘어간다 — 옛 함수가 살아 있는 상태에서 실패로 세면 안 된다.
 import 'dotenv/config';
+import { createHash, randomBytes } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const URL = process.env.SUPABASE_URL, SVC = process.env.SUPABASE_SERVICE_KEY, ANON = process.env.SUPABASE_ANON_KEY;
@@ -41,7 +42,7 @@ const fn = (name, tok, body, qs = '') => fetch(`${URL}/functions/v1/${name}${qs}
   body: JSON.stringify(body ?? {}),
 });
 
-const cleanup = { academies: [], users: [] };
+const cleanup = { academies: [], users: [], linkTokens: [] };   // 링크 토큰은 학원 cascade(0023) 로도 사라지지만, 이 점검이 심은 건 이 점검이 치운다
 
 try {
 // ---------------------------------------------------------------- A. 운영자 등록 · 운영자가 아닌 사람
@@ -196,8 +197,24 @@ if (EDGE) {
   // 잠긴 학원: 초대 링크도 인증번호도 막힌다
   let res = await fn('invite-login', null, { token: tok2 });
   ok(res.status === 403 && (await res.json()).error === 'academy_locked', `잠긴 학원 invite-login 403 (got ${res.status})`);
+  // 4차 T1: 인증번호도 보내기 단계에서 막힌다 (문자가 안 나간다). 명부는 있으니 404 가 아니라 403.
+  res = await fn('otp-send', null, { phone: P_DIR });
+  ok(res.status === 403 && (await res.json()).error === 'academy_locked', `잠긴 학원 원장 otp-send 403 academy_locked (got ${res.status})`);
   res = await fn('otp-send', null, { phone: P_MOM });
-  ok(res.status === 200, `잠겨도 otp-send 는 200 (거절은 verify 에서) (got ${res.status})`);
+  ok(res.status === 403 && (await res.json()).error === 'academy_locked', `잠긴 학원 학부모 otp-send 403 (got ${res.status})`);
+  // 4차 T1: 알림톡 버튼(link_tokens) 으로도 못 들어온다 — 세션 발급도, 이미 들어온 기기의 resolve 도 403
+  const LINK = randomBytes(16).toString('hex');
+  const linkHash = createHash('sha256').update(LINK).digest('hex');
+  cleanup.linkTokens.push(linkHash);
+  const { error: ltErr } = await admin.from('link_tokens').insert({ academy_id: A, user_id: momId, view: 'child', ref_id: null, token_hash: linkHash, expires_at: new Date(Date.now() + 10 * 60e3).toISOString() });
+  ok(!ltErr, 'link_tokens 심기: ' + (ltErr?.message ?? ''));
+  res = await fn('link-login', null, { token: LINK });
+  ok(res.status === 403 && (await res.json()).error === 'academy_locked', `잠긴 학원 link-login 403 academy_locked (got ${res.status})`);
+  res = await fn('link-login', null, { token: LINK, resolve: true });
+  ok(res.status === 403 && (await res.json()).error === 'academy_locked', `잠긴 학원 link-login(resolve) 도 403 (got ${res.status})`);
+  ok(!(await admin.from('link_tokens').select('used_at').eq('token_hash', linkHash).single()).data?.used_at, '거절된 링크는 used_at 이 안 찍힌다');
+  // 점검용 토큰은 바로 치운다 (학원 삭제 cascade 에 기대지 않는다)
+  await admin.from('link_tokens').delete().eq('token_hash', linkHash);
 
   // 운영자는 명부에 없어도 인증번호가 나간다
   res = await fn('otp-send', null, { phone: P_OP });
@@ -249,6 +266,8 @@ if (EDGE) {
   ok(!(await admin.from('academies').select('id').eq('id', A).maybeSingle()).data, 'op-delete 로 학원이 사라진다');
 } else {
   skip('잠긴 학원 invite-login 403 academy_locked');
+  skip('잠긴 학원 otp-send 403 academy_locked (원장·학부모)');
+  skip('잠긴 학원 link-login 403 academy_locked (세션·resolve)');
   skip('운영자 otp-send 200 · otp-verify operator:true memberships:[]');
   skip('잠긴 학원 원장 otp-verify 403 academy_locked');
   skip('운영자 export-academy?academy=<id> 200 · 남은 403');
@@ -274,6 +293,7 @@ ok(/not_found/.test(err(r)), '없는 학원은 not_found: ' + err(r));
 } finally {
   // 이 점검이 만든 것은 이 점검이 치운다. cleanup-test-data 는 운영자를 지키므로(고아로 안 본다)
   // 여기서 안 지우면 app_operators 에 시험용 운영자가 쌓인다.
+  for (const h of cleanup.linkTokens) await admin.from('link_tokens').delete().eq('token_hash', h);
   for (const id of cleanup.academies) await admin.from('academies').delete().eq('id', id);
   for (const id of cleanup.users) await admin.auth.admin.deleteUser(id).catch(() => {});
 }

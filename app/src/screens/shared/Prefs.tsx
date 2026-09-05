@@ -3,9 +3,11 @@ import { getPrefs, hasPushSubscription, setPrefs } from '../../lib/api';
 import { currentEnv } from '../../lib/env';
 import { currentSubscription, isPushSupported, permissionState, subscribe, unsubscribe } from '../../lib/push';
 import { useNav } from '../../lib/nav';
+import { useSession } from '../../auth/session';
 import { useLoad } from '../../lib/useLoad';
 import { toast, errToast } from '../../lib/toast';
 import { usePop } from '../../lib/pop';
+import { getTextScale, getThemePref, setTextScale, setThemePref, type TextScale, type ThemePref } from '../../lib/theme';
 
 /* 알림 설정 — 맨 위가 이 기기 푸시, 그 아래가 카톡. 키가 없으면 켠 것(카톡은 기본 전부 켬). 누르면 바로 저장한다. */
 const ROWS: [string, string, string][] = [
@@ -21,6 +23,10 @@ const ROWS: [string, string, string][] = [
    denied: 브라우저에서 막음 · on/off: 쓸 수 있음 */
 type PushState = 'loading' | 'ios-tab' | 'kakao' | 'none' | 'denied' | 'off' | 'on';
 
+/* 화면 묶음 — 이 기기에만 저장(localStorage). 누르면 바로 바뀌고 저장 단추는 없다. */
+const TEXT_OPTS: [TextScale, string][] = [['normal', '보통'], ['large', '크게']];
+const THEME_OPTS: [ThemePref, string][] = [['system', '기기 따라'], ['light', '밝게'], ['dark', '어둡게']];
+
 export function Prefs() {
   const nav = useNav();
   const { data, setData, err } = useLoad(getPrefs, []);
@@ -28,6 +34,10 @@ export function Prefs() {
   const pop = usePop();                        // 방금 켠 체크만 한 번 튄다
   const prefs = data ?? {};
   const [push, setPush] = useState<PushState>('loading');
+  const [text, setText] = useState<TextScale>(getTextScale);
+  const [theme, setTheme] = useState<ThemePref>(getThemePref);
+  const pickText = (v: TextScale) => { setTextScale(v); setText(v); };
+  const pickTheme = (v: ThemePref) => { setThemePref(v); setTheme(v); };
 
   // 이 기기의 처지를 먼저 본다: 아이폰 탭·카톡은 푸시 API 자체가 없어서 "지원 안 함" 보다 앞에 둔다.
   async function readPush() {
@@ -77,6 +87,9 @@ export function Prefs() {
           : push === 'none' ? '이 브라우저는 알림을 지원하지 않아요' : '확인하는 중…';
   const canToggle = push === 'on' || push === 'off';
   const kakaoAlso = prefs.kakao_also === true;
+  // 카톡 줄(공지·답변·보강·출결)은 학부모·학생에게 가는 알림이다 — 원장·강사에게는 뜨지 않게
+  const { active } = useSession();
+  const family = active?.role === 'parent' || active?.role === 'student';
 
   return (
     <section className="view on">
@@ -94,13 +107,14 @@ export function Prefs() {
             <span className="go">›</span>
           </button>
         )}
-        {push === 'on' && (
+        {push === 'on' && family && (
           <button className="rw" onClick={() => { if (!kakaoAlso) pop.fire('kakao_also'); toggle('kakao_also', false); }} aria-pressed={kakaoAlso}>
             <span className="bd"><span className="t">카톡도 같이 받기</span><span className="s">끄면 아래 카톡 알림 대신 이 기기 알림만 와요</span></span>
             <span className={'cb' + (kakaoAlso ? ' on' : '') + pop.cls('kakao_also')} onAnimationEnd={pop.end}>{kakaoAlso ? '✓' : ''}</span>
           </button>
         )}
       </div>
+      {family && <>
       <div className="lab">카톡</div>
       <div className="box">
         {ROWS.map(([key, title, sub]) => {
@@ -114,6 +128,22 @@ export function Prefs() {
         })}
       </div>
       <p className="muted" style={{ padding: '10px 20px 0' }}>체크를 지우면 그 카톡만 안 보내요. 앱을 열면 그대로 다 보여요.</p>
+      </>}
+      <div className="lab">화면</div>
+      <div className="box">
+        <div className="rw stack">
+          <span className="bd"><span className="t">글자 크기</span><span className="s">크게를 고르면 글자만 커져요 · 화면 배치는 그대로</span></span>
+          <div className="seg" role="radiogroup" aria-label="글자 크기">
+            {TEXT_OPTS.map(([v, label]) => <button key={v} role="radio" aria-checked={text === v} className={text === v ? 'on' : ''} onClick={() => pickText(v)}>{label}</button>)}
+          </div>
+        </div>
+        <div className="rw stack">
+          <span className="bd"><span className="t">테마</span><span className="s">기기 따라는 폰 설정을 따라가요</span></span>
+          <div className="seg" role="radiogroup" aria-label="테마">
+            {THEME_OPTS.map(([v, label]) => <button key={v} role="radio" aria-checked={theme === v} className={theme === v ? 'on' : ''} onClick={() => pickTheme(v)}>{label}</button>)}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

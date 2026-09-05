@@ -11,6 +11,9 @@ Deno.serve(async (req) => {
   const { data: lt } = await admin.from('link_tokens').select('*').eq('token_hash', await sha256(token)).maybeSingle();
   if (!lt) return json(401, { error: 'bad_token' });
   if (new Date(lt.expires_at) < new Date()) return json(401, { error: 'expired' });
+  // 잠긴 학원(운영자가 이용 정지, 0023)의 링크는 열지 않는다 — resolve 든 세션 발급이든 여기서 끝. otp-verify·invite-login 과 같은 403.
+  const { data: ac } = await admin.from('academies').select('locked').eq('id', lt.academy_id).maybeSingle();
+  if (ac?.locked === true) return json(403, { error: 'academy_locked' });
   const { data: u } = await admin.from('users').select('id, phone, active_membership_id').eq('id', lt.user_id).single();
   if (!u) return json(401, { error: 'bad_token' });
   const { data: ms } = await admin.from('memberships').select('id, academy_id, role, student_id, academies(name), students(name)').eq('user_id', u.id);

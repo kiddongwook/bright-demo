@@ -367,6 +367,9 @@ body.acad .openapp{display:block}
 .phero .pnote{margin-top:18px;font-size:13.5px;color:var(--ink2);line-height:1.75}
 .phero .pfeat{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px}
 .phero .pfeat span{font-size:12.5px;font-weight:600;color:var(--ink2);background:var(--paper);border:1px solid var(--rule);border-radius:999px;padding:7px 13px}
+/* 약관·개인정보 처리방침 (legal/*.html) — body 가 grid 라 footer 를 body 에 직접 두면 열이 하나 늘어난다. 머리 안에 붙인다. 학원 페이지(body.acad)는 앱 안 About 에서 연다. */
+.phero .plegal{margin-top:22px;font-size:12.5px;color:var(--ink3)}
+.phero .plegal a{color:var(--ink2);text-decoration:underline;text-underline-offset:3px}
 body.acad .phero{display:none}
 @media (prefers-color-scheme: dark){ .phero .pwm{content:url(assets/brand/bright-wordmark-white.png)} }
 @media(min-width:641px){
@@ -392,6 +395,7 @@ if(/[?&]a=[a-z0-9-]{2,40}(&|$)/.test(location.search)) document.body.classList.a
   <p class="psub">BRIGHT — 학원용 앱</p>
   <p class="pnote">원장님이 출석을 누르면 학부모 폰으로 바로 갑니다. 학원마다 <b>그 학원 이름과 로고</b>로 홈 화면에 놓여요.<br>여기 보이는 화면은 <b>예시 학원</b>으로 만든 데모입니다 — 눌러 보세요.</p>
   <div class="pfeat"><span>출결</span><span>공지</span><span>문의</span><span>수강료</span><span>알림톡·푸시</span></div>
+  <p class="plegal"><a href="legal/terms.html">이용약관</a> · <a href="legal/privacy.html">개인정보 처리방침</a></p>
 </header>
 
 <div class="shell"><div class="app">

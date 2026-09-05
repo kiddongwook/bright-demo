@@ -12,7 +12,7 @@
 
 /* 남은 금액 — 시트를 열면 제일 먼저 읽는 줄 */
 .bmoney { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; padding: 14px 15px; border-radius: var(--r-card); background: var(--paper); }
-.bmoney b { font-size: 26px; font-weight: 700; letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.bmoney b { font-size: calc(26px * var(--fs)); font-weight: 700; letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .bmoney span { font-size: var(--t-sub); color: var(--ink3); }
 .bmoney.done b { color: var(--ok-ink); }
 
@@ -26,7 +26,7 @@
 
 /* 전액 납부 확인 — 계좌이체 · 현금 · 카드 */
 .methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.methods .btn { width: auto; min-height: 46px; font-size: 14px; }
+.methods .btn { width: auto; min-height: 46px; font-size: calc(14px * var(--fs)); }
 
 /* 학부모 카드의 계좌 안내 */
 .bank { padding: 0 16px 14px; }
