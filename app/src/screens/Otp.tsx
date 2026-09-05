@@ -6,6 +6,8 @@ import { formatPhone } from '../lib/phone';
 import { useAcademyPublic } from '../lib/academy';
 import { logoUrl } from '../lib/logo';
 import { useDark } from '../lib/theme';
+/** 잠긴 학원의 사람에게 보이는 한 줄 — Otp·InviteEntry 가 같은 말을 쓴다. */
+export const LOCKED = '이 학원은 지금 이용이 정지되어 있어요. 원장님께 문의해 주세요.';
 export function Otp({ phone, onBack }: { phone: string; onBack: () => void }) {
   const { setFromVerify } = useSession();
   const dark = useDark();
@@ -19,9 +21,14 @@ export function Otp({ phone, onBack }: { phone: string; onBack: () => void }) {
     catch { setBusy(false); setErr('연결이 안 돼요. 잠시 뒤 다시 시도해 주세요.'); return; }
     setBusy(false);
     if (r.status === 401) { setErr('인증번호가 맞지 않아요.'); return; }
-    if (!r.ok) { setErr('확인하지 못했어요. 다시 시도해 주세요.'); return; }
-    const j = await r.json() as { session: { access_token: string; refresh_token: string }; memberships: Membership[] };
-    await setFromVerify(j.session, j.memberships);
+    if (!r.ok) {
+      // 잠긴 학원(운영자가 이용 정지) — 번호는 맞아도 들어올 수 없다 (0023)
+      const e = await r.json().catch(() => ({})) as { error?: string };
+      setErr(r.status === 403 && e.error === 'academy_locked' ? LOCKED : '확인하지 못했어요. 다시 시도해 주세요.');
+      return;
+    }
+    const j = await r.json() as { session: { access_token: string; refresh_token: string }; memberships: Membership[]; operator?: boolean };
+    await setFromVerify(j.session, j.memberships, j.operator);
   }
   return (
     <section className="view on" style={{ background: 'var(--ground)' }}>

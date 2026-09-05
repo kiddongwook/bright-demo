@@ -18,7 +18,7 @@ import {
 import { AutoTextarea } from '../../components/AutoTextarea';
 
 export function More() {
-  const nav = useNav(); const { logout, active, session } = useSession();
+  const nav = useNav(); const { logout, active, session, isOperator, enterOperator } = useSession();
   const isDirector = active?.role === 'director';
   const { data: myClasses, err: myClassesErr, reload: reloadMyClasses } = useLoad(() => isDirector ? Promise.resolve([]) : listClassesFull().then(l => l.filter(c => c.teacher_id === session?.user.id)));
   const { data: myAcademy } = useLoad(academy);
@@ -71,6 +71,8 @@ export function More() {
         {invite && <div style={{ padding: '0 16px 14px' }}><AutoTextarea readOnly value={invite} /><p className="muted" style={{ paddingTop: 6 }}>길게 눌러 복사해 주세요</p></div>}
         <button className="rw" onClick={() => nav.push('install')}><span className="ic"><IcHouse size={20} /></span><span className="bd"><span className="t">홈 화면에 추가</span><span className="s">앱처럼 아이콘으로 열어요</span></span><span className="go">›</span></button>
         <button className="rw" onClick={() => nav.push('about')}><span className="ic"><IcNote size={20} /></span><span className="bd"><span className="t">앱 정보·진단</span><span className="s">버전 · 환경 · 문제 보내기</span></span><span className="go">›</span></button>
+        {/* 사장님이 이 학원의 원장이기도 할 때 — 운영 화면으로 건너간다 (0023) */}
+        {isOperator && <button className="rw" onClick={enterOperator}><span className="ic"><IcSparkle size={20} /></span><span className="bd"><span className="t">BRIGHT 운영자로 보기</span><span className="s">학원 만들기 · 초대 링크 · 잠금</span></span><span className="go">›</span></button>}
       </div>
       <div className="lab">준비 중<span className="r">필요할 때 켭니다</span></div>
       <div className="box soft">
@@ -83,7 +85,8 @@ export function More() {
   );
 }
 
-const COLORS = ['#2F5BEA', '#111318', '#0FA37F', '#F97316', '#7C5CE6'];
+/* 강조색 다섯 — 원장의 '우리 학원' 과 운영자의 '학원 만들기' 가 같은 목록을 쓴다 */
+export const COLORS = ['#2F5BEA', '#111318', '#0FA37F', '#F97316', '#7C5CE6'];
 export function Academy() {
   const { data, err, reload, setData } = useLoad(academy);
   const [busy, setBusy] = useState(false);

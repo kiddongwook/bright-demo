@@ -50,7 +50,9 @@ Deno.serve(async (req) => {
     let key: string | null = null;
     const { data, error: e } = await admin.rpc('academy_sms_key', { p_academy: academyId });
     const row = Array.isArray(data) ? data[0] : data;
-    if (!e && row?.sms_provider === 'http' && row?.sender_key) key = row.sender_key as string;
+    // console 이 아닌 학원(http · solapi …)만 자기 키를 쓴다. 어떻게 읽히는지는 어댑터가 정한다 —
+    // http 는 그대로 senderKey, solapi 는 "apiKey:apiSecret[:발신번호]" (docs/ops/outbox.md).
+    if (!e && row?.sms_provider && row.sms_provider !== 'console' && row?.sender_key) key = row.sender_key as string;
     keyCache.set(academyId, key);
     return key;
   };

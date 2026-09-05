@@ -3,6 +3,7 @@ import { asset } from '../lib/asset';
 import { inviteLogin } from '../lib/api';
 import { useSession } from '../auth/session';
 import { currentSlug, useAcademyPublic } from '../lib/academy';
+import { LOCKED } from './Otp';
 import { logoUrl } from '../lib/logo';
 import { useDark } from '../lib/theme';
 
@@ -13,6 +14,7 @@ const MSG: Record<string, string> = {
   used: '이미 사용한 링크예요.',
   bad_token: '링크가 올바르지 않아요.',
   network: '연결이 안 돼요. 잠시 뒤 다시 눌러주세요.',
+  academy_locked: LOCKED,
 };
 
 export function InviteEntry({ token, onDone, onGate }: { token: string; onDone: () => void; onGate: () => void }) {
@@ -29,7 +31,7 @@ export function InviteEntry({ token, onDone, onGate }: { token: string; onDone: 
     if (limited) await endLimited();
     const r = await inviteLogin(token, currentSlug());
     if (!r.ok) { setErr(MSG[r.error] ?? MSG.bad_token); return; }
-    await setFromVerify(r.session, r.memberships);
+    await setFromVerify(r.session, r.memberships, r.operator);
     onDone();
   })(); }, [token, loading, occupied, go]);
   if (occupied && !go && !err) {

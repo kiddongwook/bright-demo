@@ -199,8 +199,8 @@ export async function hasPushSubscription(endpoint: string): Promise<boolean> {
 export async function createInvite(phone: string): Promise<string> {
   return must(await supabase.rpc('create_invite', { p_phone: phone })) as string;
 }
-export type InviteOk = { ok: true; user_id: string; session: { access_token: string; refresh_token: string }; memberships: Membership[] };
-export type InviteFail = { ok: false; error: 'expired' | 'used' | 'bad_token' | 'network' };
+export type InviteOk = { ok: true; user_id: string; session: { access_token: string; refresh_token: string }; memberships: Membership[]; operator?: boolean };
+export type InviteFail = { ok: false; error: 'expired' | 'used' | 'bad_token' | 'network' | 'academy_locked' };
 /** 초대 토큰으로 정식 세션을 받는다 — otp-verify 와 같은 응답 형태. 실패는 던지지 않고 사유를 돌려준다. */
 export async function inviteLogin(token: string, academy: string): Promise<InviteOk | InviteFail> {
   let r: Response;
@@ -213,9 +213,10 @@ export async function inviteLogin(token: string, academy: string): Promise<Invit
   } catch { return { ok: false, error: 'network' }; }
   if (!r.ok) {
     const j = await r.json().catch(() => ({})) as { error?: string };
-    return { ok: false, error: j.error === 'expired' || j.error === 'used' ? j.error : 'bad_token' };
+    // academy_locked 는 잠긴 학원 — 링크 잘못이 아니라 학원이 멈춰 있다 (0023)
+    return { ok: false, error: j.error === 'expired' || j.error === 'used' || j.error === 'academy_locked' ? j.error : 'bad_token' };
   }
-  const j = await r.json() as { user_id: string; session: { access_token: string; refresh_token: string }; memberships: Membership[] };
+  const j = await r.json() as { user_id: string; session: { access_token: string; refresh_token: string }; memberships: Membership[]; operator?: boolean };
   return { ok: true, ...j };
 }
 

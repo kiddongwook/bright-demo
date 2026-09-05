@@ -1,8 +1,24 @@
+import { maskPhone, solapiCreds, solapiSendSms } from './solapi.ts';
+
+/** 전역 솔라피 비밀값. 학원별 키가 있으면 solapiCreds 가 그쪽을 쓴다. */
+export const solapiEnv = () => ({
+  apiKey: Deno.env.get('SOLAPI_API_KEY') ?? '',
+  apiSecret: Deno.env.get('SOLAPI_API_SECRET') ?? '',
+  from: Deno.env.get('SOLAPI_FROM') ?? '',
+});
+
 // senderKey: 학원별 발신키 (0023 academy_settings). 주면 이 요청에만 그 키를 쓰고, 없으면 전역 값으로 간다.
 // 콘솔 모드에서는 아무 차이가 없다 — 키가 실제로 나가는 자리는 대행사 REST 뿐이다.
+// solapi 일 때 senderKey 는 "apiKey:apiSecret[:발신번호]" 로 읽는다 (docs/ops/outbox.md).
 export async function sendSms(to: string, text: string, senderKey?: string | null): Promise<void> {
   const provider = Deno.env.get('SMS_PROVIDER') ?? 'console';
   if (provider === 'console') { console.log(`[SMS→${to}] ${text}`); return; }
+  if (provider === 'solapi') {
+    const r = await solapiSendSms({ to, text }, solapiCreds(senderKey, solapiEnv()));
+    // 본문은 찍지 않는다 — 번호도 가린다. 무엇이 나갔는지는 outbox 행이 들고 있다.
+    console.log(`[SMS→${maskPhone(to)}] solapi ${r.statusCode ?? ''} ${r.messageId}`);
+    return;
+  }
   if (provider === 'http') {
     const url = Deno.env.get('SMS_HTTP_URL')!;
     const key = senderKey ?? Deno.env.get('SMS_SENDER_KEY') ?? null;

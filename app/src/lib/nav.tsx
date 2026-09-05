@@ -1,16 +1,18 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { atBase, backSnap, curEntry, hasNavEntry, pushHistory, pushSnap, replaceHistory, replaceSnap, rootSnap, sameSnap, setLive, startHistory, tabSnap, type NavEntry, type NavSnap } from './nav-history';
 
-export type Role = 'director' | 'teacher' | 'parent' | 'student';
+export type Role = 'director' | 'teacher' | 'parent' | 'student' | 'operator';
 export const TABS: Record<Role, string[]> = {
   director: ['today', 'notice', 'inbox', 'more'],
   teacher: ['today', 'notice', 'inbox', 'more'],
   parent: ['child', 'notice', 'ask', 'more'],
   student: ['me', 'notice', 'more'],
+  operator: ['op-home', 'op-settings'],   // BRIGHT 운영자 — 학원 · 설정 둘뿐
 };
 export const TABMETA: Record<string, [string, 'list' | 'notice' | 'chat' | 'house']> = {
   today: ['홈', 'list'], child: ['우리 아이', 'list'], me: ['나', 'list'],
   notice: ['공지', 'notice'], inbox: ['문의', 'chat'], ask: ['문의', 'chat'], more: ['더보기', 'house'],
+  'op-home': ['학원', 'list'], 'op-settings': ['설정', 'house'],
 };
 /* 진입 화면 제목 [제목, 오른쪽] */
 export const TITLE: Record<string, [string, string]> = {
@@ -21,16 +23,18 @@ export const TITLE: Record<string, [string, string]> = {
   stats: ['반별 출결표', ''], import: ['명부 CSV 올리기', ''], 'child-month': ['이번 달', ''], about: ['앱 정보·진단', ''], prefs: ['알림 설정', ''],
   todos: ['이번 주 할 것', '관리'],
   billing: ['수강료', ''], 'billing-settings': ['수강료 설정', ''],
+  /* BRIGHT 운영 */
+  'op-home': ['BRIGHT', ''], 'op-academy': ['학원', ''], 'op-new': ['학원 만들기', ''], 'op-settings': ['운영 설정', ''],
 };
 
 /* 넓은 화면에서 폰 틀을 벗고 대시보드로 펼칠 관리 화면들 — App 이 body.wide 를 붙였다 뗀다 */
-export const WIDE_VIEWS = new Set(['stats', 'roster', 'student', 'student-edit', 'import', 'todos', 'calendar', 'classes', 'teachers', 'readers', 'inbox', 'answer', 'billing']);
+export const WIDE_VIEWS = new Set(['stats', 'roster', 'student', 'student-edit', 'import', 'todos', 'calendar', 'classes', 'teachers', 'readers', 'inbox', 'answer', 'billing', 'op-home', 'op-academy']);
 
 type Nav ={ view: string; params: Record<string, string>; isTab: boolean; tabBase: string; limited: boolean; tab: (n: string) => void; push: (n: string, p?: Record<string, string>) => void; back: () => void; replace: (n: string, p?: Record<string, string>) => void };
 const C = createContext<Nav>(null!);
 
 /* 진입 화면이 속한 탭 — 링크로 바로 열었을 때 뒤로가기·탭 표시에 쓴다 */
-const PARENT_TAB: Record<string, string> = { 'notice-view': 'notice', 'notice-new': 'notice', readers: 'notice', answer: 'inbox', faq: 'inbox', 'ask-new': 'ask', 'ask-mine': 'ask', absence: 'child', makeup: 'today', roster: 'more', academy: 'more', install: 'more', noti: 'more', student: 'more', 'student-edit': 'more', teachers: 'more', calendar: 'more', classes: 'more', stats: 'more', import: 'more', 'child-month': 'child', about: 'more', prefs: 'more', todos: 'today', billing: 'more', 'billing-settings': 'more' };
+const PARENT_TAB: Record<string, string> = { 'notice-view': 'notice', 'notice-new': 'notice', readers: 'notice', answer: 'inbox', faq: 'inbox', 'ask-new': 'ask', 'ask-mine': 'ask', absence: 'child', makeup: 'today', roster: 'more', academy: 'more', install: 'more', noti: 'more', student: 'more', 'student-edit': 'more', teachers: 'more', calendar: 'more', classes: 'more', stats: 'more', import: 'more', 'child-month': 'child', about: 'more', prefs: 'more', todos: 'today', billing: 'more', 'billing-settings': 'more', 'op-academy': 'op-home', 'op-new': 'op-home' };
 
 export function NavProvider({ role, initial: init, limited = false, children }: { role: Role; initial?: { view: string; params?: Record<string, string> }; limited?: boolean; children: ReactNode }) {
   const first = TABS[role][0];

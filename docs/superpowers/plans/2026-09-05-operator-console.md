@@ -24,3 +24,10 @@
 
 ## Task 3 (Fable) 검증·배포
 - 회귀 전체 + operator-test, 헤드리스: 운영자 로그인 → 학원 개설 → 초대 링크로 새 컨텍스트 원장 진입 → 잠금 → 원장 로그인 거절. 화면 시트. Edge(`otp-*`, `invite-login`, `export-academy`) 재배포. 사장님 번호를 운영자로 등록(원장 소속과 병존 — 역할 선택 화면에 "BRIGHT 운영자" 항목).
+
+## 결과 (2026-09-05)
+- Task 1 백엔드: `0023_operator.sql`(app_operators·is_operator·op_academies·op_create_academy·op_director_invite·op_set_lock·op_set_sms·op_get_sms·op_delete_academy·academy_sms_key), Edge `op-delete`, `export-academy?academy=`(운영자 JWT 허용), `_shared/auth.ts` 운영자 분기·잠긴 학원 403. `tools/set-operator.mjs`, `tools/operator-test.mjs`(OP_EDGE_DEPLOYED=1) 통과. 사장님 번호 운영자 등록 완료.
+- Task 2 클라이언트: `screens/operator/{OpHome,OpAcademy,OpNew,OpSettings}`, `lib/operator.ts`(+test), 세션 `operator` 플래그, `PickRole` "BRIGHT 운영자" 항목, SideNav "운영" 그룹, `InviteEntry`/`Otp` `academy_locked` 안내, 더보기(원장·공용)에서 운영 화면 진입.
+- 덤: Solapi 어댑터 `_shared/solapi.ts`(HMAC-SHA256, send-many/detail, 90바이트 초과 LMS), `0024_sms_provider_solapi.sql`(학원별 provider `solapi` 허용, 키 형식 검사), `tools/sms-test.mjs`. 전역은 아직 `SMS_PROVIDER=console` — 키 등록·시험 발송 뒤 켠다.
+- 검증: `tsc` 깨끗, vitest 207 통과, 헤드리스 스윕 79장(역할×테마) 이상 없음, 운영자 화면 4장(목록 PC·만들기 폼·만든 뒤 초대 링크·상세). 시트: `tests/app-verify-op-{1-light,2-dark,3-operator}.png`.
+- 남은 것: `link-login` 잠금 미적용(알림톡 제한 세션), `otp-send` 잠긴 학원 번호에도 발송, 약관·개인정보 동의 화면(제안).

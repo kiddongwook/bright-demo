@@ -1,3 +1,6 @@
+import { maskPhone, solapiCreds, solapiSendAlimtalk, solapiSendSms } from './solapi.ts';
+import { solapiEnv } from './sms.ts';   // 전역 SOLAPI_* 읽기 한 곳 (sms.ts → solapi.ts 로만 흘러서 순환이 없다)
+
 // 알림톡 템플릿 — docs/ops/alimtalk.md 표와 글자 하나까지 같아야 한다 (심사받은 문구).
 // 앞머리 [학원] 은 변수다 (params['학원'] — trg_notification_outbox 가 academies.name 을 넣어 준다). 학원 이름 하드코딩 금지.
 type P = Record<string, string>;
@@ -43,6 +46,35 @@ export function renderTemplate(code: string, params: P | null | undefined): stri
   return cut(t ? t.text(p) : `[${p['학원'] ?? '학원'}] 알림이 있어요.`, TEXT_MAX);
 }
 
+/* ── 솔라피 붙이는 자리 ──
+   우리 템플릿 코드(NOTICE_NEW …) → 솔라피 templateId(KA01TP…) 표는 비밀값 SOLAPI_TEMPLATES 에 JSON 한 줄로 둔다.
+   문구는 카카오 심사를 통과한 것이 솔라피에 등록돼 있고, 우리는 변수만 채운다 —
+   그래서 TEMPLATES 의 text() 는 알림톡 본문이 아니라 **문자 대체 문구**로만 쓰인다. */
+/** 코드 → templateId. 표가 없거나 그 코드가 없으면 null (부르는 쪽이 문자로 내려간다). */
+export function solapiTemplateId(code: string, raw?: string | null): string | null {
+  const s = raw ?? Deno.env.get('SOLAPI_TEMPLATES') ?? '';
+  if (!s) return null;
+  try {
+    const m = JSON.parse(s) as Record<string, unknown>;
+    const id = m?.[code];
+    return typeof id === 'string' && id ? id : null;
+  } catch {
+    console.error('SOLAPI_TEMPLATES 가 JSON 이 아니다 — 알림톡을 건너뛰고 문자로 간다');
+    return null;
+  }
+}
+/** params → 솔라피 variables. 칸 이름을 #{학원} 꼴로 감싼다. 버튼 URL 의 토큰은 #{토큰} 으로 따로 넣는다
+ *  (docs/ops/alimtalk.md 의 템플릿 표에서 버튼이 https://<도메인>/?l=#{토큰} 이다). */
+export function solapiVariables(params: P | null | undefined, buttonUrl: string): Record<string, string> {
+  const p = clampParams(params);
+  const v: Record<string, string> = {};
+  for (const [k, val] of Object.entries(p)) v[`#{${k}}`] = val;
+  if (!v['#{학원}']) v['#{학원}'] = '학원';
+  const m = /[?&]l=([0-9a-zA-Z_-]+)/.exec(buttonUrl ?? '');
+  if (m) v['#{토큰}'] = m[1];
+  return v;
+}
+
 // senderKey: 학원별 발신키 (0023 academy_settings). 없으면 전역 ALIMTALK_SENDER_KEY 로 간다.
 export type AlimtalkMsg = { to: string; templateCode: string; params: P; buttonUrl: string; senderKey?: string | null };
 /** 대행사 어댑터. console: 로그만(받는 번호가 9999 로 끝나면 일부러 실패 — dead·문자 대체 경로 테스트용). http: 대행사 REST 로 전달. 반환값은 대행사 메시지 id. */
@@ -55,6 +87,22 @@ export async function sendAlimtalk(m: AlimtalkMsg): Promise<string> {
     const id = 'console-' + crypto.randomUUID();
     console.log(`[ALIMTALK→${m.to}] ${text} [${t.button}: ${m.buttonUrl}] (${id})`);
     return id;
+  }
+  if (provider === 'solapi') {
+    const creds = solapiCreds(m.senderKey, solapiEnv());
+    const smsText = renderSms(m.templateCode, m.params, m.buttonUrl);   // 문자로 내려갈 때와 솔라피 자체 대체에 쓸 문구
+    const pfId = Deno.env.get('SOLAPI_PF_ID') ?? '';
+    const templateId = solapiTemplateId(m.templateCode);
+    // 발신프로필이나 템플릿 id 가 없으면 알림톡을 못 만든다 — 조용히 삼키지 않고 문자로 내려간다(사유를 남긴다).
+    if (!pfId || !templateId) {
+      const why = !pfId ? 'SOLAPI_PF_ID 없음' : `SOLAPI_TEMPLATES 에 ${m.templateCode} 없음`;
+      console.log(`[ALIMTALK→${maskPhone(m.to)}] ${why} → 문자로 보낸다`);
+      const r = await solapiSendSms({ to: m.to, text: smsText }, creds);
+      return r.messageId;
+    }
+    const r = await solapiSendAlimtalk({ to: m.to, pfId, templateId, variables: solapiVariables(m.params, m.buttonUrl), fallbackText: smsText }, creds);
+    console.log(`[ALIMTALK→${maskPhone(m.to)}] solapi ${templateId} ${r.statusCode ?? ''} ${r.messageId}`);
+    return r.messageId;
   }
   if (provider === 'http') {
     // 대행사 계약 뒤 요청 본문·응답 필드(messageId)를 대행사 문서에 맞춘다 — docs/ops/outbox.md "대행사 붙이기"

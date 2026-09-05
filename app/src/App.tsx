@@ -24,22 +24,29 @@ import { useScrollTitle } from './lib/useScrollTitle';
 import { IcBack } from './components/icons';
 import './theme.css';
 
+const DEFAULT_BRAND = '#2F5BEA';   // theme.css 의 기본 강조색 — 운영 화면은 어느 학원의 색도 쓰지 않는다
+
 // 주소로 들어온 것들 — 모듈 로드 때 한 번 읽고 주소에서 지운다 (렌더 중에 history 를 만지지 않게)
 const LINK_TOKEN = takeLinkToken();          // 알림톡 버튼 ?l=<토큰>
 const INVITE_TOKEN = takeInviteToken();      // 개인 초대 링크 ?i=<토큰> (?a= 는 남긴다)
 const PUSH_NAV = takeNavParam();             // 푸시 알림을 눌러 앱이 새로 열림 ?v=<화면>&r=<id>
 
 function Shell() {
-  const { session, active, memberships, loading, limited } = useSession();
+  const { session, active, memberships, loading, limited, isOperator, opMode, pickPending } = useSession();
   const [phone, setPhone] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(LINK_TOKEN);
   const [invite, setInvite] = useState<string | null>(INVITE_TOKEN);
   const [target, setTarget] = useState<LinkTarget | null>(null);
-  useEffect(() => { if (active) setPhone(null); }, [active]); // 들어오면 번호 단계를 지운다 — 로그아웃 뒤 남의 인증 화면이 남지 않게
+  // 들어오면 번호 단계를 지운다 — 로그아웃 뒤 남의 인증 화면이 남지 않게. 소속 없는 운영자는 active 가 늘 비어 있으므로 session 을 본다.
+  useEffect(() => { if (session) setPhone(null); }, [session]);
   if (loading) return null;
   if (link) return <div className="shell"><div className="app"><LinkEntry token={link} currentUserId={session && memberships.length ? session.user.id : null} onDone={t => { setLink(null); setTarget(t); }} /></div></div>;
   if (invite) return <div className="shell"><div className="app"><InviteEntry token={invite} onDone={() => setInvite(null)} onGate={() => setInvite(null)} /></div></div>;
-  if (!session || !memberships.length) return <div className="shell"><div className="app">{phone ? <Otp phone={phone} onBack={() => setPhone(null)} /> : <Gate onSent={setPhone} />}</div></div>;
+  if (!session || (!memberships.length && !isOperator)) return <div className="shell"><div className="app">{phone ? <Otp phone={phone} onBack={() => setPhone(null)} /> : <Gate onSent={setPhone} />}</div></div>;
+  // 이번에 막 들어온 운영자가 소속도 있다 → 서버가 정해 둔 active 를 건너뛰고 한 번 묻는다 (소속이 하나뿐인 사장님도 운영 화면으로 갈 수 있게)
+  if (pickPending) return <div className="shell"><div className="app"><PickRole /></div></div>;
+  // BRIGHT 운영자: 어느 학원의 소속도 아니다. 소속이 없으면 곧장, 소속이 있으면 역할 고르기에서 "BRIGHT 운영자" 를 고른 동안 (0023).
+  if (opMode) { setContext('', session.user.id); return <NavProvider key="operator" role="operator"><Frame /></NavProvider>; }
   if (!active) return <div className="shell"><div className="app"><PickRole /></div></div>;
   setContext(active.academy_id, session.user.id);
   // 첫 화면: 알림톡 링크가 정해 준 자리 > 푸시 알림이 정해 준 자리(?v=&r=) > 기본 탭
@@ -50,12 +57,13 @@ function Shell() {
 }
 
 function Frame() {
-  const { active, endLimited } = useSession(); const nav = useNav();
+  const { active, endLimited, opMode } = useSession(); const nav = useNav();
   const dark = useDark();   // 어두운 화면에서는 흰 로고로 — 브라우저 자동 반전에 맡기지 않는다
-  const role = active!.role as Role;
+  const role: Role = opMode ? 'operator' : active!.role as Role;
+  const isOp = role === 'operator';   // 운영자는 학원이 없다 — 학원 이름·로고·종·알림 배지가 모두 빠진다
   const [badge, setBadge] = useState(0);
   const [acad, setAcad] = useState<Academy | null>(null);
-  const refreshBadge = () => unreadCount().then(setBadge).catch(() => {});
+  const refreshBadge = () => { if (isOp) return; unreadCount().then(setBadge).catch(() => {}); };
   useEffect(() => { refreshBadge(); }, [nav.view]);
   useEffect(() => { setReportScreen(nav.view); }, [nav.view]);   // 오류 보고에 "어느 화면에서" 를 싣는다
   // 앱이 열려 있을 때 푸시 알림을 누르면 서비스워커가 { type:'nav', view, ref } 를 보낸다 → 그 화면으로 민다.
@@ -76,15 +84,21 @@ function Frame() {
   // 관리 화면은 넓은 화면에서 대시보드로 펼친다
   useEffect(() => { document.body.classList.toggle('wide', WIDE_VIEWS.has(nav.view)); return () => document.body.classList.remove('wide'); }, [nav.view]);
   // PC 관리 모드: 폭 1024px 이상 + 원장·강사 → 폰 틀을 벗고 좌측 내비. 학부모·학생은 PC 에서도 폰 틀 그대로.
-  const pc = useMedia('(min-width:1024px)') && (role === 'director' || role === 'teacher') && !nav.limited;
+  const pc = useMedia('(min-width:1024px)') && (role === 'director' || role === 'teacher' || isOp) && !nav.limited;
   useEffect(() => { document.body.classList.toggle('pc', pc); return () => document.body.classList.remove('pc'); }, [pc]);
   // 밀고 들어간 화면(공지 쓰기·학생 편집…)에는 탭바를 그리지 않는다 — 돌아가는 길은 앱바의 뒤로 꺾쇠.
   // 제한 세션은 자리에 .limited-bar 가 그대로 남으므로 여백을 줄이지 않는다.
   const noTab = !nav.isTab && !nav.limited;
   useEffect(() => { document.body.classList.toggle('no-tab', noTab); return () => document.body.classList.remove('no-tab'); }, [noTab]);
   useEffect(() => { window.scrollTo(0, 0); }, [nav.view]);   // 화면이 바뀌면 맨 위부터
+  // 운영 화면은 학원이 없다 → 빈 문자열. 소속을 바꾸면 이 값이 바뀌어 아래 effect 가 다시 돈다.
+  const academyKey = isOp ? '' : active!.academy_id;
   // 로그인 뒤의 학원 값이 최종본이다 — 설치 정체성(이름·아이콘·색)도 여기 값으로 굳힌다(?a= 나 기기에 남은 slug 는 낡을 수 있다)
-  useEffect(() => { academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; applyInstallIdentity({ name: active!.academy_name ?? a.name, brandColor: a.brand_color, logoUrl: logoUrl(a.logo_path), slug: a.slug }, true); }).catch(() => {}); }, [active!.academy_id]);
+  useEffect(() => {
+    // 운영자는 학원이 없다 — 앞 역할이 물들여 둔 강조색만 기본으로 되돌리고 학원 정체성은 건드리지 않는다.
+    if (isOp) { setAcad(null); applyBrand(DEFAULT_BRAND); document.title = 'BRIGHT 운영'; return; }
+    academy().then(a => { setAcad(a); applyBrand(a.brand_color); document.title = active!.academy_name ?? a.name; applyInstallIdentity({ name: active!.academy_name ?? a.name, brandColor: a.brand_color, logoUrl: logoUrl(a.logo_path), slug: a.slug }, true); }).catch(() => {});
+  }, [academyKey]);
   const key = `${role}:${nav.view}`;
   // 큰 제목이 위로 지나가면 앱바에 작은 제목을 띄운다 (탭 루트에서만 — 진입 화면 앱바는 이미 제목이다)
   const { title: scrollTitle, scrolled } = useScrollTitle(key + JSON.stringify(nav.params));
@@ -97,16 +111,16 @@ function Frame() {
     <div className="shell"><div className="app framed">
       <UpdateBanner />
       <ConfirmHost />
-      {pc && <SideNav role={role} academyName={active!.academy_name ?? ''} logoSrc={logoSrc} dark={dark} />}
+      {pc && <SideNav role={role} academyName={isOp ? 'BRIGHT' : (active!.academy_name ?? '')} logoSrc={logoSrc} dark={dark} />}
       <header className={'appbar' + (showScrollTitle ? ' scrolled' : '')}>
         {nav.isTab
           ? <>
-            {logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={active!.academy_name} />}
+            {logoSrc ? <span className="an">{active!.academy_name}</span> : <img className="logo" src={asset(dark ? 'logo/bright-wordmark-white.png' : 'logo/bright-wordmark.png')} alt={isOp ? 'BRIGHT' : active!.academy_name} />}
             <span className={'sct' + (showScrollTitle ? ' on' : '')} aria-hidden={!showScrollTitle}>{scrollTitle}</span>
           </>
           : <><button className="bk" onClick={nav.back} aria-label="뒤로"><IcBack /></button><span className="an">{title?.[0] ?? ''}</span><span className="ad">{title?.[1] ?? ''}</span></>}
         {/* 종은 탭 루트에서만 — 진입 화면 앱바는 뒤로·제목 자리다 (noti 는 탭이 아니라 nav.isTab 이 이미 거른다) */}
-        {nav.isTab && !nav.limited && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
+        {nav.isTab && !nav.limited && !isOp && <button className="bell" onClick={() => nav.push('noti')} aria-label="알림">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
           <span className="badge">{badge ? String(badge) : ''}</span>
         </button>}

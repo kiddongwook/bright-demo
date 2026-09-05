@@ -23,6 +23,19 @@ export function toast(msg: string, opts: ToastOpts = {}) {
 
 /* 서버가 던지는 짧은 코드 → 사람 말 */
 const SERVER_MSG: [RegExp, string][] = [
+  /* BRIGHT 운영자 화면 (0023) — 아래의 느슨한 규칙(title·duplicate key)보다 먼저 본다 */
+  [/not_operator/, '운영자만 할 수 있어요'],
+  [/slug_taken/, '이미 쓰는 주소예요. 다른 주소로 바꿔 주세요'],
+  [/slug_mismatch|bad_confirm/, '주소(slug)가 달라요. 화면에 보이는 그대로 입력해 주세요'],
+  [/bad_slug/, '주소는 영어 소문자·숫자·붙임표만, 2~40자예요'],
+  [/bad_director_name/, '원장 이름을 넣어 주세요 (20자까지)'],
+  [/bad_name/, '학원 이름을 넣어 주세요 (40자까지)'],
+  [/bad_color/, '강조색 형식이 아니에요'],
+  [/bad_provider/, '발신 모드는 console 이나 http 만 돼요'],
+  [/bad_key/, '발신키가 너무 길어요 (200자까지)'],
+  [/no_director/, '이 학원에 원장 번호가 없어요. 명부를 먼저 넣어 주세요'],
+  [/academy_locked/, '이 학원은 지금 이용이 정지되어 있어요'],
+  [/bad_academy|not_found/, '학원을 찾지 못했어요. 목록을 새로 불러와 주세요'],
   [/overpay/, '남은 금액보다 많아요. 남은 금액까지만 받을 수 있어요'],
   [/over_cap/, '금액이 너무 커요 (500만 원까지)'],
   [/below_paid/, '이미 받은 금액보다 적게는 못 바꿔요. 납부 기록을 먼저 지워 주세요'],

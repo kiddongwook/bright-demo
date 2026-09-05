@@ -64,7 +64,8 @@ VAPID 비밀값이 없고 `PUSH_DRY_RUN` 도 아니면 push 행은 `vapid_not_co
 번호가 틀렸거나(명부 오타) 카톡·문자 모두 안 되는 번호. 명부에서 번호를 고친 뒤
 `update outbox set status = 'queued', attempts = 0, next_attempt_at = null where id = '…';` 로 다시 줄에 세운다.
 
-## 대행사 붙이기 (계약 뒤)
+## 대행사 붙이기 (계약 뒤) — 일반 `http` 어댑터
+솔라피를 쓰면 이 절은 건너뛰고 아래 "솔라피(Solapi) 붙이기" 로 간다. 여기는 다른 대행사를 붙일 때의 자리다.
 1. `npx supabase secrets set ALIMTALK_PROVIDER=http ALIMTALK_HTTP_URL=… ALIMTALK_HTTP_TOKEN=… ALIMTALK_SENDER_KEY=…`
 2. `supabase/functions/_shared/alimtalk.ts` 의 `http` 분기: 요청 본문·응답의 `messageId` 를 대행사 문서에 맞춘다. 문구·버튼 이름은 심사받은 것 그대로.
 3. 대행사 콜백 URL 로 `https://<ref>.supabase.co/functions/v1/outbox-callback?key=<OUTBOX_KEY>` 등록(헤더 `X-Outbox-Key` 를 붙일 수 있으면 헤더로). 대행사 본문 → `{provider_msg_id, status: delivered|failed, reason}` 변환은 `outbox-callback/index.ts` 의 `parse()` 한 곳.
@@ -72,13 +73,116 @@ VAPID 비밀값이 없고 `PUSH_DRY_RUN` 도 아니면 push 행은 `vapid_not_co
 5. `APP_URL` 을 실제 도메인으로: `npx supabase secrets set APP_URL=https://<도메인>` — 링크 버튼 도메인은 카카오에 등록돼 있어야 한다.
 6. 함수 다시 배포: `npx supabase functions deploy outbox-send --no-verify-jwt` (secrets 는 배포 없이도 반영되지만 코드가 바뀌었으면).
 
+## 솔라피(Solapi) 붙이기
+
+대행사를 솔라피로 잡았다. 문자와 알림톡이 **같은 REST 한 곳**으로 나간다 — `POST https://api.solapi.com/messages/v4/send-many/detail`.
+가입·발신번호 등록·충전·API 키 발급까지의 계정 쪽 순서는 `docs/ops/alimtalk.md` 의 "솔라피 준비" 표에 있다. 여기는 **키를 받은 다음** 할 일이다.
+
+### 1) 문자만 먼저 켠다 (알림톡 심사를 기다리는 동안)
+
+```
+npx supabase secrets set SMS_PROVIDER=solapi SOLAPI_API_KEY=… SOLAPI_API_SECRET=… SOLAPI_FROM=0212345678
+npx supabase functions deploy outbox-send --no-verify-jwt
+```
+
+`SOLAPI_FROM` 은 솔라피에 **사전등록을 마친** 발신번호다(숫자만, 하이픈 없이). 등록 안 된 번호를 넣으면 건건이 실패한다.
+이 상태에서 알림톡은 아직 `ALIMTALK_PROVIDER=console` 이므로 카톡은 로그만 찍히고, 카톡이 죽어 문자로 내려가는 줄만 실제로 나간다.
+
+### 2) 알림톡까지 켠다 (템플릿 심사 통과 뒤)
+
+```
+npx supabase secrets set ALIMTALK_PROVIDER=solapi SOLAPI_PF_ID=KA01PF… \
+  SOLAPI_TEMPLATES='{"NOTICE_NEW":"KA01TP…","NOTICE_REMIND":"KA01TP…","INQUIRY_ANSWERED":"KA01TP…","MAKEUP_CONFIRMED":"KA01TP…","ATTENDANCE":"KA01TP…"}'
+npx supabase secrets set APP_URL=https://<도메인>
+npx supabase functions deploy outbox-send --no-verify-jwt
+```
+
+- `SOLAPI_PF_ID` — 카카오 발신프로필 키(솔라피 콘솔 → 카카오 채널). 학원마다가 아니라 **BRIGHT 채널 하나**다.
+- `SOLAPI_TEMPLATES` — 우리 템플릿 코드 → 솔라피 `templateId` 표. JSON 한 줄. 작은따옴표로 감싸야 셸이 `{}` 를 안 건드린다.
+- 표에 그 코드가 없거나 `SOLAPI_PF_ID` 가 비어 있으면 **그 줄은 알림톡을 건너뛰고 곧바로 문자로 나간다.** 조용히 삼키지 않고 로그에 사유를 남긴다:
+  `[ALIMTALK→010****5678] SOLAPI_TEMPLATES 에 NOTICE_NEW 없음 → 문자로 보낸다`.
+  다섯 개를 한꺼번에 심사받지 못했을 때 알림이 멈추지 않게 하려고 이렇게 뒀다 — 대신 요금은 문자 요율로 나간다.
+
+### 비밀값 한눈에
+
+| 이름 | 언제 | 무엇 |
+|---|---|---|
+| `SMS_PROVIDER=solapi` | 1단계 | 문자를 솔라피로 |
+| `SOLAPI_API_KEY` · `SOLAPI_API_SECRET` | 1단계 | 솔라피 API 키 쌍. 시크릿은 발급 때 한 번만 보인다 |
+| `SOLAPI_FROM` | 1단계 | 등록 발신번호(숫자만) |
+| `ALIMTALK_PROVIDER=solapi` | 2단계 | 카톡을 솔라피로 |
+| `SOLAPI_PF_ID` | 2단계 | 카카오 발신프로필 키 |
+| `SOLAPI_TEMPLATES` | 2단계 | 코드→templateId JSON |
+| `APP_URL` | 2단계 | 버튼 링크 도메인 (카카오에 등록된 것) |
+
+`ALIMTALK_HTTP_*` · `ALIMTALK_SENDER_KEY` · `SMS_HTTP_*` 는 솔라피에서 쓰지 않는다 (예전 `http` 어댑터용).
+
+### 문자 종류(SMS/LMS)와 요금
+`_shared/solapi.ts` 가 문구를 **EUC-KR 바이트**로 세서 90을 넘으면 `type: 'LMS'` 로 올린다 — 한글 45자가 경계다(한글 2바이트, 영문·숫자 1바이트).
+`_shared/alimtalk.ts` 의 `cutBytes` 는 UTF-8(한글 3바이트) 로 2,000바이트 상한을 보는 **다른 셈**이다. 둘을 섞지 말 것.
+알림톡 버튼 URL(`?l=<토큰 32자>`)이 문자 대체 문구 끝에 붙으므로 대체 문자는 사실상 늘 LMS 다. 요율을 볼 때 이걸 감안한다.
+
+### 학원별 키 (0023 academy_settings)
+`academy_sms_key()` 가 주는 `sender_key` 한 칸을 솔라피에서는 **`apiKey:apiSecret[:발신번호]`** 로 읽는다.
+세 번째 칸(발신번호)은 생략하면 전역 `SOLAPI_FROM` 을 쓴다. 이 모양이 아니면 그 줄은
+`solapi: 학원 발신키 모양이 아니다 (apiKey:apiSecret[:발신번호])` 로 실패한다 — **일부러 그렇게 뒀다.** 엉뚱한 계정에 요금이 붙는 것보다 읽을 수 있는 사유로 실패하는 게 낫다.
+
+주의 — 지금은 이 길이 **막혀 있다.** `0023_operator.sql` 의 제약이 `sms_provider in ('console','http')` 라서 `'solapi'` 를 저장할 수 없다.
+학원별 솔라피 키를 실제로 쓰려면 그 체크를 넓히는 마이그레이션이 먼저 필요하다(`academy_sms_key` 와 운영자 화면의 값 목록도 같이).
+그 전까지 어떤 학원이 `sms_provider='http'` + `sender_key` 를 가진 채 전역이 `solapi` 면, 그 학원의 줄만 위 사유로 실패한다. 학원별 키를 안 쓰면(전부 `console`) 전역 키로 잘 돈다.
+
+### 오류 읽기
+`outbox.last_error` 에 남는 모양은 두 가지다.
+
+- `solapi <HTTP 상태> <errorCode> <errorMessage>` — 요청 자체가 거절됐다. 계정·인증·본문 문제다.
+  자주 보는 것: 인증 실패(키·시크릿 오타, 서버 시계가 많이 틀어짐 — date 는 요청 시각이다), 잔액 부족, 발신번호 미등록.
+- `solapi <statusCode> <statusMessage>` — 요청은 받았는데 **그 한 건의 접수가 실패**했다(`failedMessageList`).
+  받는 번호 문제(형식·수신거부), 템플릿 변수 불일치(`#{제목}` 을 안 채웠다든지), 발신프로필 문제가 여기로 온다.
+  `statusCode` 숫자의 뜻은 솔라피 콘솔의 발송 내역이나 솔라피 문서의 상태코드 표에서 확인한다 — 여기 표로 옮겨 적지 않는다(코드가 늘어난다).
+
+성공·실패를 우리가 `statusCode` 값으로 판정하지 않는다. **`failedMessageList` 에 들어 있으면 실패**, 아니면 `messageList[0].messageId` 를 `provider_msg_id` 로 저장한다.
+
+### 콜백(수신 결과)은 나중에 — 붙일 땐 하나만 고른다
+지금은 콜백 없이 돈다. 접수 성공까지만 우리가 알고, 실제 도착 여부는 솔라피 콘솔에서 본다.
+나중에 붙이려면 솔라피 웹훅을 `https://<ref>.supabase.co/functions/v1/outbox-callback?key=<OUTBOX_KEY>` 로 걸고,
+솔라피 본문 → `{provider_msg_id, status: delivered|failed, reason}` 변환을 `outbox-callback/index.ts` 의 `parse()` 한 곳에 둔다
+(`provider_msg_id` 는 우리가 저장한 솔라피 `messageId` 다).
+
+**이때 문자 대체가 두 겹이 된다.** 우리는 `kakaoOptions.disableSms = false` 로 보내므로 카톡이 실패하면 **솔라피가 이미 문자를 대신 보낸다.** 그런데 `outbox-callback` 은 `status: failed` 를 받으면 문자 줄을 하나 더 만든다 → 같은 사람이 문자를 두 번 받는다. 둘 중 하나만 골라야 한다.
+
+- **솔라피에 맡긴다(권장)** — `parse()` 가 카톡 실패를 `failed` 로 올리지 않게 한다(최종 도착 상태만 매핑). 대체가 대행사 안에서 한 번에 끝나 빠르다.
+- **우리가 한다** — `_shared/solapi.ts` 의 `disableSms` 를 `true` 로 바꾸고 지금의 콜백 → 문자 줄 흐름을 그대로 쓴다. 문자 대체까지 `outbox` 에 이력이 남는다.
+
+### ⚠ 켠 프로젝트에서 테스트 스크립트를 돌리지 않는다
+`SMS_PROVIDER=solapi` 가 걸린 프로젝트에서는 **`tools/*-test.mjs` 를 절대 돌리지 않는다.**
+`outbox-test.mjs` 는 `0109` + 임의의 6자리로 사람을 만들고(진짜 누군가의 번호일 수 있는 11자리 010 번호다),
+C·D 절이 일부러 `sms` 줄을 만들어 발송기를 깨운다 — 콘솔 모드에선 로그로 끝나지만 솔라피가 켜져 있으면 **모르는 사람에게 요금 붙은 문자가 실제로 나간다.**
+개발·회귀용 프로젝트는 `SMS_PROVIDER=console` 로 따로 두고, 솔라피는 운영 프로젝트에만 건다.
+운영 프로젝트에서 확인할 일이 있으면 아래 `sms-test.mjs` 로 **자기 번호에 한 통**만 보낸다.
+
+### 첫 알림톡 한 건에서 반드시 볼 것
+우리는 ATA 요청에 `kakaoOptions`(템플릿·변수) 와 함께 문자 대체용 `text` 를 같이 싣는다.
+솔라피 공식 예시의 알림톡 본문에는 `text` 가 없다 — SDK 스키마는 허용하지만, **변수와 함께 보냈을 때 솔라피가 이 `text` 를 대체 문자 본문으로 쓰는지 실제로 확인된 바 없다.**
+키를 꽂고 처음 알림톡을 보낼 때 이걸 먼저 본다(카톡이 없는 번호로 한 건 보내 대체 문자가 어떻게 오는지).
+거절되거나 무시되면 `_shared/solapi.ts` 의 `solapiSendAlimtalk` 에서 `text` 를 빼면 된다 — 그러면 솔라피가 템플릿으로 대체 문구를 만든다(대신 버튼 URL 이 그 문자에 안 실릴 수 있다).
+
+### 시험
+```
+cd tools && node --env-file=../.env.local sms-test.mjs 01012345678
+```
+자기 번호로 **진짜 한 통**이 나간다(요금이 나간다). `groupId` · `messageId` · `statusCode` · 남은 잔액을 찍는다.
+`.env.local` 에 `SOLAPI_*` 가 없으면 아무 것도 보내지 않고 무엇을 보낼 뻔했는지만 찍고 정상 종료한다 — 키 넣기 전에 문구·SMS/LMS 판정만 보는 용도로도 쓴다.
+문자를 받았으면 발신번호 등록·충전·키가 모두 맞은 것이다. 그다음 실제 알림 흐름은 공지를 하나 올려 `outbox` 가 도는지로 본다.
+
 ## 비밀
 `OUTBOX_KEY` 는 `tools/setup-outbox.mjs` 가 만들어 Edge secrets · `app_settings` · `.env.local` 에만 둔다. 바꾸려면 `.env.local` 의 `OUTBOX_KEY=` 줄을 지우고 스크립트를 다시 실행(새 키를 만들어 세 곳에 다시 넣는다).
 `app_settings` 는 정책이 없어 service role 만 읽는다. 더 단단히 하려면 Supabase Vault 로 옮기고 `outbox_tick()` 이 `vault.decrypted_secrets` 를 읽게 바꾼다.
 
 ## 개발 프로젝트에서
 - `ALIMTALK_PROVIDER=console`: 실제 발송 없이 로그만. `outbox-send` 응답의 `debug` 에 받는 번호·URL 이 들어 있어 테스트가 토큰을 얻는다. 받는 번호가 `9999` 로 끝나면 일부러 실패한다(dead·문자 대체 경로).
-- 통합 테스트: `cd tools && node --env-file=../.env.local outbox-test.mjs` → `PASS: outbox A~F`. 푸시·초대는 `push-test.mjs`(A~G 는 DB 만 있으면 통과, H 절 발송은 배포 + `PUSH_DRY_RUN=1` 필요) 와 `invite-test.mjs`(C 절은 `invite-login` 배포 필요). 테스트는 도는 동안 `app_settings.outbox_url` 을 잠시 빼서 틱이 끼어들지 않게 하고 끝나면 되돌린다.
+- **테스트 스크립트는 `SMS_PROVIDER`·`ALIMTALK_PROVIDER` 가 둘 다 `console` 인 프로젝트에서만 돌린다.** 솔라피가 걸려 있으면 임의로 만든 `0109…` 번호로 진짜 문자가 나간다(위 "⚠ 켠 프로젝트에서…").
+- 통합 테스트: `cd tools && node --env-file=../.env.local outbox-test.mjs` → `PASS: outbox A~F`.
+  다른 점검이 남긴 줄이 아직 재시도 중이면 `failed !== 0` 으로 헛디딘다 — `node --env-file=../.env.local cleanup-test-data.mjs` 를 먼저 돌리고 다시 본다. 푸시·초대는 `push-test.mjs`(A~G 는 DB 만 있으면 통과, H 절 발송은 배포 + `PUSH_DRY_RUN=1` 필요) 와 `invite-test.mjs`(C 절은 `invite-login` 배포 필요). 테스트는 도는 동안 `app_settings.outbox_url` 을 잠시 빼서 틱이 끼어들지 않게 하고 끝나면 되돌린다.
 - 링크 하나 만들어 보기: 원장으로 공지를 올리고 `outbox-send` 를 `X-Outbox-Key` 헤더로 호출하면 `debug[].url` 이 나온다. 그 주소를 새 시크릿 창에서 열면 공지가 바로 열린다.
 
 ## 처리량

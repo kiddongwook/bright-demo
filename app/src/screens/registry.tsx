@@ -20,6 +20,10 @@ import { Install } from './shared/Install';
 import { About } from './shared/About';
 import { Prefs } from './shared/Prefs';
 import { Me } from './student/Me';
+import { OpHome } from './operator/OpHome';
+import { OpAcademy } from './operator/OpAcademy';
+import { OpNew } from './operator/OpNew';
+import { OpSettings } from './operator/OpSettings';
 
 const ParentNotices = () => <NoticeFeed who="우리 아이 반" />;
 const StudentNotices = () => <NoticeFeed who="우리 반" />;
@@ -41,4 +45,6 @@ export const SCREENS: Record<string, ComponentType<any>> = {
   'parent:ask': Ask, 'parent:ask-new': AskNew, 'parent:ask-mine': AskMine, 'parent:more': MoreSimple,
   '*:install': Install, '*:about': About, '*:prefs': Prefs,
   'student:me': Me, 'student:notice': StudentNotices, 'student:notice-view': NoticeView, 'student:more': MoreSimple,
+  /* BRIGHT 운영자 — 학원 소속이 아닌 화면 묶음 (0023) */
+  'operator:op-home': OpHome, 'operator:op-academy': OpAcademy, 'operator:op-new': OpNew, 'operator:op-settings': OpSettings,
 };
